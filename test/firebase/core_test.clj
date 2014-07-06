@@ -1,6 +1,6 @@
-(ns cljs-firebase.core-test
+(ns firebase.core-test
   (:require [clojure.test :refer :all]
-            [cljs-firebase.core :refer :all]))
+            [firebase.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
