@@ -1,4 +1,4 @@
-(ns firebase.core
+(ns pani.core
   (:require [cljs.core.async :refer [<! >! chan]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
