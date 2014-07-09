@@ -54,9 +54,7 @@
   "Bind to a certain property under the given root"
   ([root type korks]
    (let [bc (chan)]
-     (pani.core/bind root type korks #(do
-                                        (println "Pushing" %)
-                                        (go (>! bc %))))
+     (pani.core/bind root type korks #(go (>! bc %)))
      bc))
 
   ([root type korks cb]
