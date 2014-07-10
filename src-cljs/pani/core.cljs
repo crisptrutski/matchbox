@@ -16,9 +16,10 @@
 ;;
 (defn walk-root [root korks]
   "Takes korks and reduces it to a root on which we can perform direct actions"
-  (cond
-    (sequential? korks) (reduce #(.child %1 (name %2)) root korks)
-    :else (.child root (name korks))))
+  (let [p (if (sequential? korks)
+            (clojure.string/join "/" (map name korks))
+            (name korks))]
+    (.child root p)))
 
 (defn- fb-call!
   "Set the value at the given root"
@@ -50,12 +51,13 @@
 (defn bind
   "Bind to a certain property under the given root"
   ([root type korks]
-   (let [c (walk-root root korks)
-         bind-chan (chan)]
-     (.on c (name type) #(go (>! bind-chan (clj-val %1))))
+   (let [bind-chan (chan)]
+     (bind root type korks #(go (>! bind-chan %)))
      bind-chan))
 
   ([root type korks cb]
    (let [c (walk-root root korks)]
-     (.on c (name type) #(cb (clj-val %1))))))
+     (.on c (name type) 
+          #(when-let [v (clj-val %1)]
+             (cb v))))))
 

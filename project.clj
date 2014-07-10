@@ -13,8 +13,12 @@
 
 
   :plugins [[lein-cljsbuild "1.0.3"]]
-  :cljsbuild {:builds [{:id "dev"
-                        :source-paths ["src"]
-                        :compiler {:output-to "target/main.js"
-                                   :optimizations :whitespace
-                                   :pretty-print true}}]})
+  :profiles {:dev {:dependencies [[om "0.6.4"]]}}
+
+  :cljsbuild {:builds [{:id "om-value-changes"
+                        :source-paths ["src-cljs" "examples/cljs/om-value-changes/src"]
+                        :compiler {
+                                 :output-to "examples/cljs/om-value-changes/main.js"
+                                 :output-dir "examples/cljs/om-value-changes/out"
+                                 :source-map true
+                                 :optimizations :none }}]})
