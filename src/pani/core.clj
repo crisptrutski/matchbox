@@ -71,4 +71,11 @@
                                (reify com.firebase.client.ChildEventListener
                                  (onChildAdded [this v _]
                                    (cb (.getValue v)))))
+
+       (= type :child_removed)
+       (.addChildEventListener node
+                               (reify com.firebase.client.ChildEventListener
+                                 (onChildRemoved [this v]
+                                   (cb (.getValue v)))))
+
        :else (throw (Exception. (str type " is not supported")))))))
