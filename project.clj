@@ -1,4 +1,4 @@
-(defproject pani "0.0.1"
+(defproject pani "0.0.2"
   :description "Convenience library for using Firebase with Clojurescript"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

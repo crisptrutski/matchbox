@@ -6,7 +6,7 @@ The goal of this library is not to provide access to the entire functionality of
 
 # Current version
 
-The library is in its infancy.  The current version is `0.0.1`.  This library is not on clojars yet.
+The library is in its infancy.  The current version is `0.0.2`.  This library is not on clojars yet.
 
 
 # Features
@@ -61,7 +61,19 @@ Finally, use the `walk-root` function to get a new child node:
 
 	(def messages-root (pani.core/walk-root r :messages))
 	(pani.core/bind messages-root :child_added [] #(log %1))
+	
+## Clojurescript Examples
+***Note that***, most examples will require you to add your Firebase app url to the example.  You'd most likely have to edit a line like the following in one of the source files (most likely `core.cljs`):
 
+	;; TODO: Set this to a firebase app URL
+	(def firebase-app-url "https://your-app.firebaseio.com/")
+
+
+All examples are available under the `examples` directory.  To run a Clojurescript example just run the respective `lein` command to build it:
+
+    lein cljsbuild once <example-name>
+
+This should build and place a `main.js` file along with an `out` directory in the example's directory.  You should now be able to go to the example's directory and open the `index.html` file in a web-browser.
 
 ## License
 
