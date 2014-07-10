@@ -21,6 +21,18 @@
             (name korks))]
     (.child root p)))
 
+
+(defn name [r]
+  "Get the name of the given root"
+  (.name r))
+
+(defn parent [r]
+  "Get the parent of the given root"
+  (let [p (.parent r)]
+    (if (nil? (js->clj p))
+      nil
+      p)))
+
 (defn- fb-call!
   "Set the value at the given root"
   ([push-fn root val]

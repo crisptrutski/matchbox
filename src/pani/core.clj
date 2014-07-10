@@ -27,6 +27,14 @@
                (name korks))]
     (.child root path)))
 
+(defn name [root]
+  "Get the name of the given root"
+  (.getName root))
+
+(defn parent [root]
+  "Get the parent of the given root"
+  (.getParent root))
+
 ;; A function set the value on a root [korks]
 ;;
 (defn set!

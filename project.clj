@@ -12,7 +12,8 @@
   :cljsbuild {:builds []}
 
 
-  :plugins [[lein-cljsbuild "1.0.3"]]
+  :plugins [[lein-cljsbuild "1.0.3"]
+            [com.cemerick/clojurescript.test "0.3.1"]]
   :profiles {:dev {:dependencies [[om "0.6.4"]]}}
 
   :cljsbuild {:builds [{:id "om-value-changes"
@@ -21,4 +22,13 @@
                                  :output-to "examples/cljs/om-value-changes/main.js"
                                  :output-dir "examples/cljs/om-value-changes/out"
                                  :source-map true
-                                 :optimizations :none }}]})
+                                 :optimizations :none }}
+                       {:id "test"
+                        :source-paths ["src-cljs" "test"]
+                        :compiler {:output-to "target/cljs/test.js"
+                                   :optimizations :whitespace
+                                   :pretty-print true}}]
+              :test-commands {"unit-tests" ["phantomjs" :runner
+                                            "this.literal_js_was_evaluated=true"
+                                            "vendor/firebase-1.0.17.js"
+                                            "target/cljs/test.js"]}})

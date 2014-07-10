@@ -49,8 +49,9 @@
           tran (pani/fb->app orig)]
       (is (= orig tran)))))
 
-
-
-
-
+(deftest walk-root-works
+  (let [r (pani/root "https://some-app.firebaseio.com/")]
+    (is (= (pani/name (pani/walk-root r [:info :world])) "world"))
+    (is (= (pani/name (pani/parent (pani/walk-root r [:info :world]))) "info"))
+    (is (= (pani/name (pani/walk-root r :age)) "age"))))
 

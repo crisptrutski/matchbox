@@ -6,7 +6,7 @@
   (:require-macros [cljs.core.async.macros :refer [go-loop]]))
 
 ;; TODO: Set this to a firebase app URL
-(def firebase-app-url "https://your-app.firebaseio.com/")
+(def firebase-app-url "https://blazing-fire-1915.firebaseio.com/")
 
 (enable-console-print!)
 
