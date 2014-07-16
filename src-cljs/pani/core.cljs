@@ -73,3 +73,8 @@
           #(when-let [v (clj-val %1)]
              (cb v))))))
 
+(defn transact!
+  "Use the firebase transaction mechanism to update a value atomically"
+  [root korks f & args]
+  (let [c (walk-root root korks)]
+    (.transaction c #(apply f % args))))

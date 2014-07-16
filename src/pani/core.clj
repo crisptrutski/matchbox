@@ -1,5 +1,11 @@
 (ns pani.core
-  (:require [clojure.core.async :refer [<! >! chan go go-loop]]))
+  (:require [clojure.core.async :refer [<! >! chan go go-loop]])
+  (:import [com.firebase.client
+            Firebase
+            ValueEventListener
+            ChildEventListener
+            Transaction
+            Transaction$Handler]))
 
 (defn app->fb [v]
   (if (map? v)
@@ -15,7 +21,7 @@
 ;;
 (defn root [url]
   "Makes a root reference for firebase"
-  (com.firebase.client.Firebase. url))
+  (Firebase. url))
 
 ;; A utility function to traverse through korks and get ref to a child object
 ;; [:hello :world :bye ] refers to hello.world.bye
@@ -58,6 +64,19 @@
          sval (app->fb val)]
      (pani.core/set! node sval))))
 
+(defmacro bind-handlers [btype node cb & specs]
+  (let [pcount {:value 2 :child_added 3 :child_removed 2}]
+    `(cond
+       ~@(mapcat (fn [[matchtype iface handler]]
+                   (let [params (vec (take (pcount matchtype) (repeatedly gensym)))
+                         attacher (if (= matchtype :value) 'addValueEventListener 'addChildEventListener)]
+                     (list
+                       `(= ~btype ~matchtype )
+                       `(. ~node ~attacher (reify ~iface
+                                             (~handler ~params
+                                               (~cb (.getValue ~(second params))))))))) specs)
+       :else (throw (Exception. (str ~type " is not supported"))))))
+
 (defn bind
   "Bind to a certain property under the given root"
   ([root type korks]
@@ -67,23 +86,23 @@
 
   ([root type korks cb]
    (let [node (walk-root root korks)]
-     (cond
-       (= type :value) 
-       (.addValueEventListener node
-                               (reify com.firebase.client.ValueEventListener
-                                 (onDataChange [this v]
-                                   (cb (.getValue v)))))
+     (bind-handlers type node cb
+        [:value         ValueEventListener onDataChange]
+        [:child_added   ChildEventListener onChildAdded]
+        [:child_removed ChildEventListener onChildRemoved]))))
 
-       (= type :child_added)
-       (.addChildEventListener node
-                               (reify com.firebase.client.ChildEventListener
-                                 (onChildAdded [this v _]
-                                   (cb (.getValue v)))))
 
-       (= type :child_removed)
-       (.addChildEventListener node
-                               (reify com.firebase.client.ChildEventListener
-                                 (onChildRemoved [this v]
-                                   (cb (.getValue v)))))
+(defn transact!
+  "Use the firebase transaction mechanism to update a value atomically"
+  [root korks f & args]
+  (let [r (walk-root root korks)]
+    (.runTransaction r (reify Transaction$Handler
+                         (doTransaction [this d]
+                           (let [cv (.getValue d)
+                                 nv (apply f cv args)]
+                             (.setValue d nv)
+                             (Transaction/success d)))
+                         (onComplete [_ _ _ _])))))
 
-       :else (throw (Exception. (str type " is not supported")))))))
+(let [r (root "https://blazing-fire-1915.firebaseio.com/age")]
+  (pani.core/transact! r [] inc))
