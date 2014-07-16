@@ -2,7 +2,7 @@
   (:require-macros [cemerick.cljs.test
                     :refer (is deftest with-test run-tests testing test-var)])
   (:require [cemerick.cljs.test :as t]
-            [pani.core :as pani]))
+            [pani.cljs.core :as pani]))
 
 (enable-console-print!)
 

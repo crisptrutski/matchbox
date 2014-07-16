@@ -1,6 +1,6 @@
 (ns pani.core-test
   (:require [clojure.test :refer :all]
-            [pani.core :as pani]))
+            [pani.clojure.core :as pani]))
 
 (deftest app->fb-works
   (do

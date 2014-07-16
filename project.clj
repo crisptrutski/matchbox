@@ -17,14 +17,14 @@
   :profiles {:dev {:dependencies [[om "0.6.4"]]}}
 
   :cljsbuild {:builds [{:id "om-value-changes"
-                        :source-paths ["src-cljs" "examples/cljs/om-value-changes/src"]
+                        :source-paths ["examples/cljs/om-value-changes/src"]
                         :compiler {
                                  :output-to "examples/cljs/om-value-changes/main.js"
                                  :output-dir "examples/cljs/om-value-changes/out"
                                  :source-map true
                                  :optimizations :none }}
                        {:id "test"
-                        :source-paths ["src-cljs" "test"]
+                        :source-paths ["test"]
                         :compiler {:output-to "target/cljs/test.js"
                                    :optimizations :whitespace
                                    :pretty-print true}}]

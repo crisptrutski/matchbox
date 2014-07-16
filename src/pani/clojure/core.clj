@@ -1,4 +1,4 @@
-(ns pani.core
+(ns pani.clojure.core
   (:require [clojure.core.async :refer [<! >! chan go go-loop]])
   (:import [com.firebase.client
             Firebase
@@ -56,13 +56,13 @@
   ([root val]
    (let [node (.push root)
          sval (app->fb val)]
-     (pani.core/set! node sval)))
+     (pani.clojure.core/set! node sval)))
 
   ([root korks val]
    (let [r    (walk-root root korks)
          node (.push r)
          sval (app->fb val)]
-     (pani.core/set! node sval))))
+     (pani.clojure.core/set! node sval))))
 
 (defmacro bind-handlers [btype node cb & specs]
   (let [pcount {:value 2 :child_added 3 :child_removed 2}]
@@ -81,7 +81,7 @@
   "Bind to a certain property under the given root"
   ([root type korks]
    (let [bc (chan)]
-     (pani.core/bind root type korks #(go (>! bc %)))
+     (pani.clojure.core/bind root type korks #(go (>! bc %)))
      bc))
 
   ([root type korks cb]
@@ -103,6 +103,3 @@
                              (.setValue d nv)
                              (Transaction/success d)))
                          (onComplete [_ _ _ _])))))
-
-(let [r (root "https://blazing-fire-1915.firebaseio.com/age")]
-  (pani.core/transact! r [] inc))
