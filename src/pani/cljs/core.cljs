@@ -17,7 +17,7 @@
 (defn walk-root [root korks]
   "Takes korks and reduces it to a root on which we can perform direct actions"
   (let [p (if (sequential? korks)
-            (clojure.string/join "/" (map name korks))
+            (apply str (interpose "/" (map name korks)))
             (name korks))]
     (.child root p)))
 
@@ -69,7 +69,7 @@
 
   ([root type korks cb]
    (let [c (walk-root root korks)]
-     (.on c (name type) 
+     (.on c (clojure.core/name type) 
           #(when-let [v (clj-val %1)]
              (cb v))))))
 
@@ -77,4 +77,4 @@
   "Use the firebase transaction mechanism to update a value atomically"
   [root korks f & args]
   (let [c (walk-root root korks)]
-    (.transaction c #(apply f % args))))
+    (.transaction c #(apply f % args) #() false)))
