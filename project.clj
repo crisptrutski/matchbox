@@ -2,6 +2,7 @@
   :description "Convenience library for using Firebase with Clojurescript"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :url "http://github.com/verma/pani"
   :author "verma"
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.5.1"]
