@@ -10,7 +10,6 @@
                  [org.clojure/core.async "0.1.303.0-886421-alpha"]
                  [com.firebase/firebase-client "1.0.7"]]
   :deploy-repositories [["releases" :clojars]]
-  :cljsbuild {:builds []}
 
 
   :plugins [[lein-cljsbuild "1.0.3"]

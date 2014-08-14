@@ -1,5 +1,6 @@
 (ns pani.cljs.core
-  (:require [cljs.core.async :refer [<! >! chan]])
+  (:refer-clojure :exclude [name get-in])
+  (:require [cljs.core.async :refer [<! >! chan put!]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defn- clj-val [v]
@@ -17,8 +18,8 @@
 (defn walk-root [root korks]
   "Takes korks and reduces it to a root on which we can perform direct actions"
   (let [p (if (sequential? korks)
-            (apply str (interpose "/" (map name korks)))
-            (name korks))]
+            (apply str (interpose "/" (map clojure.core/name korks)))
+            (clojure.core/name korks))]
     (.child root p)))
 
 
@@ -41,6 +42,16 @@
 
   ([push-fn root korks val]
    (fb-call! push-fn (walk-root root korks) val)))
+
+(defn get-in
+  "get-in style single shot get function, returns a channel which delivers the value"
+  [root ks]
+  (let [c (chan)]
+    (.once root "value" #(let [v (-> (.val %)
+                                     (js->clj :keywordize-keys true)
+                                     (clojure.core/get-in (if (sequential? ks) ks [ks])))]
+                           (put! c v)))
+    c))
 
 ;; A function set the value on a root [korks]
 ;;
