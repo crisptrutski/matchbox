@@ -1,13 +1,13 @@
-(defproject pani "0.0.2"
-  :description "Convenience library for using Firebase with Clojurescript"
+(defproject pani "0.0.3"
+  :description "Convenience library for using Firebase with Clojure and Clojurescript"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :url "http://github.com/verma/pani"
   :author "verma"
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-2234"]
-                 [org.clojure/core.async "0.1.303.0-886421-alpha"]
+                 [org.clojure/clojurescript "0.0-2311"]
+                 [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
                  [com.firebase/firebase-client "1.0.7"]]
   :deploy-repositories [["releases" :clojars]]
 

@@ -1,6 +1,6 @@
 (ns pani.cljs.core
-  (:refer-clojure :exclude [name get-in])
-  (:require [cljs.core.async :refer [<! >! chan put!]])
+  (:refer-clojure :exclude [name get-in merge])
+  (:require [cljs.core.async :refer [<! >! chan put! merge]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defn- clj-val [v]
@@ -89,3 +89,22 @@
   [root korks f & args]
   (let [c (walk-root root korks)]
     (.transaction c #(apply f % args) #() false)))
+
+(defn- fb->chan
+  "Given a firebase ref, an event and a transducer, binds and posts to returned channel"
+  [fbref event td]
+  (let [c (chan 1 td)]
+    (.on fbref (clojure.core/name event)
+         #(put! c [event %]))
+    c))
+
+(defn listen<
+  "Listens for events on the given firebase ref"
+  [root korks]
+  (let [root    (walk-root root korks)
+        events  [:child_added :child_removed :child_changed]
+        td      (map (fn [[evt snap]]
+                       [evt (.name snap) (.val snap)]))
+        chans   (map (fn [event]
+                       (fb->chan root event td)) events)]
+    (merge chans)))
