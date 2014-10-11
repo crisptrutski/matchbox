@@ -1,12 +1,12 @@
 (ns examples.cljs.om-value-changes.core
-  (:require [pani.core :as pani]
+  (:require [pani.cljs.core :as pani]
             [cljs.core.async :refer [<!]]
             [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go-loop]]))
 
 ;; TODO: Set this to a firebase app URL
-(def firebase-app-url "https://blazing-fire-1915.firebaseio.com/")
+(def firebase-app-url "https://<your app>.firebaseio.com/")
 
 (enable-console-print!)
 
