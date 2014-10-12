@@ -14,57 +14,57 @@ The library is in its infancy.  The current version is `0.0.2`.
 # Features
 
 Pani offers several benefits over raw JS interop:
- 
+
  * Idiomatic constructs
  * Async channels or callbacks for change notifications
  * Javascript objects abstraction
- 
+
 This library, for now, is entirely based on how I intend to use this library (may be with Om etc.) and would grow as I discover more things I'd like it to do.  Pull requests welcome!
 
 # Usage
 
 Require `pani`:
 
-    (:require [pani.cljs.core])       ; for clojurescript
-    (:require [pani.clojure.core])    ; for clojure
-    
+    (:require [pani.cljs.core :as p])       ; for clojurescript
+    (:require [pani.clojure.core :as p])    ; for clojure
+
 Create a root object:
 
-	(def r (pani.core/root "https://your-app.firebaseio.com/"))
+	(def r (p/root "https://your-app.firebaseio.com/"))
 
 Bind a callback to recieve callback notifications when a `value` notification occurs:
 
-    (pani.core/bind r :value :age #(log %1))
-    
+    (p/bind r :value :age #(log %1))
+
 The `bind` call accepts either a key or a seq of keys (`get-in` style):
 
-	(pani.core/bind r :value [:info :world] #(log %1))
+	(p/bind r :value [:info :world] #(log %1))
 
 You can also bind to other Firebase notification events, e.g. the `child_added` notification:
 
-	(pani.core/bind r :child_added :messages #(log %1))
-	
+	(p/bind r :child_added :messages #(log %1))
+
 If no callback is specified, the `bind` call returns an async channel:
 
-    (let [c (pani.core/bind r :child_added :messages)]
+    (let [c (p/bind r :child_added :messages)]
       (go-loop [msg (<! c)]
         (.log js/console "New message (go-loop):" (:message msg))
         (recur (<! c))))
 
 Use the `set!` call to set a value, like `bind` this function accepts either a single key or a seq of keys:
 
-	(pani.core/set! r [:info :world] "welcome")
-	(pani.core/set! r :age 100)
+	(p/set! r [:info :world] "welcome")
+	(p/set! r :age 100)
 
 Use the `push!` function to push values into a collection:
 
-	(pani.core/push! r :messages {:message "hello"})
-	
+	(p/push! r :messages {:message "hello"})
+
 Finally, use the `walk-root` function to get a new child node:
 
-	(def messages-root (pani.core/walk-root r :messages))
-	(pani.core/bind messages-root :child_added [] #(log %1))
-	
+	(def messages-root (p/walk-root r :messages))
+	(p/bind messages-root :child_added [] #(log %1))
+
 ## Clojurescript Examples
 ***Note that***, most examples will require you to add your Firebase app url to the example.  You'd most likely have to edit a line like the following in one of the source files (most likely `core.cljs`):
 

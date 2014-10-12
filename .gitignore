@@ -1,5 +1,6 @@
 main.js
 out/
+.repl/
 /target
 /classes
 /checkouts

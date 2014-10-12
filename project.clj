@@ -5,16 +5,18 @@
   :url "http://github.com/verma/pani"
   :author "verma"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-2311"]
-                 [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
-                 [com.firebase/firebase-client "1.0.7"]]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/clojurescript "0.0-2371"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [com.firebase/firebase-client-jvm "1.1.1"]]
   :deploy-repositories [["releases" :clojars]]
 
 
   :plugins [[lein-cljsbuild "1.0.3"]
             [com.cemerick/clojurescript.test "0.3.1"]]
-  :profiles {:dev {:dependencies [[om "0.6.4"]]}}
+  :profiles {:dev {:dependencies [[om "0.6.4"]
+                                  [com.cemerick/piggieback "0.1.3"]]
+                   :plugins [[com.cemerick/austin "0.1.5"]]}}
 
   :cljsbuild {:builds [{:id "om-value-changes"
                         :source-paths ["examples/cljs/om-value-changes/src"]
