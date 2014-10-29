@@ -19,7 +19,7 @@
                    :plugins [[com.cemerick/austin "0.1.5"]]}}
 
   :cljsbuild {:builds [{:id "om-value-changes"
-                        :source-paths ["examples/cljs/om-value-changes/src"]
+                        :source-paths ["examples/cljs/om-value-changes/src" "src"]
                         :compiler {
                                  :output-to "examples/cljs/om-value-changes/main.js"
                                  :output-dir "examples/cljs/om-value-changes/out"

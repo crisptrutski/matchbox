@@ -22,7 +22,7 @@
        (.then f))))
 
 
-(def query
+(defn query
   "Setup a geofire query"
   ([r lat lng radius]
    (let [c (chan)]
