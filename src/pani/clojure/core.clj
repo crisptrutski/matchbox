@@ -74,7 +74,8 @@
                        `(= ~btype ~matchtype )
                        `(. ~node ~attacher (reify ~iface
                                              (~handler ~params
-                                               (~cb (.getValue ~(second params))))))))) specs)
+                                               (~cb {:name (name ~(second params))
+                                                     :val  (.getValue ~(second params))}))))))) specs)
        :else (throw (Exception. (str ~type " is not supported"))))))
 
 (defn bind

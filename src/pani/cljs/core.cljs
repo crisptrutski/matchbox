@@ -82,7 +82,7 @@
    (let [c (walk-root root korks)]
      (.on c (clojure.core/name type) 
           #(when-let [v (clj-val %1)]
-             (cb v))))))
+             (cb {:val v, :name (name %1)}))))))
 
 (defn transact!
   "Use the firebase transaction mechanism to update a value atomically"
