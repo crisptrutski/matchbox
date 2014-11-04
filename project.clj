@@ -18,6 +18,8 @@
                                   [com.cemerick/piggieback "0.1.3"]]
                    :plugins [[com.cemerick/austin "0.1.5"]]}}
 
+  :aliases {"auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
+
   :cljsbuild {:builds [{:id "om-value-changes"
                         :source-paths ["examples/cljs/om-value-changes/src" "src"]
                         :compiler {
@@ -27,10 +29,11 @@
                                  :optimizations :none }}
                        {:id "test"
                         :source-paths ["test"]
+                        :notify-command ["phantomjs" :cljs.test/runner "vendor/firebase-1.1.3.js" "target/cljs/test.js"]
                         :compiler {:output-to "target/cljs/test.js"
                                    :optimizations :whitespace
                                    :pretty-print true}}]
               :test-commands {"unit-tests" ["phantomjs" :runner
                                             "this.literal_js_was_evaluated=true"
-                                            "vendor/firebase-1.0.17.js"
+                                            "vendor/firebase-1.1.3.js"
                                             "target/cljs/test.js"]}})

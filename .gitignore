@@ -1,4 +1,6 @@
 main.js
+.git/
+.DS_Store
 out/
 .repl/
 /target

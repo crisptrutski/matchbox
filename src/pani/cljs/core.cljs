@@ -1,6 +1,6 @@
 (ns pani.cljs.core
   (:refer-clojure :exclude [name get-in merge])
-  (:require [cljs.core.async :refer [<! >! chan put! merge]])
+  (:require [cljs.core.async :as async :refer [<! >! chan put! merge]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defn- clj-val [v]
@@ -20,7 +20,9 @@
   (let [p (if (sequential? korks)
             (apply str (interpose "/" (map clojure.core/name korks)))
             (clojure.core/name korks))]
-    (.child root p)))
+    (if (= "" p)
+      root
+      (.child root p))))
 
 
 (defn name [r]
@@ -71,6 +73,17 @@
   ([root korks val]
    (fb-call! #(.push %1 %2) root korks val)))
 
+(defn remove!
+  "Remove the value at the given location"
+  ([r f]
+   (.remove r f))
+  ([r]
+   (let [c (chan)]
+     (remove! r #(if %
+                   (async/onto-chan c [%])
+                   (async/close! c)))
+     c)))
+
 (defn bind
   "Bind to a certain property under the given root"
   ([root type korks]
@@ -80,7 +93,7 @@
 
   ([root type korks cb]
    (let [c (walk-root root korks)]
-     (.on c (clojure.core/name type) 
+     (.on c (clojure.core/name type)
           #(when-let [v (clj-val %1)]
              (cb {:val v, :name (name %1)}))))))
 
@@ -88,7 +101,7 @@
   "Use the firebase transaction mechanism to update a value atomically"
   [root korks f & args]
   (let [c (walk-root root korks)]
-    (.transaction c #(apply f % args) #() false)))
+    (.transaction c #(clj->js (apply f (js->clj % :keywordize-keys true) args)) #() false)))
 
 (defn- fb->chan
   "Given a firebase ref, an event and a transducer, binds and posts to returned channel"
