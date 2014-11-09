@@ -92,10 +92,13 @@
      bind-chan))
 
   ([root type korks cb]
-   (let [c (walk-root root korks)]
-     (.on c (clojure.core/name type)
-          #(when-let [v (clj-val %1)]
-             (cb {:val v, :name (name %1)}))))))
+   (let [n (clojure.core/name type)
+         c (walk-root root korks)
+         f #(when-let [v (clj-val %1)]
+             (cb {:val v, :name (name %1)}))]
+     (.on c n f)
+     ;; return function to close binding
+     #(.off c n f))))
 
 (defn transact!
   "Use the firebase transaction mechanism to update a value atomically"
