@@ -20,6 +20,9 @@
 
   :aliases {"auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
 
+
+  :aot [pani.clojure.android-stub]
+
   :cljsbuild {:builds [{:id "om-value-changes"
                         :source-paths ["examples/cljs/om-value-changes/src" "src"]
                         :compiler {
