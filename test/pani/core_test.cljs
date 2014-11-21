@@ -44,6 +44,7 @@
     (go (let [v (<! c)]
           (is (= (:name v) "age")
               (= (:val v) 10)))
+        (pani/disable-listeners!)
         (done))
     (pani/set! r :age 10)))
 
@@ -52,6 +53,7 @@
      (pani/bind r :child_added :messages
                 (fn [v]
                   (is (= (:val v) "hello-world"))
+                  (pani/disable-listeners!)
                   (done)))
      (pani/push! r :messages "hello-world")))
 
@@ -60,6 +62,7 @@
         [c _] (pani/bind r :child_added :messages)]
     (go (let [v (<! c)]
           (is (= (:val v) "hello-world")))
+        (pani/disable-listeners!)
         (done))
     (pani/push! r :messages "hello-world")))
 
@@ -72,6 +75,7 @@
              (let [r (conj r (first m))]
                (when (= (count r) 3)
                  (is (= r [:child_added :child_changed :child_removed]))
+                 (pani/disable-listeners!)
                  (done))
                (recur (<! c) r)))
     (let [rf (pani/push! r :messages "hello world")]
@@ -86,6 +90,7 @@
              (let [c (conj c (:val m))]
                (when (= (count c) 2)
                  (is (= c [10 11]))
+                 (pani/disable-listeners!)
                  (done))
                (recur (<! v) c)))
     (pani/set! r 10)
