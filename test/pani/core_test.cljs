@@ -40,7 +40,7 @@
 
 (deftest ^:async value-turnaround-chans
   (let [r (random-root)
-        c (pani/bind r :value :age)]
+        [c _] (pani/bind r :value :age)]
     (go (let [v (<! c)]
           (is (= (:name v) "age")
               (= (:val v) 10)))
@@ -57,7 +57,7 @@
 
 (deftest ^:async push-turnaround-chans
   (let [r (random-root)
-        c (pani/bind r :child_added :messages)]
+        [c _] (pani/bind r :child_added :messages)]
     (go (let [v (<! c)]
           (is (= (:val v) "hello-world")))
         (done))
@@ -81,7 +81,7 @@
 (deftest ^:async transact-works
   (let [r (random-root)
         r (pani/walk-root r :stuff)
-        v (pani/bind r :value [])]
+        [v _] (pani/bind r :value [])]
     (go-loop [m (<! v) c []]
              (let [c (conj c (:val m))]
                (when (= (count c) 2)

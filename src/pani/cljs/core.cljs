@@ -87,9 +87,10 @@
 (defn bind
   "Bind to a certain property under the given root"
   ([root type korks]
-   (let [bind-chan (chan)]
-     (bind root type korks #(go (>! bind-chan %)))
-     bind-chan))
+   (let [bind-chan (chan)
+         close-fn (bind root type korks
+                        #(go (>! bind-chan %)))]
+     [bind-chan close-fn]))
 
   ([root type korks cb]
    (let [n (clojure.core/name type)
