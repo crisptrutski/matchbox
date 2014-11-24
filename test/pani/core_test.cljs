@@ -95,3 +95,19 @@
     (pani/set! r 10)
     (pani/transact! r [] inc)
     (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
+
+
+(deftest disable-listeners!-test
+  (let [r (random-root)]
+    (pani/bind r :value [])
+    (pani/bind r :value [:a])
+    (pani/bind r :child_added [:b])
+    (pani/bind r :child_removed [:a :b])
+
+    (is (= 4 (count @pani/listeners)))
+    (pani/disable-listeners! (pani/walk-root r :b))
+    (is (= 3 (count @pani/listeners)))
+    (pani/disable-listeners! r :value)
+    (is (= 2 (count @pani/listeners)))
+    (pani/disable-listeners!)
+    (is (= 0 (count @pani/listeners)))))
