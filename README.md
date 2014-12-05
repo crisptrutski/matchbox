@@ -6,7 +6,7 @@ The goal of this library is not to provide access to the entire functionality of
 
 # Current version
 
-The library is in its infancy.  The current version is `0.0.2`.
+The library is in its infancy.  The current version is `0.0.3`.
 
 [![Clojars Project](http://clojars.org/pani/latest-version.svg)](http://clojars.org/pani)
 
