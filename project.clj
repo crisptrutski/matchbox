@@ -20,6 +20,8 @@
 
   :aliases {"auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
 
+  :aot [pani.clojure.android-stub]
+
   :cljsbuild {:builds [{:id "om-value-changes"
                         :source-paths ["examples/cljs/om-value-changes/src" "src"]
                         :compiler {
@@ -28,7 +30,7 @@
                                  :source-map true
                                  :optimizations :none }}
                        {:id "test"
-                        :source-paths ["test"]
+                        :source-paths ["test" "src"]
                         :notify-command ["phantomjs" :cljs.test/runner "vendor/firebase-1.1.3.js" "target/cljs/test.js"]
                         :compiler {:output-to "target/cljs/test.js"
                                    :optimizations :whitespace

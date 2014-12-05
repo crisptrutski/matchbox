@@ -40,10 +40,11 @@
 
 (deftest ^:async value-turnaround-chans
   (let [r (random-root)
-        c (pani/bind r :value :age)]
+        [c _] (pani/bind r :value :age)]
     (go (let [v (<! c)]
           (is (= (:name v) "age")
               (= (:val v) 10)))
+        (pani/disable-listeners!)
         (done))
     (pani/set! r :age 10)))
 
@@ -52,14 +53,16 @@
      (pani/bind r :child_added :messages
                 (fn [v]
                   (is (= (:val v) "hello-world"))
+                  (pani/disable-listeners!)
                   (done)))
      (pani/push! r :messages "hello-world")))
 
 (deftest ^:async push-turnaround-chans
   (let [r (random-root)
-        c (pani/bind r :child_added :messages)]
+        [c _] (pani/bind r :child_added :messages)]
     (go (let [v (<! c)]
           (is (= (:val v) "hello-world")))
+        (pani/disable-listeners!)
         (done))
     (pani/push! r :messages "hello-world")))
 
@@ -72,6 +75,7 @@
              (let [r (conj r (first m))]
                (when (= (count r) 3)
                  (is (= r [:child_added :child_changed :child_removed]))
+                 (pani/disable-listeners!)
                  (done))
                (recur (<! c) r)))
     (let [rf (pani/push! r :messages "hello world")]
@@ -81,11 +85,12 @@
 (deftest ^:async transact-works
   (let [r (random-root)
         r (pani/walk-root r :stuff)
-        v (pani/bind r :value [])]
+        [v _] (pani/bind r :value [])]
     (go-loop [m (<! v) c []]
              (let [c (conj c (:val m))]
                (when (= (count c) 2)
                  (is (= c [10 11]))
+                 (pani/disable-listeners!)
                  (done))
                (recur (<! v) c)))
     (pani/set! r 10)
