@@ -53,11 +53,10 @@
   "Takes korks and reduces it to a root on which we can perform direct actions"
   (let [p (if (sequential? korks)
             (apply str (interpose "/" (map clojure.core/name korks)))
-            (clojure.core/name korks))]
-    (if (= "" p)
+            (when korks (clojure.core/name korks)))]
+    (if-not (seq p)
       root
       (.child root p))))
-
 
 (defn name [r]
   "Get the name of the given root"
