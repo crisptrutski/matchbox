@@ -39,7 +39,6 @@
   (js->clj (.val v) :keywordize-keys true))
 
 ;; Make a firebase object ouf the given URL
-;;
 (defn get-ref [url]
   "Makes a root reference for firebase"
   (js/Firebase. url))
@@ -48,7 +47,6 @@
 
 ;; A utility function to traverse through korks and get ref to a child object
 ;; [:hello :world :bye] refers to hello.world.bye
-;;
 (defn walk-root [root korks]
   "Takes korks and reduces it to a root on which we can perform direct actions"
   (let [p (if (sequential? korks)
@@ -129,7 +127,7 @@
    (let [type (clojure.core/name type)
          child (walk-root root korks)
          callback #(when-let [v (clj-val %1)]
-                    (cb {:val v, :name (name %1)}))
+                     (cb {:val v, :name (name %1)}))
          unsub #(.off child type callback)]
      (.on child type callback)
      (register-listener child type unsub)

@@ -66,32 +66,32 @@
         (done))
     (pani/push! r :messages "hello-world")))
 
-
 (deftest ^:async listen-emits-lifetime-events
   (let [r (random-root)
         c (pani/listen< r :messages)]
-    (go-loop [m (<! c)
-              r []]
-             (let [r (conj r (first m))]
-               (when (= (count r) 3)
-                 (is (= r [:child_added :child_changed :child_removed]))
-                 (pani/disable-listeners!)
-                 (done))
-               (recur (<! c) r)))
+    (go-loop [m (<! c), r []]
+      (let [r (conj r (first m))]
+        (when (= (count r) 3)
+          (is (= r [:child_added :child_changed :child_removed]))
+          (pani/disable-listeners!)
+          (done))
+        (recur (<! c) r)))
     (let [rf (pani/push! r :messages "hello world")]
       (pani/set! rf "world hello")
-      (pani/remove! rf))))
+      (pani/remove! rf))
+    (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
 
 (deftest ^:async transact-works
   (let [r (random-root)
         r (pani/walk-root r :stuff)
         [v _] (pani/bind r :value [])]
     (go-loop [m (<! v) c []]
-             (let [c (conj c (:val m))]
-               (when (= (count c) 2)
-                 (is (= c [10 11]))
-                 (pani/disable-listeners!)
-                 (done))
-               (recur (<! v) c)))
+      (let [c (conj c (:val m))]
+        (when (= (count c) 2)
+          (is (= c [10 11]))
+          (pani/disable-listeners!)
+          (done))
+        (recur (<! v) c)))
     (pani/set! r 10)
-    (pani/transact! r [] inc)))
+    (pani/transact! r [] inc)
+    (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
