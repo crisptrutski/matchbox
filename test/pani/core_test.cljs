@@ -1,5 +1,5 @@
 (ns pani.core-test
-  (:require-macros [cemerick.cljs.test :refer [is deftest with-test run-tests testing test-var done]]
+  (:require-macros [cemerick.cljs.test :refer [is deftest done]]
                    [cljs.core.async.macros :refer [go go-loop]])
   (:require [cemerick.cljs.test :as t]
             [cljs.core.async :refer [<!]]
