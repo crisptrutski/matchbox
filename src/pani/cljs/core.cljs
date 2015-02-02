@@ -1,6 +1,7 @@
 (ns pani.cljs.core
   (:refer-clojure :exclude [name get-in merge])
-  (:require [cljs.core.async :as async :refer [<! >! chan put! merge]])
+  (:require cljsjs.firebase
+            [cljs.core.async :as async :refer [<! >! chan put! merge]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 ;; Firebase listeners, modeled as maps of [:channel, :close-fn, :ref]
@@ -34,7 +35,6 @@
      (doseq [{:keys [close-fn]} (filter p? xs)]
        (close-fn)))))
 
-
 (defn- clj-val [v]
   (js->clj (.val v) :keywordize-keys true))
 
@@ -47,7 +47,7 @@
 (def root get-ref)
 
 ;; A utility function to traverse through korks and get ref to a child object
-;; [:hello :world :bye ] refers to hello.world.bye
+;; [:hello :world :bye] refers to hello.world.bye
 ;;
 (defn walk-root [root korks]
   "Takes korks and reduces it to a root on which we can perform direct actions"
@@ -60,7 +60,7 @@
 
 (defn name [r]
   "Get the name of the given root"
-  (.name r))
+  (.key r))
 
 (defn parent [r]
   "Get the parent of the given root"
@@ -155,7 +155,7 @@
   (let [root    (walk-root root korks)
         events  [:child_added :child_removed :child_changed]
         td      (map (fn [[evt snap]]
-                       [evt (.name snap) (.val snap)]))
+                       [evt (.key snap) (.val snap)]))
         chans   (map (fn [event]
                        (fb->chan root event td)) events)]
     (merge chans)))
