@@ -1,4 +1,5 @@
 (ns pani.clojure.core
+  (:refer-clojure :exclude [name])
   (:require [clojure.core.async :refer [<! >! chan go go-loop]])
   (:import [com.firebase.client
             Firebase
@@ -17,7 +18,7 @@
     (clojure.walk/keywordize-keys v)
     v))
 
-;; Make a firebase object ouf the given URL
+;; Make a firebase object out the given URL
 ;;
 (defn root [url]
   "Makes a root reference for firebase"
@@ -29,8 +30,8 @@
 (defn walk-root [root korks]
   "Takes korks and reduces it to a root on which we can perform direct actions"
   (let [path (if (sequential? korks)
-               (clojure.string/join "/" (map name korks))
-               (name korks))]
+               (clojure.string/join "/" (map clojure.core/name korks))
+               (clojure.core/name korks))]
     (.child root path)))
 
 (defn name [root]

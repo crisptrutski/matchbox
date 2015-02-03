@@ -1,7 +1,10 @@
 (ns pani.cljs.core
   (:refer-clojure :exclude [name get-in merge])
-  (:require [cljs.core.async :as async :refer [<! >! chan put! merge]])
+  (:require cljsjs.firebase
+            [cljs.core.async :as async :refer [<! >! chan put! merge]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
+
+(def name- clojure.core/name)
 
 ;; Firebase listeners, modeled as maps of [:channel, :close-fn, :ref]
 (defonce listeners (atom []))
@@ -12,34 +15,33 @@
           :ref      ref
           :type     type}))
 
-(defn disable-listeners!
-  ;; close all listeners
-  ([]
-   (let [xs @listeners]
-     (reset! listeners [])
-     (doseq [{:keys [close-fn]} xs]
-       (close-fn))))
-  ;; close all listeners on ref
-  ([ref]
-   (let [xs @listeners
-         p? (comp #{ref} :ref)]
-     (swap! listeners #(vec (remove p? %)))
-     (doseq [{:keys [close-fn]} (filter p? xs)]
-       (close-fn))))
-  ;; close all listeners on ref with given type
-  ([ref type]
-   (let [xs @listeners
-         p? (fn [{t :type r :ref}] (and (= r ref) (= t type)))]
-     (swap! listeners #(vec (remove p? %)))
-     (doseq [{:keys [close-fn]} (filter p? xs)]
-       (close-fn)))))
+(defn disable-listeners-by! [match?]
+  (let [xs @listeners]
+    (swap! listeners #(vec (remove match? %)))
+    (doseq [{:keys [close-fn]} (vec (filter match? xs))]
+      (close-fn))))
 
+(defn- ref-match
+  "Curried equality check for refs"
+  [a]
+  (let [s (str a)]
+    (fn [b] (= s (str b)))))
+
+(defn disable-listeners!
+  ([]
+   (disable-listeners-by! (constantly true)))
+  ([ref]
+   (disable-listeners-by! (comp (ref-match ref) :ref)))
+  ([ref type]
+   (disable-listeners-by! (let [r= (ref-match ref)
+                                t= (let [n (name- type)] #(= n %))]
+                            (fn [{t :type r :ref}]
+                              (and (r= r) (t= t)))))))
 
 (defn- clj-val [v]
   (js->clj (.val v) :keywordize-keys true))
 
 ;; Make a firebase object ouf the given URL
-;;
 (defn get-ref [url]
   "Makes a root reference for firebase"
   (js/Firebase. url))
@@ -47,21 +49,19 @@
 (def root get-ref)
 
 ;; A utility function to traverse through korks and get ref to a child object
-;; [:hello :world :bye ] refers to hello.world.bye
-;;
+;; [:hello :world :bye] refers to hello.world.bye
 (defn walk-root [root korks]
   "Takes korks and reduces it to a root on which we can perform direct actions"
   (let [p (if (sequential? korks)
-            (apply str (interpose "/" (map clojure.core/name korks)))
-            (clojure.core/name korks))]
-    (if (= "" p)
+            (apply str (interpose "/" (map name- korks)))
+            (when korks (name- korks)))]
+    (if-not (seq p)
       root
       (.child root p))))
 
-
 (defn name [r]
   "Get the name of the given root"
-  (.name r))
+  (.key r))
 
 (defn parent [r]
   "Get the parent of the given root"
@@ -127,10 +127,10 @@
      [bind-chan close-fn]))
 
   ([root type korks cb]
-   (let [type (clojure.core/name type)
+   (let [type (name- type)
          child (walk-root root korks)
          callback #(when-let [v (clj-val %1)]
-                    (cb {:val v, :name (name %1)}))
+                     (cb {:val v, :name (name %1)}))
          unsub #(.off child type callback)]
      (.on child type callback)
      (register-listener child type unsub)
@@ -146,7 +146,7 @@
   "Given a firebase ref, an event and a transducer, binds and posts to returned channel"
   [fbref event td]
   (let [c (chan 1 td)]
-    (.on fbref (clojure.core/name event)
+    (.on fbref (name- event)
          #(put! c [event %]))
     c))
 
@@ -156,7 +156,7 @@
   (let [root    (walk-root root korks)
         events  [:child_added :child_removed :child_changed]
         td      (map (fn [[evt snap]]
-                       [evt (.name snap) (.val snap)]))
+                       [evt (.key snap) (.val snap)]))
         chans   (map (fn [event]
                        (fb->chan root event td)) events)]
     (merge chans)))
