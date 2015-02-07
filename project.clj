@@ -5,8 +5,8 @@
   :url "http://github.com/verma/pani"
   :author "verma"
   :min-lein-version "2.5.0"
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-2755"]
+  :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-2755" :scope "provided"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.firebase/firebase-client-jvm "1.1.1"]
 
@@ -14,12 +14,14 @@
   :deploy-repositories [["releases" :clojars]]
 
 
-  :plugins [[lein-cljsbuild "1.0.3"]
-            [com.cemerick/clojurescript.test "0.3.1"]]
+  :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
+            [com.cemerick/clojurescript.test "0.3.1" :scope "test"]]
+
   :profiles {:dev {:dependencies [[om "0.6.4"]]
                    :plugins [[com.cemerick/austin "0.1.7-SNAPSHOT"]]}}
 
-  :aliases {"auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
+  :aliases {"auto-test" ["do" "clean," "cljsbuild" "auto" "test"]
+            "install"   ["with-profiles" "-dev" "install"]}
 
   :aot [pani.clojure.android-stub]
 
