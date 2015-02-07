@@ -82,12 +82,14 @@
 (defn get-in
   "get-in style single shot get function, returns a channel which delivers the value"
   [root ks]
-  (let [c (chan)]
-    (.once root "value" #(let [v (-> (.val %)
-                                     (js->clj :keywordize-keys true)
-                                     (clojure.core/get-in (if (sequential? ks) ks [ks])))]
-                           (put! c v)))
-    c))
+  (let [loc (clojure.string/join "/" (map name- ks))
+        ref (.child root loc)
+        ch  (async/chan)]
+    (.once ref "value"
+           #(if-let [v (.val %)]
+              (put! ch (js->clj v :keywordize-keys true))
+              (async/close! ch)))
+    ch))
 
 ;; A function set the value on a root [korks]
 ;;
