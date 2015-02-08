@@ -1,5 +1,5 @@
 (ns pani.cljs.core
-  (:refer-clojure :exclude [name get-in merge])
+  (:refer-clojure :exclude [name get-in merge set!])
   (:require cljsjs.firebase
             [cljs.core.async :as async :refer [<! >! chan put! merge]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -70,15 +70,6 @@
       nil
       p)))
 
-(defn- fb-call!
-  "Set the value at the given root"
-  ([push-fn root val]
-   (let [as-js (clj->js val)]
-     (push-fn root as-js)))
-
-  ([push-fn root korks val]
-   (fb-call! push-fn (walk-root root korks) val)))
-
 (defn get-in
   "get-in style single shot get function, returns a channel which delivers the value"
   [root ks]
@@ -95,18 +86,18 @@
 (defn set!
   "Set the value at the given root"
   ([root val]
-   (fb-call! #(.set %1 %2) root val))
+   (.set root (clj->js val)))
 
   ([root korks val]
-   (fb-call! #(.set %1 %2) root korks val)))
+   (set! (walk-root root korks) val)))
 
 (defn push!
   "Set the value at the given root"
   ([root val]
-   (fb-call! #(.push %1 %2) root val))
+   (.push root (clj->js val)))
 
   ([root korks val]
-   (fb-call! #(.push %1 %2) root korks val)))
+   (push! (walk-root root korks) val)))
 
 (defn remove!
   "Remove the value at the given location"
