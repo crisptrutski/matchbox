@@ -2,6 +2,8 @@
 
 A convenience library to access Firebase from Clojurescript.
 
+[![Build Status](https://travis-ci.org/verma/pani.svg)](https://travis-ci.org/verma/pani)
+
 The goal of this library is not to provide access to the entire functionality offered by Firebase, but to make it convenient to use Firebase as a data store from within Clojurescript.
 
 # Current version
