@@ -89,7 +89,7 @@
    (.set root (clj->js val)))
 
   ([root korks val]
-   (set! (walk-root root korks) val)))
+   (.set (walk-root root korks) (clj->js val))))
 
 (defn push!
   "Set the value at the given root"
