@@ -131,24 +131,19 @@
 (defn transact!
   "Use the firebase transaction mechanism to update a value atomically"
   [root korks f & args]
-  (let [c (walk-root root korks)]
-    (.transaction c #(clj->js (apply f (js->clj % :keywordize-keys true) args)) #() false)))
-
-(defn- fb->chan
-  "Given a firebase ref, an event and a transducer, binds and posts to returned channel"
-  [fbref event td]
-  (let [c (chan 1 td)]
-    (.on fbref (name- event)
-         #(put! c [event %]))
-    c))
+  (let [c (walk-root root korks)
+        t (fn [current]
+            (let [newval (apply f (js->clj current :keywordize-keys true) args)]
+              newval))]
+    (.transaction c t)))
 
 (defn listen<
   "Listens for events on the given firebase ref"
   [root korks]
-  (let [root    (walk-root root korks)
-        events  [:child_added :child_removed :child_changed]
-        td      (map (fn [[evt snap]]
-                       [evt (.key snap) (.val snap)]))
-        chans   (map (fn [event]
-                       (fb->chan root event td)) events)]
-    (merge chans)))
+  (let [c    (chan)
+        root (walk-root root korks)]
+    (doto root 
+      (.on "child_added" #(put! c [:child_added (.key %) (.val %)]))
+      (.on "child_changed" #(put! c [:child_changed (.key %) (.val %)]))
+      (.on "child_removed" #(put! c [:child_removed (.key %) (.val %)])))
+    c))

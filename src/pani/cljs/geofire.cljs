@@ -5,7 +5,7 @@
 (defn root
   "Create and return a Geofire root"
   [url]
-  (GeoFire. url))
+  (js/GeoFire. url))
 
 (defn set!
   "Set the location for the given key"
