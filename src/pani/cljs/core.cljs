@@ -82,8 +82,7 @@
 (defn get-in
   "get-in style single shot get function, returns a channel which delivers the value"
   [root ks]
-  (let [loc (clojure.string/join "/" (map name- ks))
-        ref (.child root loc)
+  (let [ref (walk-root root ks)
         ch  (async/chan)]
     (.once ref "value"
            #(if-let [v (.val %)]
