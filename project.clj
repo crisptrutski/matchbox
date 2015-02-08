@@ -20,7 +20,8 @@
   :profiles {:dev {:dependencies [[om "0.6.4"]]
                    :plugins [[com.cemerick/austin "0.1.7-SNAPSHOT"]]}}
 
-  :aliases {"auto-test" ["do" "clean," "cljsbuild" "auto" "test"]
+  :aliases {"test-all"  ["do" "test," "cljsbuild" "once" "test"]
+            "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]
             "install"   ["with-profiles" "-dev" "install"]}
 
   :aot [pani.clojure.android-stub]
