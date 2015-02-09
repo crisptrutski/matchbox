@@ -96,6 +96,25 @@
     (pani/transact! r [] inc)
     (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
 
+(deftest ^:async transact-data-works
+  (let [r (random-root)
+        r (pani/walk-root r :stuff)
+        [v _] (pani/bind r :value [])]
+    (go-loop [m (<! v) c []]
+      (let [c (conj c (:val m))]
+        (when (= (count c) 2)
+          ;; NOTE:
+          ;; 1. written strings read bas as keywords if keys of a map
+          ;; 2. written keywords read back as strings if not keys of a map
+          ;; 3. written sets read back as vectors
+          (is (= c [{:a 1, :b 2} ["a" "b"]]))
+          (pani/disable-listeners!)
+          (done))
+        (recur (<! v) c)))
+    (pani/set! r {"a" 1, "b" 2})
+    (pani/transact! r [] (comp set keys))
+    (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
+
 
 (deftest disable-listeners!-test
   (let [r (random-root)]

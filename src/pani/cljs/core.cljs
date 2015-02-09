@@ -133,8 +133,9 @@
   [root korks f & args]
   (let [c (walk-root root korks)
         t (fn [current]
-            (let [newval (apply f (js->clj current :keywordize-keys true) args)]
-              newval))]
+            (let [js-val (js->clj current :keywordize-keys true)
+                  js-new (apply f js-val args)]
+              (clj->js js-new)))]
     (.transaction c t)))
 
 (defn listen<
