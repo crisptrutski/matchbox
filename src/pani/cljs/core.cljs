@@ -141,13 +141,18 @@
               (clj->js js-new)))]
     (.transaction c t)))
 
+(defn- snapshot->channel
+  [ch type snapshot]
+  (put! ch [type (.key snapshot) (.val snapshot)]))
+
 (defn listen<
   "Listens for events on the given firebase ref"
   [root korks]
-  (let [c    (chan)
-        root (walk-root root korks)]
+  (let [ch   (chan)
+        root (walk-root root korks)
+        emit #(partial snapshot->channel ch %)]
     (doto root
-      (.on "child_added" #(put! c [:child_added (.key %) (.val %)]))
-      (.on "child_changed" #(put! c [:child_changed (.key %) (.val %)]))
-      (.on "child_removed" #(put! c [:child_removed (.key %) (.val %)])))
-    c))
+      (.on "child_added"   (emit :child-added))
+      (.on "child_changed" (emit :child-changed))
+      (.on "child_removed" (emit :child-removed)))
+    ch))

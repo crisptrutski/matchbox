@@ -72,7 +72,7 @@
     (go-loop [m (<! c), r []]
       (let [r (conj r (first m))]
         (when (= (count r) 3)
-          (is (= r [:child_added :child_changed :child_removed]))
+          (is (= r [:child-added :child-changed :child-removed]))
           (pani/disable-listeners!)
           (done))
         (recur (<! c) r)))
