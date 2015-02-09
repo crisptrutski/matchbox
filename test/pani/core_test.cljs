@@ -115,6 +115,21 @@
     (pani/transact! r [] (comp set keys))
     (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
 
+(deftest ^:async value-and-get-in-test
+  (let [r (random-root)]
+    (pani/set! r {"a" {"b" {"c" 1}}, "c" 2})
+    (go-loop [c (pani/value r)]
+      (is (= (<! c) {:a {:b {:c 1}}, :c 2}))
+      ;; closed after
+      (is (nil? (<! c)))
+      (done))
+    (go
+      ;; sugared version to take path
+      (is (= {:c 1} (<! (pani/get-in r [:a :b]))))
+      ;; invalid paths return closed channel / deliver nil
+      (is (nil? (<! (pani/get-in r [:a :b :c :d])))))
+    (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
+
 
 (deftest disable-listeners!-test
   (let [r (random-root)]

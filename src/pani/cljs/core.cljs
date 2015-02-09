@@ -70,16 +70,19 @@
       nil
       p)))
 
-(defn get-in
-  "get-in style single shot get function, returns a channel which delivers the value"
-  [root ks]
-  (let [ref (walk-root root ks)
-        ch  (async/chan)]
+(defn value
+  "Returns a channel which delivers value of ref just once"
+  [ref]
+  (let [ch (async/chan)]
     (.once ref "value"
-           #(if-let [v (.val %)]
-              (put! ch (js->clj v :keywordize-keys true))
-              (async/close! ch)))
+           (fn [js-val]
+             (if-let [v (clj-val js-val)]
+                (put! ch v))
+             (async/close! ch)))
     ch))
+
+(def ^{:doc "Similar to `value`, but takes a relative path"}
+  get-in (comp value walk-root))
 
 ;; A function set the value on a root [korks]
 ;;
@@ -143,7 +146,7 @@
   [root korks]
   (let [c    (chan)
         root (walk-root root korks)]
-    (doto root 
+    (doto root
       (.on "child_added" #(put! c [:child_added (.key %) (.val %)]))
       (.on "child_changed" #(put! c [:child_changed (.key %) (.val %)]))
       (.on "child_removed" #(put! c [:child_removed (.key %) (.val %)])))
