@@ -72,7 +72,7 @@
     (go-loop [m (<! c), r []]
       (let [r (conj r (first m))]
         (when (= (count r) 3)
-          (is (= r [:child_added :child_changed :child_removed]))
+          (is (= r [:child-added :child-changed :child-removed]))
           (pani/disable-listeners!)
           (done))
         (recur (<! c) r)))
@@ -94,6 +94,40 @@
         (recur (<! v) c)))
     (pani/set! r 10)
     (pani/transact! r [] inc)
+    (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
+
+(deftest ^:async transact-data-works
+  (let [r (random-root)
+        r (pani/walk-root r :stuff)
+        [v _] (pani/bind r :value [])]
+    (go-loop [m (<! v) c []]
+      (let [c (conj c (:val m))]
+        (when (= (count c) 2)
+          ;; NOTE:
+          ;; 1. written strings read bas as keywords if keys of a map
+          ;; 2. written keywords read back as strings if not keys of a map
+          ;; 3. written sets read back as vectors
+          (is (= c [{:a 1, :b 2} ["a" "b"]]))
+          (pani/disable-listeners!)
+          (done))
+        (recur (<! v) c)))
+    (pani/set! r {"a" 1, "b" 2})
+    (pani/transact! r [] (comp set keys))
+    (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
+
+(deftest ^:async value-and-get-in-test
+  (let [r (random-root)]
+    (pani/set! r {"a" {"b" {"c" 1}}, "c" 2})
+    (go-loop [c (pani/value r)]
+      (is (= (<! c) {:a {:b {:c 1}}, :c 2}))
+      ;; closed after
+      (is (nil? (<! c)))
+      (done))
+    (go
+      ;; sugared version to take path
+      (is (= {:c 1} (<! (pani/get-in r [:a :b]))))
+      ;; invalid paths return closed channel / deliver nil
+      (is (nil? (<! (pani/get-in r [:a :b :c :d])))))
     (js/setTimeout (fn [] (is nil "Timeout, assume Firebase is offline") (done)) 3000)))
 
 

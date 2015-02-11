@@ -70,16 +70,19 @@
       nil
       p)))
 
-(defn get-in
-  "get-in style single shot get function, returns a channel which delivers the value"
-  [root ks]
-  (let [ref (walk-root root ks)
-        ch  (async/chan)]
+(defn value
+  "Returns a channel which delivers value of ref just once"
+  [ref]
+  (let [ch (async/chan)]
     (.once ref "value"
-           #(if-let [v (.val %)]
-              (put! ch (js->clj v :keywordize-keys true))
-              (async/close! ch)))
+           (fn [js-val]
+             (if-let [v (clj-val js-val)]
+                (put! ch v))
+             (async/close! ch)))
     ch))
+
+(def ^{:doc "Similar to `value`, but takes a relative path"}
+  get-in (comp value walk-root))
 
 ;; A function set the value on a root [korks]
 ;;
@@ -133,17 +136,23 @@
   [root korks f & args]
   (let [c (walk-root root korks)
         t (fn [current]
-            (let [newval (apply f (js->clj current :keywordize-keys true) args)]
-              newval))]
+            (let [js-val (js->clj current :keywordize-keys true)
+                  js-new (apply f js-val args)]
+              (clj->js js-new)))]
     (.transaction c t)))
+
+(defn- snapshot->channel
+  [ch type snapshot]
+  (put! ch [type (.key snapshot) (.val snapshot)]))
 
 (defn listen<
   "Listens for events on the given firebase ref"
   [root korks]
-  (let [c    (chan)
-        root (walk-root root korks)]
-    (doto root 
-      (.on "child_added" #(put! c [:child_added (.key %) (.val %)]))
-      (.on "child_changed" #(put! c [:child_changed (.key %) (.val %)]))
-      (.on "child_removed" #(put! c [:child_removed (.key %) (.val %)])))
-    c))
+  (let [ch   (chan)
+        root (walk-root root korks)
+        emit #(partial snapshot->channel ch %)]
+    (doto root
+      (.on "child_added"   (emit :child-added))
+      (.on "child_changed" (emit :child-changed))
+      (.on "child_removed" (emit :child-removed)))
+    ch))
