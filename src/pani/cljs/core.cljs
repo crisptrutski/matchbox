@@ -84,8 +84,6 @@
 (def ^{:doc "Similar to `value`, but takes a relative path"}
   get-in (comp value walk-root))
 
-;; A function set the value on a root [korks]
-;;
 (defn set!
   "Set the value at the given root"
   ([root val]
@@ -95,7 +93,7 @@
    (.set (walk-root root korks) (clj->js val))))
 
 (defn push!
-  "Set the value at the given root"
+  "Append the value at the given root"
   ([root val]
    (.push root (clj->js val)))
 
@@ -107,14 +105,20 @@
   ([r f]
    (.remove r f))
   ([r]
-   (let [c (chan)]
-     (remove! r #(if %
-                   (async/onto-chan c [%])
-                   (async/close! c)))
-     c)))
+   (let [ch (chan)]
+     (remove! r (fn [succes]
+                  (if success (async/onto-chan ch [%]))
+                  (async/close! ch)))
+     ch)))
 
 (defn bind
-  "Bind to a certain property under the given root"
+  "Bind to a certain property under the given root
+  Supported types:
+   :value
+   :child-added
+   :child-changed
+   :child-moved
+   :child-removed"
   ([root type korks]
    (let [bind-chan (chan)
          close-fn (bind root type korks
@@ -143,7 +147,7 @@
 
 (defn- snapshot->channel
   [ch type snapshot]
-  (put! ch [type (.key snapshot) (.val snapshot)]))
+  (put! ch [type (.key snapshot) (clj-val snapshot)]))
 
 (defn listen<
   "Listens for events on the given firebase ref"
@@ -154,5 +158,6 @@
     (doto root
       (.on "child_added"   (emit :child-added))
       (.on "child_changed" (emit :child-changed))
+      (.on "child_moved"   (emit :child-moved))
       (.on "child_removed" (emit :child-removed)))
     ch))

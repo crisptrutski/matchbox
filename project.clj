@@ -13,7 +13,6 @@
                  [cljsjs/firebase "2.1.2-1"]]
   :deploy-repositories [["releases" :clojars]]
 
-
   :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
             [com.cemerick/clojurescript.test "0.3.1" :scope "test"]]
 
@@ -22,7 +21,8 @@
 
   :aliases {"test-all"  ["do" "test," "cljsbuild" "once" "test"]
             "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]
-            "install"   ["with-profiles" "-dev" "install"]}
+            ;"install"   ["with-profiles" "-dev" "install"]
+            }
 
   :aot [pani.clojure.android-stub]
 
