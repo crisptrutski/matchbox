@@ -21,7 +21,7 @@
 
 ;; FIXME: does not unsubscribe
 (defn bind-to-ratom [ratom ref & [korks]]
-  (let [ch (pa/listen-to< (p/get-in ref korks) :value)]
+  (let [ch (pa/listen-to< ref korks :value)]
     (go-loop [[key val] (<! ch)]
       (if val
         (do
@@ -46,7 +46,7 @@
     (vec (concat pre [[k v]] post))))
 
 (defn listen-into-ratom [ratom ref & [korks]]
-  (let [ch (pa/listen-children< (p/get-in ref korks))]
+  (let [ch (pa/listen-children< ref korks)]
     (go-loop [[evt [key val]] (<! ch)]
       (prn (str "Listen: " (path ref) evt ", " key " => " val))
       (when evt
@@ -92,7 +92,7 @@
 (def fb-items (p/get-in fb-root [:path :to :items]))
 
 (defn reset-items! []
-  (p/remove! fb-items))
+  (p/dissoc! fb-items))
 
 (defn update-item-value! [key f]
   (p/swap-in! fb-items [key :value] f))
