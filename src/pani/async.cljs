@@ -9,12 +9,9 @@
   (let [ch (chan)] (f ch) ch))
 
 (defn chan->cb
-  "Create callback that pushes arguments onto given chan, and closes on nil"
+  "Create callback that pushes non-nil arguments onto given chan"
   [ch]
-  (fn [val]
-    (if val
-      (put! ch val)
-      (close! ch))))
+  (fn [val] (if val (put! ch val))))
 
 (defn chan->cb-once
   "Create callback that pushes arguments onto chan exactly once"
