@@ -104,7 +104,7 @@
       (let [c (conj c (:val m))]
         (when (= (count c) 2)
           ;; NOTE:
-          ;; 1. written strings read bas as keywords if keys of a map
+          ;; 1. written strings read back as keywords if keys of a map
           ;; 2. written keywords read back as strings if not keys of a map
           ;; 3. written sets read back as vectors
           (is (= c [{:a 1, :b 2} ["a" "b"]]))

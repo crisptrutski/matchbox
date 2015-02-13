@@ -77,7 +77,7 @@
     (.once ref "value"
            (fn [js-val]
              (if-let [v (clj-val js-val)]
-                (put! ch v))
+               (put! ch v))
              (async/close! ch)))
     ch))
 
@@ -106,8 +106,8 @@
    (.remove r f))
   ([r]
    (let [ch (chan)]
-     (remove! r (fn [succes]
-                  (if success (async/onto-chan ch [%]))
+     (remove! r (fn [success]
+                  (if success (put! ch success))
                   (async/close! ch)))
      ch)))
 
