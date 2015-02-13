@@ -1,5 +1,6 @@
 (ns examples.cljs.om-value-changes.core
-  (:require [pani.cljs.core :as pani]
+  (:require [pani.core :as p]
+            [pani.async :as pa]
             [cljs.core.async :refer [<!]]
             [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true])
@@ -7,6 +8,7 @@
 
 ;; TODO: Set this to a firebase app URL
 (def firebase-app-url "https://<your app>.firebaseio.com/")
+(def firebase-app-url "https://luminous-torch-5788.firebaseio.com/")
 
 (enable-console-print!)
 
@@ -14,31 +16,31 @@
 
 ;;; state modifiers
 
-(defn set-item-fn [{:keys [name val]}]
+(defn set-item-fn [[name val]]
   (fn [items]
     (let [items (or items (sorted-map))]
       (assoc items name val))))
 
-(defn remove-item-fn [{:keys [name]}]
+(defn remove-item-fn [[name]]
   #(dissoc % name))
 
 ;;; event handlers
 
 (defn inc-counter-handler [app r]
   (om/transact! app :count inc)
-  (pani/transact! r :counter inc))
+  (p/swap-in! r :counter inc))
 
 (defn add-item-handler [app r]
   (let [v {:value (js/Math.random)}]
-    (pani/push! r :items v)))
+    (p/conj-in! r :items v)))
 
 (defn mutate-item-handler [app r name]
   (let [v {:value (js/Math.random)}]
-    (pani/set! r [:items name] v)))
+    (p/reset-in! r [:items name] v)))
 
 (defn del-items-handler [app r]
   (om/update! app :items (sorted-map))
-  (pani/set! r :items nil))
+  (p/dissoc-in! r :items))
 
 ;;; om components
 
@@ -63,16 +65,16 @@
   (reify
     om/IWillMount
     (will-mount [_]
-      (let [r (pani/root firebase-app-url)
-            c (pani/bind r :value :counter)]
+      (let [r (p/connect firebase-app-url)
+            c (pa/listen-to< r :counter :value)]
         ;; wire up counter, via channel
-        (go-loop [{:keys [val] :as v} (<! c)]
+        (go-loop [[_ val] (<! c)]
                  (om/transact! app :count #(max % val))
                  (recur (<! c)))
         ;; wire up items, via callbacks
-        (pani/bind r :child_added   :items #(om/transact! app :items (set-item-fn %)))
-        (pani/bind r :child_changed :items #(om/transact! app :items (set-item-fn %)))
-        (pani/bind r :child_removed :items #(om/transact! app :items (remove-item-fn %)))
+        (p/listen-to r :items :child-added   #(om/transact! app :items (set-item-fn %)))
+        (p/listen-to r :items :child-changed #(om/transact! app :items (set-item-fn %)))
+        (p/listen-to r :items :child-removed #(om/transact! app :items (remove-item-fn %)))
         (om/set-state! owner :fb-root r)))
 
     om/IRender
