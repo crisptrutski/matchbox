@@ -15,6 +15,8 @@
 (def all-events
   (conj child-events :value))
 
+(defn SERVER_TIMESTAMP js/Firebase.ServerValue.TIMESTAMP)
+
 ;; utils
 
 ;; FIXME: camel-case keys?
