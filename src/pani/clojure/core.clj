@@ -29,7 +29,7 @@
                (name korks))]
     (.child root path)))
 
-(defn key [ref] (.getName ref))
+(defn key [ref] (.getKey ref))
 
 (defn parent [ref] (.getParent ref))
 
@@ -41,9 +41,7 @@
 
 (defn conj!
   ([ref val]
-   (let [node (.push ref)
-         sval (serialize val)]
-     (reset! node sval))))
+   (reset! (.push ref) val)))
 
 (defn swap!
   "Use the firebase transaction mechanism to update a value atomically"
@@ -57,7 +55,10 @@
          (reset! d new)
          (Transaction/success d)))
      (onComplete [_ _ _ _]))
-   false))
+   true))
+
+;; TODO: merge!
+;; TODO: dissoc!
 
 ;;
 
@@ -71,7 +72,7 @@
   (apply swap! (get-in ref korks) f args))
 
 (defmacro bind-handlers [btype node cb & specs]
-  (let [pcount {:value 2, :child_added 3, :child_removed 2}]
+  (let [pcount {:value 2, :child-added 3, :child-removed 2}]
     `(cond
        ~@(mapcat (fn [[matchtype iface handler]]
                    (let [params (vec (repeatedly (pcount matchtype) gensym))
@@ -93,8 +94,8 @@
   ([ref type cb]
    (bind-handlers type ref cb
                   [:value         ValueEventListener onDataChange]
-                  [:child_added   ChildEventListener onChildAdded]
-                  [:child_removed ChildEventListener onChildRemoved]))
+                  [:child-added   ChildEventListener onChildAdded]
+                  [:child-removed ChildEventListener onChildRemoved]))
   ([ref korks type cb]
    (listen-to (get-in ref korks) type cb)))
 
