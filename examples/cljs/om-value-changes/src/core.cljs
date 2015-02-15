@@ -4,10 +4,10 @@
             [cljs.core.async :refer [<!]]
             [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true])
-  (:require-macros [cljs.core.async.macros :refer [go-loop]]))
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 ;; TODO: Set this to a firebase app URL
-(def firebase-app-url "https://<your app>.firebaseio.com/")
+;; (def firebase-app-url "https://<your app>.firebaseio.com/")
 (def firebase-app-url "https://luminous-torch-5788.firebaseio.com/")
 
 (enable-console-print!)
@@ -67,10 +67,12 @@
     (will-mount [_]
       (let [r (p/connect firebase-app-url)
             c (pa/listen-to< r :counter :value)]
+        (go (let [[err info] (<! (pa/auth-anon< r))]
+              (om/update! app :uid (:uid info))) )
         ;; wire up counter, via channel
         (go-loop [[_ val] (<! c)]
-                 (om/transact! app :count #(max % val))
-                 (recur (<! c)))
+          (om/transact! app :count #(max % val))
+          (recur (<! c)))
         ;; wire up items, via callbacks
         (p/listen-to r :items :child-added   #(om/transact! app :items (set-item-fn %)))
         (p/listen-to r :items :child-changed #(om/transact! app :items (set-item-fn %)))
@@ -81,8 +83,9 @@
     (render [_]
       (let [r (om/get-state owner :fb-root)]
         (dom/div nil
-         (om/build counter-view app {:opts {:r r}})
-         (om/build items-view app {:opts {:r r}}))))))
+          (dom/span nil "User ID: " (or (:uid app) (dom/em nil "pending")))
+          (om/build counter-view app {:opts {:r r}})
+          (om/build items-view app {:opts {:r r}}))))))
 
 (om/root app-view app-state
          {:target (.getElementById js/document "app")})

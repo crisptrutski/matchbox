@@ -115,6 +115,8 @@
     #js {:remember "sessionOnly"}
     undefined))
 
+;; FIXME: auth callbacks should automatically receive hydrated auth info
+
 (defn auth [ref email password & [cb session-only?]]
   (.authWithPassword
    ref
@@ -131,7 +133,7 @@
 (defn auth-info
   "Returns a map of uid, provider, token, expires - or nil if there is no session"
   [ref]p
-  (.getAuth ref))
+  (hydrate (.getAuth ref)))
 
 ;; onAuth and offAuth are not wrapped yet
 

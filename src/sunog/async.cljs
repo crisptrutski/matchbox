@@ -14,19 +14,26 @@
   (fn [val] (if val (put! ch val))))
 
 (defn chan->cb-once
-  "Create callback that pushes arguments onto chan exactly once"
+  "Create callback that pushes arguments onto chan at-most once"
   [ch]
   (fn [val]
     (if val (put! ch val))
     (close! ch)))
 
+(defn chan->auth-cb
+  "Creates a callback to push [err, value] arguments onto a chan, exactly once"
+  [ch]
+  (fn [err val]
+    (put! ch [err (p/hydrate val)])
+    (close! ch)))
+
 ;; auth
 
-(defn auth [ref email password & [session-only?]]
-  #(with-chan (p/auth ref email password (chan->cb-once %) session-only?)))
+(defn auth< [ref email password & [session-only?]]
+  (with-chan #(p/auth ref email password (chan->auth-cb %) session-only?)))
 
-(defn auth-anon [ref & [session-only?]]
-  #(with-chan (p/auth-anon ref (chan->cb-once %) sesion-only?)))
+(defn auth-anon< [ref & [session-only?]]
+  (with-chan #(p/auth-anon ref (chan->auth-cb %) sesion-only?)))
 
 ;; async
 
