@@ -33,7 +33,7 @@
   (with-chan #(p/auth ref email password (chan->auth-cb %) session-only?)))
 
 (defn auth-anon< [ref & [session-only?]]
-  (with-chan #(p/auth-anon ref (chan->auth-cb %) sesion-only?)))
+  (with-chan #(p/auth-anon ref (chan->auth-cb %) session-only?)))
 
 ;; async
 
