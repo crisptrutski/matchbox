@@ -74,6 +74,23 @@
   [ref]
   (take-while identity (iterate parent (parent ref))))
 
+;;
+
+(defonce connected (atom true))
+
+(defn disconnect! []
+  (.goOffline js/Firebase)
+  (clojure.core/reset! connected false))
+
+(defn reconnect! []
+  (.goOnline js/Firebase)
+  (clojure.core/reset! connected true))
+
+(defn check-connected?
+  "Returns boolean around whether client is set to synchronise with server.
+   Says nothing about actual connectivity."
+  []
+  @connected)
 
 ;; --------------------
 ;; getters 'n setters

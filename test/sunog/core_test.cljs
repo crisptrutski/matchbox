@@ -107,3 +107,16 @@
     (p/reset-in! ref "c" 3)
     (p/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done)))
     (js/setTimeout (fn [] (is (not "timeout")) (done)) 1000)))
+
+(deftest disconnect!-reconnect!-test
+  ;; default is connected
+  (is (p/check-connected?))
+  ;; do things in twos to show idempotent
+  (p/disconnect!)
+  (is (not (p/check-connected?)))
+  (p/disconnect!)
+  (is (not (p/check-connected?)))
+  (p/reconnect!)
+  (is (p/check-connected?))
+  (p/reconnect!)
+  (is (p/check-connected?)))
