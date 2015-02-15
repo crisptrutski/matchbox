@@ -123,6 +123,7 @@
 
 (deftest ^:async auth-anon-test
   (let [ref (random-ref)]
+    (is (nil? (p/auth-info ref)))
     ;; not a happy test right now, haven't figured why tests don't connect
     (p/auth-anon ref (fn [error auth-data]
                        (is (nil? auth-data))

@@ -128,6 +128,13 @@
    (or cb undefined)
    (build-opts session-only?)))
 
+(defn auth-info
+  "Returns a map of uid, provider, token, expires - or nil if there is no session"
+  [ref]p
+  (.getAuth ref))
+
+;; onAuth and offAuth are not wrapped yet
+
 (defn unauth [ref]
   (.unauth ref))
 
