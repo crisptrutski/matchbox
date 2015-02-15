@@ -1,4 +1,4 @@
-# Sunog (pending actual naming #1)
+# Sunog ([pending](https://github.com/crisptrutski/sunog/issues/1))
 
 A convenience library to access Firebase from Clojurescript.
 
