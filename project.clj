@@ -16,13 +16,10 @@
   :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
             [com.cemerick/clojurescript.test "0.3.1" :scope "test"]]
 
-  :profiles {:dev {:dependencies [[om "0.6.4"]]
-                   :plugins [[com.cemerick/austin "0.1.7-SNAPSHOT"]]}}
+  :profiles {:dev {:dependencies [[om "0.6.4"]]}}
 
   :aliases {"test-all"  ["do" "test," "cljsbuild" "once" "test"]
-            "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]
-            ;"install"   ["with-profiles" "-dev" "install"]
-            }
+            "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
 
   :aot [pani.clojure.android-stub]
 
