@@ -107,6 +107,29 @@
 (defn cancel [ref-disconnect & [cb]]
   (.cancel ref-disconnect (or cb undefined)))
 
+;; --------------------
+;; auth
+
+(defn build-opts [session-only?]
+  (if session-only?
+    #js {:remember "sessionOnly"}
+    undefined))
+
+(defn auth [ref email password & [cb session-only?]]
+  (.authWithPassword
+   ref
+   #js {:email email, :password password}
+   (or cb undefined)
+   (build-opts session-only?)))
+
+(defn auth-anon [ref & [cb session-only?]]
+  (.authAnonymously
+   ref
+   (or cb undefined)
+   (build-opts session-only?)))
+
+(defn unauth [ref]
+  (.unauth ref))
 
 ;; --------------------
 ;; getters 'n setters
