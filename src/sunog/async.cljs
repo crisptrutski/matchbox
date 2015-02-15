@@ -45,6 +45,9 @@
 
 (def remove!< dissoc!<)
 
+(defn set-priority!< [ref priority]
+  (with-chan #(p/set-priority! ref priority (chan->cb-once %))))
+
 ;; async + in
 
 (defn deref-in< [ref korks]
@@ -71,6 +74,9 @@
   (remove!< (p/get-in ref korks)))
 
 (def remove-in!< dissoc-in!<)
+
+(defn set-priority-in!< [ref korks priority]
+  (set-priotity!< (get-in ref korks) priority))
 
 ;; subscriptions
 

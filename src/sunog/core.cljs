@@ -111,6 +111,9 @@
 
 (def remove! dissoc!)
 
+(defn set-priority! [ref priority & [cb]]
+  (.setPriority ref priority (or cb undefined)))
+
 ;; nested variants
 
 (defn deref-in [ref korks & [cb]]
@@ -136,6 +139,8 @@
 
 (def remove-in! remove-in!)
 
+(defn set-priority-in! [ref korks priority]
+  (set-priority! (get-in ref korks) priority cb))
 
 ;; ------------------
 ;; subscriptions
