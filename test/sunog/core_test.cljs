@@ -68,7 +68,7 @@
     ;; does not work without server connection
     ;; (p/deref ref (fn [v] (is (= [34 36] (vals v))) (done)))
 
-    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1000)))
+    (js/setTimeout (fn [] (when-not (= @seen #{34 36}) (is (not "timeout")) (done))) 2000)))
 
 (deftest ^:async swap!-test
   (let [ref (random-ref)]
