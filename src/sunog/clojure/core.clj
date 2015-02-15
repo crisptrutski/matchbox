@@ -80,33 +80,39 @@
   (let [cb nil #_"extract this like in CLJS case"]
     (.runTransaction ref (build-tx-handler f args cb) true)))
 
-(defn merge! [ref val]
-  (.updateChildren ref (serialize val)))
+(defn merge! [ref val & [cb]]
+  (if-not cb
+    (.updateChildren ref (serialize val))
+    (.updateChildren ref (serialize val) (wrap-cb cb))))
 
-(defn dissoc! [ref]
-  (.removeValue ref))
+(defn dissoc! [ref & [cb]]
+  (if-not cb
+    (.removeValue ref)
+    (.removeValue ref (wrap-cb cb))))
 
 (def remove! dissoc)
 
-(defn set-priority [ref priority]
-  (.setPriority ref priority))
+(defn set-priority [ref priority & [cb]]
+  (if-not cb
+    (.setPriority ref priority)
+    (.setPriority ref priority (wrap-cb cb))))
 
 ;;
 
-(defn reset-in! [ref korks val]
-  (reset! (get-in ref korks) val))
+(defn reset-in! [ref korks val & [cb]]
+  (reset! (get-in ref korks) val cb))
 
-(defn conj-in! [ref korks val]
-  (conj! (get-in ref korks) val))
+(defn conj-in! [ref korks val & [cb]]
+  (conj! (get-in ref korks) val cb))
 
 (defn swap-in! [ref korks f & args]
   (apply swap! (get-in ref korks) f args))
 
-(defn merge-in! [ref korks val]
-  (merge! (get-in ref korks) val))
+(defn merge-in! [ref korks val & [cb]]
+  (merge! (get-in ref korks) val cb))
 
-(defn dissoc-in! [ref korks]
-  (dissoc! (get-in ref korks)))
+(defn dissoc-in! [ref korks & [cb]]
+  (dissoc! (get-in ref korks) cb))
 
 (def remove-in! dissoc-in!)
 
