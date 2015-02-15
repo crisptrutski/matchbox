@@ -16,7 +16,12 @@
   :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
             [com.cemerick/clojurescript.test "0.3.1" :scope "test"]]
 
-  :profiles {:dev {:dependencies [[om "0.7.3"]]}}
+  :repl-options {:nrepl-middleware [cljx.repl-middleware/wrap-cljx]}
+
+  :jar-exclusions [#"\.cljx|\.swp|\.swo|\.DS_Store"]
+
+  :profiles {:dev {:dependencies [[om "0.7.3"]]
+                   :plugins [[com.keminglabs/cljx "0.5.0"]]}}
 
   :aliases {"test-all"  ["do" "test," "cljsbuild" "once" "test"]
             "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
@@ -37,4 +42,12 @@
                                    :pretty-print true}}]
               :test-commands {"unit-tests" ["phantomjs" :runner
                                             "this.literal_js_was_evaluated=true"
-                                            "target/cljs/test.js"]}})
+                                            "target/cljs/test.js"]}}
+
+  :cljx {:builds [{:source-paths ["src"]
+                   :output-path "target/classes"
+                   :rules :clj}
+
+                  {:source-paths ["src"]
+                   :output-path "target/classes"
+                   :rules :cljs}]})
