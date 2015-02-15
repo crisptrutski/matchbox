@@ -81,3 +81,29 @@
     (p/reset! ref 34)
     (p/remove! ref)
     (p/deref ref (fn [v] (is (nil? v)) (done)))))
+
+(deftest ^:async set-priority!-test
+  (let [ref (random-ref)
+        child-1 (p/get-in ref "a")
+        child-2 (p/get-in ref "b")
+        child-3 (p/get-in ref "c")]
+    (p/reset! child-1 1)
+    (p/reset! child-2 2)
+    (p/reset! child-3 3)
+    ;; order is:
+    ;; 1st: no priority
+    ;; 2nd: number as priority
+    ;; 3rd: string as priority
+    ;; (sorts by name on equality)
+    (p/set-priority! child-1 "a")
+    (p/set-priority-in! ref (p/key child-2) 0)
+    (p/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done)))
+    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1000)))
+
+(deftest ^:async reset-with-priority!-test
+  (let [ref (random-ref)]
+    (p/reset-with-priority-in! ref "a" 1 "a")
+    (p/reset-with-priority-in! ref "b" 2 0)
+    (p/reset-in! ref "c" 3)
+    (p/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done)))
+    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1000)))
