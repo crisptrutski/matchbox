@@ -14,6 +14,13 @@
             Transaction
             Transaction$Handler]))
 
+;; TODO: review + unsubscribe listeners
+;; TODO: server time
+;; TODO: parents (inherit)
+;; TODO: connect/discconet/on-disconnect
+;; TODO: auth
+;; TODO: listen-children
+
 (defn serialize [v]
   (if (map? v)
     (walk/stringify-keys v)
