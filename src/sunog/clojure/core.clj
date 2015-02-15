@@ -4,7 +4,11 @@
             [clojure.string :as str]
             [clojure.walk :as walk])
   (:import [com.firebase.client
+            ServerValue
             Firebase
+            FirebaseError
+            MutableData
+            DataSnapshot
             ValueEventListener
             ChildEventListener
             Transaction
@@ -20,6 +24,15 @@
     (walk/keywordize-keys v)
     v))
 
+(defn- wrap-cb [cb]
+  (reify com.firebase.client.Firebase$CompletionListener
+    (^void onComplete [this ^FirebaseError err ^Firebase ref]
+      (prn err ref)
+      (if err
+        (throw err)
+        (cb ref)))))
+;;
+
 (defn connect [url]
   (Firebase. url))
 
@@ -33,32 +46,50 @@
 
 (defn parent [ref] (.getParent ref))
 
-(defn value [ref] (hydrate (.getValue ref)))
+(defn value [ref cb]
+  (.addListenerForSingleValue
+   ref
+   (reify ValueEventListener
+     (^void onDataChange [_ ^DataSnapshot snapshot]
+       (cb (hydrate (.getValue snapshot))))
+     (^void onCancelled [_ ^FirebaseError err]
+       (throw err)))))
 
-(defn reset!
-  ([ref val]
-   (.setValue ref (serialize val))))
+(defn reset! [ref val & [cb]]
+  (if-not cb
+    (.setValue ref (serialize val))
+    (.setValue ref (serialize val) (wrap-cb cb))))
 
 (defn conj!
-  ([ref val]
-   (reset! (.push ref) val)))
+  ([ref val & [cb]]
+   (reset! (.push ref) val cb)))
+
+;; FIXME not sure how to add callback here
+
+(defn- build-tx-handler [f & args]
+  (reify Transaction$Handler
+    (#_com.firebase.client.Transaction$Result doTransaction [_ #_MutableData d]
+      (let [current (hydrate (.getValue d))]
+        (prn current)
+        (reset! d (apply f current args))
+        (Transaction/success d)))
+    (onComplete [_ _ _ _])))
 
 (defn swap!
-  "Use the firebase transaction mechanism to update a value atomically"
+  "Update value atomically, with local optimistic writes"
   [ref f & args]
-  (.runTransaction
-   ref
-   (reify Transaction$Handler
-     (doTransaction [this d]
-       (let [old (value d)
-             new (apply f old args)]
-         (reset! d new)
-         (Transaction/success d)))
-     (onComplete [_ _ _ _]))
-   true))
+  (.runTransaction ref (build-tx-handler f) true))
 
-;; TODO: merge!
-;; TODO: dissoc!
+(defn merge! [ref val]
+  (.updateChildren ref (serialize val)))
+
+(defn dissoc! [ref]
+  (.removeValue ref))
+
+(def remove! dissoc)
+
+(defn set-priority [ref priority]
+  (.setPriority ref priority))
 
 ;;
 
@@ -70,6 +101,14 @@
 
 (defn swap-in! [ref korks f & args]
   (apply swap! (get-in ref korks) f args))
+
+(defn merge-in! [ref korks val]
+  (merge! (get-in ref korks) val))
+
+(defn dissoc-in! [ref korks]
+  (dissoc! (get-in ref korks)))
+
+(def remove-in! dissoc-in!)
 
 (defmacro bind-handlers [btype node cb & specs]
   (let [pcount {:value 2, :child-added 3, :child-removed 2}]
