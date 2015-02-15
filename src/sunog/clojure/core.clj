@@ -64,21 +64,21 @@
   ([ref val & [cb]]
    (reset! (.push ref) val cb)))
 
-;; FIXME not sure how to add callback here
-
-(defn- build-tx-handler [f & args]
+(defn- build-tx-handler [f args cb]
   (reify Transaction$Handler
-    (#_com.firebase.client.Transaction$Result doTransaction [_ #_MutableData d]
+    (^com.firebase.client.Transaction$Result doTransaction [_ ^MutableData d]
       (let [current (hydrate (.getValue d))]
-        (prn current)
         (reset! d (apply f current args))
         (Transaction/success d)))
-    (onComplete [_ _ _ _])))
+    (^void onComplete [_ ^FirebaseError error, ^boolean committed, ^DataSnapshot d]
+      (if (and cb (not error) committed)
+        (cb (hydrate (.getValue d)))))))
 
 (defn swap!
   "Update value atomically, with local optimistic writes"
   [ref f & args]
-  (.runTransaction ref (build-tx-handler f) true))
+  (let [cb nil #_"extract this like in CLJS case"]
+    (.runTransaction ref (build-tx-handler f args cb) true)))
 
 (defn merge! [ref val]
   (.updateChildren ref (serialize val)))
