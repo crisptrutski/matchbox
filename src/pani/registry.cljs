@@ -1,4 +1,4 @@
-(ns pani.registry)
+(ns sunog.registry)
 
 (defonce unsubs (atom {}))
 

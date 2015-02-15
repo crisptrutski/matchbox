@@ -1,7 +1,7 @@
-(ns pani.registry-test
+(ns sunog.registry-test
   (:require-macros [cemerick.cljs.test :refer [is deftest done]])
   (:require [cemerick.cljs.test :as t]
-            [pani.registry :as r]))
+            [sunog.registry :as r]))
 
 (reset! r/unsubs {})
 

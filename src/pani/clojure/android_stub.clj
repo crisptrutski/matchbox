@@ -1,5 +1,5 @@
 ;; Avoid reflection-triggered exception when Android SDK not in classpath
-(ns pani.clojure.android-stub
+(ns sunog.clojure.android-stub
   (:require [clojure.reflect :refer [resolve-class]]))
 
 (defn class-exists? [c]

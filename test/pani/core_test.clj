@@ -1,6 +1,6 @@
-(ns pani.core-test
+(ns sunog.core-test
   (:require [clojure.test :refer :all]
-            [pani.clojure.core :as p]))
+            [sunog.clojure.core :as p]))
 
 (def firebase-url "https://blazing-fire-1915.firebaseio.com")
 

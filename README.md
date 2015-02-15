@@ -1,8 +1,8 @@
-# Pani
+# Sunog (pending actual naming #1)
 
 A convenience library to access Firebase from Clojurescript.
 
-[![Build Status](https://travis-ci.org/verma/pani.svg)](https://travis-ci.org/verma/pani)
+[![Build Status](https://travis-ci.org/crisptrutski/sunog.svg)](https://travis-ci.org/crisptrutski/sunog)
 
 The goal of this library is not to expose all functionality offered by Firebase, but to provide opinionated convenient.
 
@@ -10,7 +10,7 @@ The goal of this library is not to expose all functionality offered by Firebase,
 
 The library is in its formative years.  The current version is `0.0.3`.
 
-[![Clojars Project](http://clojars.org/pani/latest-version.svg)](http://clojars.org/pani)
+[![Clojars Project](http://clojars.org/sunog/latest-version.svg)](http://clojars.org/sunog)
 
 
 # Features
@@ -25,11 +25,11 @@ This library, for now, is entirely based on how I intend to use this library (ma
 
 # Usage
 
-Require `pani`:
+Require `sunog`:
 
-    (:require [pani.core :as p])          ; for clojurescript
-    (:require [pani.async :as pa])        ; for clojurescript
-    (:require [pani.clojure.core :as p])  ; for clojure, until v0.0.5
+    (:require [sunog.core :as p])          ; for clojurescript
+    (:require [sunog.async :as pa])        ; for clojurescript
+    (:require [sunog.clojure.core :as p])  ; for clojure, until v0.0.5
 
 Create a root object:
 

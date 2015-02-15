@@ -1,5 +1,5 @@
-(ns pani.async
-  (:require [pani.core :as p]
+(ns sunog.async
+  (:require [sunog.core :as p]
             [cljs.core.async :refer [<! >! chan put! close!]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 

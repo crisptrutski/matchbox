@@ -1,8 +1,8 @@
-(ns pani.core
+(ns sunog.core
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
   (:require cljsjs.firebase
             [clojure.string :as str]
-            [pani.registry :refer [register-listener]]))
+            [sunog.registry :refer [register-listener]]))
 
 ;; constants
 

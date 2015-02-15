@@ -1,6 +1,6 @@
 (ns examples.cljs.om-value-changes.core
-  (:require [pani.core :as p]
-            [pani.async :as pa]
+  (:require [sunog.core :as p]
+            [sunog.async :as pa]
             [cljs.core.async :refer [<!]]
             [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true])

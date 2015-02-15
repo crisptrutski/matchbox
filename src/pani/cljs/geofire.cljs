@@ -1,4 +1,4 @@
-(ns pani.cljs.geofire
+(ns sunog.cljs.geofire
   (:refer-clojure :exclude [set! get])
   (:require [cljs.core.async :refer (chan put!)]))
 

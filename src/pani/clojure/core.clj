@@ -1,4 +1,4 @@
-(ns pani.clojure.core
+(ns sunog.clojure.core
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
   (:require [clojure.core.async :refer [<! >! chan go go-loop]]
             [clojure.string :as str]

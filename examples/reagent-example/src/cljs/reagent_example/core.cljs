@@ -6,8 +6,8 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType]
 
-            [pani.core :as p]
-            [pani.async :as pa]
+            [sunog.core :as p]
+            [sunog.async :as pa]
             [cljs.core.async :as async :refer [<! >! chan put! merge]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:import goog.History))

@@ -1,8 +1,8 @@
-(defproject pani "0.0.4"
+(defproject sunog "0.0.4"
   :description "Convenience library for using Firebase with Clojure and Clojurescript"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :url "http://github.com/verma/pani"
+  :url "http://github.com/crisptrutski/sunog"
   :author "verma"
   :min-lein-version "2.5.0"
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
@@ -21,7 +21,7 @@
   :aliases {"test-all"  ["do" "test," "cljsbuild" "once" "test"]
             "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
 
-  :aot [pani.clojure.android-stub]
+  :aot [sunog.clojure.android-stub]
 
   :cljsbuild {:builds [{:id "om-value-changes"
                         :source-paths ["examples/cljs/om-value-changes/src" "src"]

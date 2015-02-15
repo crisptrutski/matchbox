@@ -1,9 +1,9 @@
-(ns pani.core-test
+(ns sunog.core-test
   (:require-macros [cemerick.cljs.test :refer [is deftest done]]
                    [cljs.core.async.macros :refer [go go-loop]])
   (:require [cemerick.cljs.test :as t]
             [cljs.core.async :refer [<!]]
-            [pani.core :as p]))
+            [sunog.core :as p]))
 
 (def firebase-url "https://blazing-fire-1915.firebaseio.com")
 
