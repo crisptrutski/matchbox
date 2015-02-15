@@ -123,7 +123,7 @@
   (reset! (get-in ref korks) val cb))
 
 (defn reset-with-priority-in! [ref korks val priority & [cb]]
-  (reset! (get-in ref korks) val priority cb))
+  (reset-with-priority! (get-in ref korks) val priority cb))
 
 (defn merge-in! [ref korks val & [cb]]
   (merge! (get-in ref korks) val cb))
@@ -139,7 +139,7 @@
 
 (def remove-in! remove-in!)
 
-(defn set-priority-in! [ref korks priority]
+(defn set-priority-in! [ref korks priority & [cb]]
   (set-priority! (get-in ref korks) priority cb))
 
 ;; ------------------

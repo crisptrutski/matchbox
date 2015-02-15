@@ -57,7 +57,7 @@
   (reset!< (p/get-in ref korks) val))
 
 (defn reset-with-priority-in!< [ref korks val priority]
-  (reset!< (p/get-in ref korks) val priority))
+  (reset-with-priority!< (p/get-in ref korks) val priority))
 
 (defn merge-in!< [ref korks val]
   (merge!< (p/get-in ref korks) val))
@@ -76,7 +76,7 @@
 (def remove-in!< dissoc-in!<)
 
 (defn set-priority-in!< [ref korks priority]
-  (set-priotity!< (get-in ref korks) priority))
+  (set-priority!< (get-in ref korks) priority))
 
 ;; subscriptions
 
