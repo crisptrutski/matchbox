@@ -15,6 +15,8 @@
 (def all-events
   (conj child-events :value))
 
+(def undefined) ;; firebase methods do not take kindly to nil callbacks
+
 (defn SERVER_TIMESTAMP js/Firebase.ServerValue.TIMESTAMP)
 
 ;; utils
@@ -102,13 +104,12 @@
   [ref]
   (.onDisconnect ref))
 
-(defn cancel [ref-disconnect]
-  (.cancel ref-disconnect))
+(defn cancel [ref-disconnect & [cb]]
+  (.cancel ref-disconnect (or cb undefined)))
+
 
 ;; --------------------
 ;; getters 'n setters
-
-(def undefined) ;; firebase methods do not take kindly to nil callbacks
 
 (defn deref [ref cb]
   (.once ref "value" (comp cb value)))
