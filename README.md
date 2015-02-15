@@ -4,11 +4,11 @@ A convenience library to access Firebase from Clojurescript.
 
 [![Build Status](https://travis-ci.org/verma/pani.svg)](https://travis-ci.org/verma/pani)
 
-The goal of this library is not to provide access to the entire functionality offered by Firebase, but to make it convenient to use Firebase as a data store from within Clojurescript.
+The goal of this library is not to expose all functionality offered by Firebase, but to provide opinionated convenient.
 
 # Current version
 
-The library is in its infancy.  The current version is `0.0.3`.
+The library is in its formative years.  The current version is `0.0.3`.
 
 [![Clojars Project](http://clojars.org/pani/latest-version.svg)](http://clojars.org/pani)
 
@@ -27,45 +27,46 @@ This library, for now, is entirely based on how I intend to use this library (ma
 
 Require `pani`:
 
-    (:require [pani.cljs.core :as p])       ; for clojurescript
-    (:require [pani.clojure.core :as p])    ; for clojure
+    (:require [pani.core :as p])          ; for clojurescript
+    (:require [pani.async :as pa])        ; for clojurescript
+    (:require [pani.clojure.core :as p])  ; for clojure, until v0.0.5
 
 Create a root object:
 
-	(def r (p/root "https://your-app.firebaseio.com/"))
+	(def r (p/connect "https://your-app.firebaseio.com/"))
 
 Bind a callback to recieve callback notifications when a `value` notification occurs:
 
-    (p/bind r :value :age #(log %1))
+    (p/listen-to r :ago :value #(log %1))
 
-The `bind` call accepts either a key or a seq of keys (`get-in` style):
+The `listen-to` call accepts either a key or a seq of keys (`get-in` style):
 
-	(p/bind r :value [:info :world] #(log %1))
+	(p/listen-to r [:info :world] :value #(log %1))
 
-You can also bind to other Firebase notification events, e.g. the `child_added` notification:
+You can also listen to other Firebase notification events, e.g. the `child-added` notification:
 
-	(p/bind r :child_added :messages #(log %1))
+	(p/listen-to r :messages :child-added #(log %1))
 
-If no callback is specified, the `bind` call returns an async channel:
+If no callback is specified, the `listen-to` call returns an async channel:
 
-    (let [c (p/bind r :child_added :messages)]
+    (let [c (p/listen-to r :messages :child_added)]
       (go-loop [msg (<! c)]
         (.log js/console "New message (go-loop):" (:message msg))
         (recur (<! c))))
 
-Use the `set!` call to set a value, like `bind` this function accepts either a single key or a seq of keys:
+Use the `reset!` call to set a value, like `bind` this function accepts either a single key or a seq of keys:
 
-	(p/set! r [:info :world] "welcome")
-	(p/set! r :age 100)
+	(p/reset-in! r [:info :world] "welcome")
+	(p/reset-in! r :age 100)
 
-Use the `push!` function to push values into a collection:
+Use the `conj!` function to push values into a collection:
 
-	(p/push! r :messages {:message "hello"})
+	(p/conj! r {:message "hello"})
 
-Finally, use the `walk-root` function to get a new child node:
+Finally, use the `get-in` function to get a new child node:
 
-	(def messages-root (p/walk-root r :messages))
-	(p/bind messages-root :child_added [] #(log %1))
+	(def messages-root (p/get-in r :messages))
+	(p/listen-to messages-root :child-added #(log %1))
 
 ## Clojurescript Examples
 ***Note that***, most examples will require you to add your Firebase app url to the example.  You'd most likely have to edit a line like the following in one of the source files (most likely `core.cljs`):

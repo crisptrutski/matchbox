@@ -1,57 +1,64 @@
 (ns pani.core-test
   (:require [clojure.test :refer :all]
-            [pani.clojure.core :as pani]))
+            [pani.clojure.core :as p]))
 
-(deftest app->fb-works
-  (do
-    (let [orig {:hello "world" :bye "world"}
-          tran (pani/app->fb orig)]
-      (is (contains? tran "hello"))
-      (is (not (contains? tran :hello))))
+(def firebase-url "https://blazing-fire-1915.firebaseio.com")
 
-    (let [orig [1 2 3 4]
-          tran (pani/app->fb orig)]
-      (is (= orig tran)))
+(deftest serialize-test
+  ;; keywords -> strings
+  (let [orig {:hello "world" :bye "world"}
+        tran (p/serialize orig)]
+    (is (contains? tran "hello"))
+    (is (not (contains? tran :hello))))
+  ;; unchanged
+  (doseq [x [true [1 2 3 4] 150 "hello"]]
+    (is (= x (p/serialize x)))))
 
-    (let [orig true
-          tran (pani/app->fb orig)]
-      (is (= orig tran)))
+(deftest hydrate-test
+  ;; strings -> keywords
+  (let [orig {"hello" "world" "bye" "world"}
+        tran (p/hydrate orig)]
+    (is (contains? tran :hello))
+    (is (not (contains? tran "hello"))))
+  ;; unchanged
+  (doseq [x [true [1 2 3 4] 150 "hello"]]
+    (is (= x (p/hydrate x)))))
 
-    (let [orig 150
-          tran (pani/app->fb orig)]
-      (is (= orig tran)))
-    
-    (let [orig "hello"
-          tran (pani/app->fb orig)]
-      (is (= orig tran)))))
+(deftest get-in-test
+  (let [r (p/connect "https://some-app.firebaseio.com/")]
+    (is (= (p/key (p/get-in r [:info :world])) "world"))
+    (is (= (p/key (p/parent (p/get-in r [:info :world]))) "info"))
+    (is (= (p/key (p/get-in r :age)) "age"))))
 
+(deftest reset-test!
+  (let [path (mapv str [(rand-int 500) (rand-int 500)])
+        ref  (p/get-in (p/connect firebase-url) path)
+        val  (rand-int 1000)
+        p    (promise)]
+    (p/listen-to ref :value #(deliver p %))
+    (p/reset! ref val)
+    (is (= [(last path) val] @p))))
 
-(deftest fb->app-works
-  (do
-    (let [orig {"hello" "world" "bye" "world"}
-          tran (pani/fb->app orig)]
-      (is (contains? tran :hello))
-      (is (not (contains? tran "hello"))))
+(deftest conj-test!
+  (let [path (mapv str [(rand-int 500) (rand-int 500)])
+        ref  (p/get-in (p/connect firebase-url) path)
+        val  (rand-int 1000)
+        p1   (promise)
+        p2   (promise)]
+    (p/listen-to ref :child-added #(deliver p1 %))
+    (p/conj! ref val)
+    (is (= val (last @p1)))
+    ;; FIXME times out.. probably also a persistence issue
+    ;;
+    ;; (p/listen-to ref (first @p1) :value #(deliver p2 %))
+    ;; (is (= @p1 @p2))
+    ))
 
-    (let [orig [1 2 3 4]
-          tran (pani/fb->app orig)]
-      (is (= orig tran)))
-
-    (let [orig true
-          tran (pani/fb->app orig)]
-      (is (= orig tran)))
-
-    (let [orig 150
-          tran (pani/fb->app orig)]
-      (is (= orig tran)))
-    
-    (let [orig "hello"
-          tran (pani/fb->app orig)]
-      (is (= orig tran)))))
-
-(deftest walk-root-works
-  (let [r (pani/root "https://some-app.firebaseio.com/")]
-    (is (= (pani/name (pani/walk-root r [:info :world])) "world"))
-    (is (= (pani/name (pani/parent (pani/walk-root r [:info :world]))) "info"))
-    (is (= (pani/name (pani/walk-root r :age)) "age"))))
-
+(deftest swap!-test
+  (let [path (mapv str [(rand-int 500) (rand-int 500)])
+        ref  (p/get-in (p/connect firebase-url) path)
+        val  (rand-int 1000)
+        p    (promise)]
+    (p/listen-to ref :value #(deliver p %))
+    (p/swap! ref vector val 512)
+    (is (= [(last path) [nil val 512]] @p))))
