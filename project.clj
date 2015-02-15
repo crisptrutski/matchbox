@@ -1,4 +1,4 @@
-(defproject sunog "0.0.4"
+(defproject sunog "0.0.5-SNAPSHOT"
   :description "Convenience library for using Firebase with Clojure and Clojurescript"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
