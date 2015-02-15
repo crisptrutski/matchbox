@@ -20,6 +20,14 @@
     (if val (put! ch val))
     (close! ch)))
 
+;; auth
+
+(defn auth [ref email password & [session-only?]]
+  #(with-chan (p/auth ref email password (chan->cb-once %) session-only?)))
+
+(defn auth-anon [ref & [session-only?]]
+  #(with-chan (p/auth-anon ref (chan->cb-once %) sesion-only?)))
+
 ;; async
 
 (defn deref< [ref]
