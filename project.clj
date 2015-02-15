@@ -6,7 +6,7 @@
   :author "verma"
   :min-lein-version "2.5.0"
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
-                 [org.clojure/clojurescript "0.0-2850" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-2755" :scope "provided"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.firebase/firebase-client-jvm "2.2.0"]
 
