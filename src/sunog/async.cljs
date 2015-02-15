@@ -28,6 +28,9 @@
 (defn reset!< [ref val]
   (with-chan #(p/reset! ref val (chan->cb-once %))))
 
+(defn reset-with-priority!< [ref val priority]
+  (with-chan #(p/reset! ref val priority (chan->cb-once %))))
+
 (defn merge!< [ref val]
   (with-chan #(p/merge! ref val (chan->cb-once %))))
 
@@ -49,6 +52,9 @@
 
 (defn reset-in!< [ref korks val]
   (reset!< (p/get-in ref korks) val))
+
+(defn reset-with-priority-in!< [ref korks val priority]
+  (reset!< (p/get-in ref korks) val priority))
 
 (defn merge-in!< [ref korks val]
   (merge!< (p/get-in ref korks) val))
