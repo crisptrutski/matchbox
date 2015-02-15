@@ -5,7 +5,7 @@
             [cljs.core.async :refer [<!]]
             [sunog.core :as p]))
 
-(def firebase-url "https://blazing-fire-1915.firebaseio.com")
+(def firebase-url "https://luminous-torch-5788.firebaseio.com/")
 
 (defn random-ref []
   (let [ref (p/connect (str firebase-url "/" (rand-int 100000)))]
