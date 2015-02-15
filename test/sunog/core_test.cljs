@@ -9,8 +9,8 @@
 
 (defn random-ref []
   (let [ref (p/connect (str firebase-url "/" (rand-int 100000)))]
-    ;; clear data once connection closed
-    (.. ref onDisconnect remove)
+        ;; clear data once connection closed
+    (-> ref p/on-disconnect p/remove!)
     ref))
 
 ;; utils

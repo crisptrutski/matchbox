@@ -92,6 +92,17 @@
   []
   @connected)
 
+;; FIXME: find a better abstraction
+;; https://github.com/crisptrutski/sunog/issues/4
+
+(defn on-disconnect
+  "Return an on"
+  [ref]
+  (.onDisconnect ref))
+
+(defn cancel [ref-disconnect]
+  (.cancel ref-disconnect))
+
 ;; --------------------
 ;; getters 'n setters
 
