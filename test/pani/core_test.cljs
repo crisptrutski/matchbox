@@ -7,8 +7,6 @@
 
 (def firebase-url "https://blazing-fire-1915.firebaseio.com")
 
-(js/console.log nil)
-
 (defn random-ref []
   (let [ref (p/connect (str firebase-url "/" (rand-int 100000)))]
     ;; clear data once connection closed
