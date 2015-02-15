@@ -115,19 +115,23 @@
     #js {:remember "sessionOnly"}
     undefined))
 
-;; FIXME: auth callbacks should automatically receive hydrated auth info
+(defn- wrap-auth-cb [cb]
+  (if cb
+    (fn [err info]
+      (cb err (hydrate info)))
+    undefined))
 
 (defn auth [ref email password & [cb session-only?]]
   (.authWithPassword
    ref
    #js {:email email, :password password}
-   (or cb undefined)
+   (wrap-auth-cb cb)
    (build-opts session-only?)))
 
 (defn auth-anon [ref & [cb session-only?]]
   (.authAnonymously
    ref
-   (or cb undefined)
+   (wrap-auth-cb cb)
    (build-opts session-only?)))
 
 (defn auth-info

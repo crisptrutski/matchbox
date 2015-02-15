@@ -24,7 +24,7 @@
   "Creates a callback to push [err, value] arguments onto a chan, exactly once"
   [ch]
   (fn [err val]
-    (put! ch [err (p/hydrate val)])
+    (put! ch [err val])
     (close! ch)))
 
 ;; auth
