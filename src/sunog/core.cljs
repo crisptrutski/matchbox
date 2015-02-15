@@ -17,6 +17,8 @@
 
 (def undefined) ;; firebase methods do not take kindly to nil callbacks
 
+(defn no-op [& _])
+
 (def SERVER_TIMESTAMP js/Firebase.ServerValue.TIMESTAMP)
 
 ;; utils
