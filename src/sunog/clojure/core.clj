@@ -1,6 +1,6 @@
 (ns sunog.clojure.core
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
-  (:require [clojure.core.async :refer [<! >! chan go go-loop]]
+  (:require [clojure.core.async :refer [chan put!]]
             [clojure.string :as str]
             [clojure.walk :as walk])
   (:import [com.firebase.client
@@ -13,6 +13,15 @@
             ChildEventListener
             Transaction
             Transaction$Handler]))
+
+(def child-events
+  [:child-added
+   :child-changed
+   :child-moved
+   :child-removed])
+
+(def all-events
+  (conj child-events :value))
 
 ;; TODO: review + unsubscribe listeners
 ;; TODO: server time
@@ -34,10 +43,7 @@
 (defn- wrap-cb [cb]
   (reify com.firebase.client.Firebase$CompletionListener
     (^void onComplete [this ^FirebaseError err ^Firebase ref]
-      (prn err ref)
-      (if err
-        (throw err)
-        (cb ref)))))
+      (if err (throw err) (cb ref)))))
 ;;
 
 (defn connect [url]
@@ -53,14 +59,15 @@
 
 (defn parent [ref] (.getParent ref))
 
+(defn reify-value-listener [cb]
+  (reify ValueEventListener
+    (^void onDataChange [_ ^DataSnapshot ds]
+      (cb [(.getKey ds) (hydrate (.getValue ds))]))
+    (^void onCancelled [_ ^FirebaseError err]
+      (throw err))))
+
 (defn value [ref cb]
-  (.addListenerForSingleValue
-   ref
-   (reify ValueEventListener
-     (^void onDataChange [_ ^DataSnapshot snapshot]
-       (cb (hydrate (.getValue snapshot))))
-     (^void onCancelled [_ ^FirebaseError err]
-       (throw err)))))
+  (.addListenerForSingleValue ref (reify-value-listener cb)))
 
 (defn reset! [ref val & [cb]]
   (if-not cb
@@ -123,35 +130,49 @@
 
 (def remove-in! dissoc-in!)
 
-(defmacro bind-handlers [btype node cb & specs]
-  (let [pcount {:value 2, :child-added 3, :child-removed 2}]
-    `(cond
-       ~@(mapcat (fn [[matchtype iface handler]]
-                   (let [params (vec (repeatedly (pcount matchtype) gensym))
-                         attacher (if (= matchtype :value)
-                                    'addValueEventListener
-                                    'addChildEventListener)]
-                     (list
-                      `(= ~btype ~matchtype)
-                      `(. ~node
-                          ~attacher
-                          (reify ~iface
-                            (~handler ~params
-                              (~cb [(key ~(second params))
-                                    (.getValue ~(second params))])))))))
-                 specs)
-       :else (throw (Exception. (str ~type " is not supported"))))))
+(defn- wrap-snapshot [^DataSnapshot d]
+  [(.getKey d) (hydrate (.getValue d))])
+
+(defn reify-child-listener [{:keys [added changed moved removed]}]
+  (reify ChildEventListener
+    (^void onChildAdded [_ ^DataSnapshot d ^String previous-child-name]
+      (if added (added (wrap-snapshot d))))
+    (^void onChildChanged [_ ^DataSnapshot d ^String previous-child-name]
+      (if changed (changed (wrap-snapshot d))))
+    (^void onChildMoved [_ ^DataSnapshot d ^String previous-child-name]
+      (if moved (moved (wrap-snapshot d))))
+    (^void onChildRemoved [_ ^DataSnapshot d]
+      (if removed (removed (wrap-snapshot d))))
+    (^void onCancelled [_ ^FirebaseError err]
+      (throw err))))
+
+(defn- strip-prefix [type]
+  (-> type name (str/replace #"^.+\-" "") keyword))
 
 (defn listen-to
   ([ref type cb]
-   (bind-handlers type ref cb
-                  [:value         ValueEventListener onDataChange]
-                  [:child-added   ChildEventListener onChildAdded]
-                  [:child-removed ChildEventListener onChildRemoved]))
+   (assert (some #{type} all-events) (str "Unknown type: " type))
+   (if-not (some #{type} child-events)
+     (.addValueEventListener ref (reify-value-listener cb))
+     (.addChildEventListener ref (reify-child-listener
+                                  (hash-map (strip-prefix type) cb)))))
   ([ref korks type cb]
    (listen-to (get-in ref korks) type cb)))
 
+(defn listen-children
+  ([ref cb]
+   (let [bases (map strip-prefix child-events)
+         cbs (zipmap bases (->> child-events
+                                (map (fn [type] #(vector type %)))
+                                (map #(comp cb %))))]
+     (.addChildEventListener ref (reify-child-listener cbs)))))
+
 (defn listen-to< [ref type]
   (let [ch (chan)]
-    (listen-to ref type #(go (>! ch %)))
+    (listen-to ref type #(if % (put! ch %)))
+    ch))
+
+(defn listen-children< [ref]
+  (let [ch (chan)]
+    (listen-children ref #(if % (put! ch %)))
     ch))
