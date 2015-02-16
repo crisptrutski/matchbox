@@ -1,45 +1,50 @@
 (ns sunog.core
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
   (:require [clojure.string :as str]
-            [sunog.impl :as impl]))
+            [sunog.impl :as impl])
+  (#+clj :require #+cljs :require-macros [potemkin.namespaces :refer [import-vars]]))
 
 ;; constants
 
-(def child-events
-  [:child-added
-   :child-changed
-   :child-moved
-   :child-removed])
+(import-vars
+ [sunog.common
 
-(def all-events
-  (conj child-events :value))
+  all-events
+  child-events])
 
-(def SERVER_TIMESTAMP impl/SERVER_TIMESTAMP)
+(import-vars
+ [sunog.impl
 
-;; FIXME: camel-case keys?
-;;        hydrate to custom vectors to preserve rich keys?
-;;        preserve sets (don't coerce to vector)
-;;        similarly preserve keywords as values
+  SERVER_TIMESTAMP
+  connect
+  ;; snapshots
+  key
+  value
+  ;; FIXME: camel-case keys?
+  ;;        hydrate to custom vectors to preserve rich keys?
+  ;;        preserve sets (don't coerce to vector)
+  ;;        similarly preserve keywords as values
+  hydrate
+  serialize
+  ;; navigation
+  get-in
+  parent
+  ;; getters / setters
+  deref
+  reset
+  reset-with-priority!
+  merge!
+  conj!
+  swap!
+  dissoc!
+  remove!
+  set-priority!])
 
-(def hydrate impl/hydrate)
-
-(def serialize impl/serialize)
-
-(def key impl/key)
-
-(def value impl/value)
+;; circular defs from common to impl :(
 
 (defn- wrap-snapshot [snapshot]
   ;; TODO: enhance with snapshot protocol
   [(key snapshot) (value snapshot)])
-
-;; references
-
-(def connect impl/connect)
-
-(def get-in impl/get-in)
-
-(def parent impl/parent)
 
 (defn parents
   "Probably don't need this. Or maybe we want more zipper nav (siblings, in-order, etc)"
@@ -111,29 +116,6 @@
 
 (defn unauth [ref]
   #+cljs (.unauth ref))
-
-;; --------------------
-;; getters 'n setters
-
-(def deref impl/deref)
-
-(def reset! impl/reset!)
-
-(defn reset-with-priority! [ref val priority & [cb]]
-  #+cljs (.setWithPriority ref (serialize val) priority (or cb impl/undefined)))
-
-(def merge! impl/merge!)
-
-(def conj! impl/conj!)
-
-(def swap! impl/swap!)
-
-(def dissoc! impl/dissoc!)
-
-(def remove! dissoc!)
-
-(defn set-priority! [ref priority & [cb]]
-  #+cljs (.setPriority ref priority (or cb impl/undefined)))
 
 ;; nested variants
 

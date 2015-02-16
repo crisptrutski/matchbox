@@ -66,6 +66,9 @@
 (defn reset! [ref val & [cb]]
   (.set ref (serialize val) (or cb undefined)))
 
+(defn reset-with-priority! [ref val priority & [cb]]
+  (.setWithPriority ref (serialize val) priority (or cb impl/undefined)))
+
 (defn merge! [ref val & [cb]]
   (.update ref (serialize val) (or cb undefined)))
 

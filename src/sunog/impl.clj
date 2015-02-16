@@ -20,7 +20,6 @@
 (def child-events sunog.core/child-events)
 
 ;; TODO: review + unsubscribe listeners
-;; TODO: server time
 ;; TODO: connect/discconet/on-disconnect
 ;; TODO: auth
 
