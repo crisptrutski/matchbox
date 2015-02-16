@@ -20,6 +20,6 @@
       1 (do (call-all! (flatten-vals (get @unsubs ref)))
             (swap! unsubs dissoc ref))
       2 (do (call-all! (flatten-vals (get-in @unsubs [ref type])))
-            (swap! unsubs update ref #(dissoc % type)))
+            (swap! unsubs update-in [ref] #(dissoc % type)))
       3 (do (unsub!)
             (swap! unsubs update-in [ref type] #(disj % unsub!))))))

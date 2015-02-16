@@ -1,8 +1,5 @@
-(ns sunog.clojure.core
+(ns sunog.impl
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
-  (:require [clojure.core.async :refer [chan put!]]
-            [clojure.string :as str]
-            [clojure.walk :as walk])
   (:import [com.firebase.client
             ServerValue
             Firebase
@@ -12,39 +9,46 @@
             ValueEventListener
             ChildEventListener
             Transaction
-            Transaction$Handler]))
+            Transaction$Handler])
+  (:require [clojure.core.async :refer [chan put!]]
+            [clojure.string :as str]
+            [clojure.walk :as walk]))
 
-(def child-events
-  [:child-added
-   :child-changed
-   :child-moved
-   :child-removed])
+;; who doesn't like circular refs?
 
-(def all-events
-  (conj child-events :value))
+(def all-events sunog.core/all-events)
+(def child-events sunog.core/child-events)
 
 ;; TODO: review + unsubscribe listeners
 ;; TODO: server time
-;; TODO: parents (inherit)
 ;; TODO: connect/discconet/on-disconnect
 ;; TODO: auth
-;; TODO: listen-children
-
-(defn serialize [v]
-  (if (map? v)
-    (walk/stringify-keys v)
-    v))
-
-(defn hydrate [v]
-  (if (map? v)
-    (walk/keywordize-keys v)
-    v))
 
 (defn- wrap-cb [cb]
   (reify com.firebase.client.Firebase$CompletionListener
     (^void onComplete [this ^FirebaseError err ^Firebase ref]
       (if err (throw err) (cb ref)))))
 ;;
+
+(def SERVER_TIMESTAMP ServerValue/TIMESTAMP)
+
+(defn hydrate [v]
+  (if (map? v)
+    (walk/keywordize-keys v)
+    v))
+
+(defn serialize [v]
+  (if (map? v)
+    (walk/stringify-keys v)
+    v))
+
+(defn key [ref] (.getKey ref))
+
+(defn value [snapshot]
+  (hydrate (.getValue snapshot)))
+
+(defn wrap-snapshot [^DataSnapshot d]
+  [(key d) (value d)])
 
 (defn connect [url]
   (Firebase. url))
@@ -55,18 +59,16 @@
                (name korks))]
     (.child root path)))
 
-(defn key [ref] (.getKey ref))
-
 (defn parent [ref] (.getParent ref))
 
-(defn reify-value-listener [cb]
+(defn- reify-value-listener [cb]
   (reify ValueEventListener
     (^void onDataChange [_ ^DataSnapshot ds]
-      (cb [(.getKey ds) (hydrate (.getValue ds))]))
+      (cb (wrap-snapshot ds)))
     (^void onCancelled [_ ^FirebaseError err]
       (throw err))))
 
-(defn value [ref cb]
+(defn deref [ref cb]
   (.addListenerForSingleValue ref (reify-value-listener cb)))
 
 (defn reset! [ref val & [cb]]
@@ -104,34 +106,10 @@
     (.removeValue ref)
     (.removeValue ref (wrap-cb cb))))
 
-(def remove! dissoc)
-
 (defn set-priority [ref priority & [cb]]
   (if-not cb
     (.setPriority ref priority)
     (.setPriority ref priority (wrap-cb cb))))
-
-;;
-
-(defn reset-in! [ref korks val & [cb]]
-  (reset! (get-in ref korks) val cb))
-
-(defn conj-in! [ref korks val & [cb]]
-  (conj! (get-in ref korks) val cb))
-
-(defn swap-in! [ref korks f & args]
-  (apply swap! (get-in ref korks) f args))
-
-(defn merge-in! [ref korks val & [cb]]
-  (merge! (get-in ref korks) val cb))
-
-(defn dissoc-in! [ref korks & [cb]]
-  (dissoc! (get-in ref korks) cb))
-
-(def remove-in! dissoc-in!)
-
-(defn- wrap-snapshot [^DataSnapshot d]
-  [(.getKey d) (hydrate (.getValue d))])
 
 (defn reify-child-listener [{:keys [added changed moved removed]}]
   (reify ChildEventListener
@@ -166,13 +144,3 @@
                                 (map (fn [type] #(vector type %)))
                                 (map #(comp cb %))))]
      (.addChildEventListener ref (reify-child-listener cbs)))))
-
-(defn listen-to< [ref type]
-  (let [ch (chan)]
-    (listen-to ref type #(if % (put! ch %)))
-    ch))
-
-(defn listen-children< [ref]
-  (let [ch (chan)]
-    (listen-children ref #(if % (put! ch %)))
-    ch))

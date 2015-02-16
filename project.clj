@@ -38,13 +38,13 @@
   :aot [sunog.clojure.android-stub]
 
   :cljsbuild {:builds [{:id "om-value-changes"
-                        :source-paths ["examples/cljs/om-value-changes/src" "src"]
+                        :source-paths ["examples/cljs/om-value-changes/src" "src" "target/classes"]
                         :compiler {:output-to "examples/cljs/om-value-changes/main.js"
                                    :output-dir "examples/cljs/om-value-changes/out"
                                    :source-map true
                                    :optimizations :none }}
                        {:id "test"
-                        :source-paths ["src", "test"]
+                        :source-paths ["src", "test", "target/classes"]
                         :notify-command ["phantomjs" :cljs.test/runner "target/cljs/test.js"]
                         :compiler {:output-to "target/cljs/test.js"
                                    :optimizations :whitespace
