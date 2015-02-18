@@ -7,7 +7,7 @@
 (defn- underscore->kebab [string]
   (-> string (str/replace "_" "-") keyword))
 
-(defn- korks->path [korks]
+(defn korks->path [korks]
   (if (sequential? korks)
     (str/join "/" (map name korks))
     (when korks (name korks))))

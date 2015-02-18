@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [sunog.core :as p]))
 
-(def firebase-url "https://blazing-fire-1915.firebaseio.com")
+;; (def firebase-url "https://blazing-fire-1915.firebaseio.com")
 (def firebase-url "https://luminous-torch-5788.firebaseio.com/")
 
 (deftest serialize-test
