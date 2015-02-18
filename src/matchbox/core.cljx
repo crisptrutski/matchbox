@@ -1,4 +1,4 @@
-(ns sunog.core
+(ns matchbox.core
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
   #+clj
   (:import [com.firebase.client
@@ -12,8 +12,8 @@
             Transaction
             Transaction$Handler])
   (:require [clojure.string :as str]
-            [sunog.utils :as utils]
-            [sunog.registry :refer [register-listener]]
+            [matchbox.utils :as utils]
+            [matchbox.registry :refer [register-listener]]
             #+clj [clojure.walk :as walk]
             #+cljs cljsjs.firebase))
 
@@ -214,7 +214,7 @@
   @connected)
 
 ;; FIXME: find a better abstraction
-;; https://github.com/crisptrutski/sunog/issues/4
+;; https://github.com/crisptrutski/matchbox/issues/4
 
 (defn on-disconnect
   "Return an on"

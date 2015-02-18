@@ -1,4 +1,4 @@
-(ns sunog.registry)
+(ns matchbox.registry)
 
 (defonce unsubs (atom {}))
 

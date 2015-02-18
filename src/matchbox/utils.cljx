@@ -1,4 +1,4 @@
-(ns sunog.utils
+(ns matchbox.utils
   (:require [clojure.string :as str]))
 
 (defn- kebab->underscore [keyword]

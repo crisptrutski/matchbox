@@ -1,10 +1,10 @@
-(ns sunog.core-test
+(ns matchbox.core-test
   (:require-macros [cemerick.cljs.test :refer [is deftest done]]
                    [cljs.core.async.macros :refer [go go-loop]])
   (:require [cemerick.cljs.test :as t]
             [cljs.core.async :refer [<!]]
-            [sunog.core :as p]
-            [sunog.utils :as utils]))
+            [matchbox.core :as p]
+            [matchbox.utils :as utils]))
 
 (def firebase-url "https://luminous-torch-5788.firebaseio.com/")
 
