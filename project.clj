@@ -30,10 +30,10 @@
   :auto-clean false
 
   :profiles {:dev {:dependencies [[om "0.7.3"]]
-                   :plugins [[com.keminglabs/cljx "0.5.0"]]}}
-
-  :aliases {"test-all"  ["do" "test," "cljsbuild" "once" "test"]
-            "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
+                   :plugins [[com.keminglabs/cljx "0.5.0"]]
+                   :aliases {"test-all"  ["do" "cljx" "once,"
+                                               "test,"
+                                               "cljsbuild" "once" "test"]}}}
 
   :aot [sunog.clojure.android-stub]
 
