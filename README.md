@@ -3,6 +3,7 @@
 A convenience library to access Firebase from Clojurescript.
 
 [![Build Status](https://travis-ci.org/crisptrutski/sunog.svg)](https://travis-ci.org/crisptrutski/sunog)
+[![Dependency Status](https://www.versioneye.com/clojure/sunog:sunog/0.0.4/badge.svg)](https://www.versioneye.com/clojure/sunog:sunog/0.0.4)
 
 The goal of this library is not to expose all functionality offered by Firebase, but to provide opinionated convenient.
 
