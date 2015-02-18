@@ -10,15 +10,8 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.firebase/firebase-client-jvm "2.2.0"]
 
-                 [cljsjs/firebase "2.1.2-1"]
-
-                 [com.keminglabs/cljx "0.5.0" :exclusions [com.cemerick/piggieback]]
-                 [com.cemerick/piggieback "0.1.5"]]
+                 [cljsjs/firebase "2.1.2-1"]]
   :deploy-repositories [["releases" :clojars]]
-
-  :repl-options {:nrepl-middleware
-                 [cljx.repl-middleware/wrap-cljx
-                  cemerick.piggieback/wrap-cljs-repl]}
 
   :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
             [com.cemerick/clojurescript.test "0.3.1" :scope "test"]
@@ -29,7 +22,12 @@
 
   :auto-clean false
 
-  :profiles {:dev {:dependencies [[om "0.7.3"]]
+  :profiles {:dev {:dependencies [[om "0.7.3"]
+                                  [com.keminglabs/cljx "0.5.0" :exclusions [com.cemerick/piggieback]]
+                                  [com.cemerick/piggieback "0.1.5"]]
+                   :repl-options {:nrepl-middleware
+                                  [cljx.repl-middleware/wrap-cljx
+                                   cemerick.piggieback/wrap-cljs-repl]}
                    :plugins [[com.keminglabs/cljx "0.5.0"]]
                    :aliases {"test-all"  ["do" "cljx" "once,"
                                                "test,"
