@@ -9,7 +9,7 @@ The goal of this library is not to expose all functionality offered by Firebase,
 
 # Current version
 
-The library is in its formative years.  The current version is `0.0.3`.
+The library is in its formative years.
 
 [![Clojars Project](http://clojars.org/sunog/latest-version.svg)](http://clojars.org/sunog)
 
