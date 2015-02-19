@@ -10,32 +10,41 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.firebase/firebase-client-jvm "2.2.0"]
 
-                 [cljsjs/firebase "2.1.2-1"]]
+                 [cljsjs/firebase "2.1.2-1"]
+
+                 [com.keminglabs/cljx "0.5.0" :exclusions [com.cemerick/piggieback]]
+                 [com.cemerick/piggieback "0.1.5"]]
   :deploy-repositories [["releases" :clojars]]
 
-  :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
-            [com.cemerick/clojurescript.test "0.3.1" :scope "test"]]
+  :repl-options {:nrepl-middleware
+                 [cljx.repl-middleware/wrap-cljx
+                  cemerick.piggieback/wrap-cljs-repl]}
 
-  :repl-options {:nrepl-middleware [cljx.repl-middleware/wrap-cljx]}
+  :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
+            [com.cemerick/clojurescript.test "0.3.1" :scope "test"]
+            [com.keminglabs/cljx "0.5.0" :exclusions [com.cemerick/piggieback]]
+            [com.cemerick/piggieback "0.1.5"]]
 
   :jar-exclusions [#"\.cljx|\.swp|\.swo|\.DS_Store"]
 
-  :profiles {:dev {:dependencies [[om "0.7.3"]]
-                   :plugins [[com.keminglabs/cljx "0.5.0"]]}}
+  :auto-clean false
 
-  :aliases {"test-all"  ["do" "test," "cljsbuild" "once" "test"]
-            "auto-test" ["do" "clean," "cljsbuild" "auto" "test"]}
+  :profiles {:dev {:dependencies [[om "0.7.3"]]
+                   :plugins [[com.keminglabs/cljx "0.5.0"]]
+                   :aliases {"test-all"  ["do" "cljx" "once,"
+                                               "test,"
+                                               "cljsbuild" "once" "test"]}}}
 
   :aot [sunog.clojure.android-stub]
 
   :cljsbuild {:builds [{:id "om-value-changes"
-                        :source-paths ["examples/cljs/om-value-changes/src" "src"]
+                        :source-paths ["examples/cljs/om-value-changes/src" "src" "target/classes"]
                         :compiler {:output-to "examples/cljs/om-value-changes/main.js"
                                    :output-dir "examples/cljs/om-value-changes/out"
                                    :source-map true
                                    :optimizations :none }}
                        {:id "test"
-                        :source-paths ["src", "test"]
+                        :source-paths ["src", "test", "target/classes"]
                         :notify-command ["phantomjs" :cljs.test/runner "target/cljs/test.js"]
                         :compiler {:output-to "target/cljs/test.js"
                                    :optimizations :whitespace

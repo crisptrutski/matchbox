@@ -1,7 +1,7 @@
 (ns sunog.async
   (:require [sunog.core :as p]
-            [cljs.core.async :refer [<! >! chan put! close!]])
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
+            #+clj [clojure.core.async :refer [<! >! chan put! close!]]
+            #+cljs [cljs.core.async :refer [<! >! chan put! close!]]))
 
 (defn with-chan
   "Call a function with a fresh channel, then return the channel"

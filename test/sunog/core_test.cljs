@@ -3,7 +3,8 @@
                    [cljs.core.async.macros :refer [go go-loop]])
   (:require [cemerick.cljs.test :as t]
             [cljs.core.async :refer [<!]]
-            [sunog.core :as p]))
+            [sunog.core :as p]
+            [sunog.utils :as utils]))
 
 (def firebase-url "https://luminous-torch-5788.firebaseio.com/")
 
@@ -13,27 +14,25 @@
     (-> ref p/on-disconnect p/remove!)
     ref))
 
-;; utils
-
 (deftest serialize-hydrate-test
   (is (= {:a 1, :b ["b" "a"]}
          (p/hydrate
           (p/serialize {"a" 1, "b" #{:a :b}})))))
 
 (deftest kebab->underscore-test
-  (is (= "a_cromulent_name" (p/kebab->underscore :a-cromulent-name))))
+  (is (= "a_cromulent_name" (utils/kebab->underscore :a-cromulent-name))))
 
 (deftest underscore->kebab-test
-  (is (= :a-tasty-skewer (p/underscore->kebab "a_tasty_skewer"))))
+  (is (= :a-tasty-skewer (utils/underscore->kebab "a_tasty_skewer"))))
 
 (deftest korks->path-test
-  (is (= nil   (p/korks->path nil)))
-  (is (= ""    (p/korks->path "")))
-  (is (= ""    (p/korks->path [])))
-  (is (= "a"   (p/korks->path :a)))
-  (is (= "a"   (p/korks->path ["a"])))
-  (is (= "a/b" (p/korks->path "a/b")))
-  (is (= "a/b" (p/korks->path [:a :b]))))
+  (is (= nil   (utils/korks->path nil)))
+  (is (= ""    (utils/korks->path "")))
+  (is (= ""    (utils/korks->path [])))
+  (is (= "a"   (utils/korks->path :a)))
+  (is (= "a"   (utils/korks->path ["a"])))
+  (is (= "a/b" (utils/korks->path "a/b")))
+  (is (= "a/b" (utils/korks->path [:a :b]))))
 
 (deftest key-parent-get-in-test
   (let [root (p/connect firebase-url)

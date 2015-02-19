@@ -1,6 +1,7 @@
 (ns sunog.registry-test
-  (:require-macros [cemerick.cljs.test :refer [is deftest done]])
-  (:require [cemerick.cljs.test :as t]
+  #+cljs (:require-macros [cemerick.cljs.test :refer [is deftest done]])
+  (:require #+cljs [cemerick.cljs.test :as t]
+            #+clj [clojure.test :as t :refer [deftest is]]
             [sunog.registry :as r]))
 
 (reset! r/unsubs {})
