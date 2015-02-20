@@ -3,7 +3,7 @@
 A convenience library to access Firebase from Clojurescript.
 
 [![Build Status](https://travis-ci.org/crisptrutski/matchbox.svg?branch=master)](https://travis-ci.org/crisptrutski/matchbox)
-[![Dependency Status](https://www.versioneye.com/clojure/matchbox:matchbox/0.0.5-SNAPSHOT/badge.svg)](https://www.versioneye.com/clojure/matchbox:matchbox/0.0.4)
+[![Dependency Status](https://www.versioneye.com/clojure/matchbox:matchbox/badge.svg)](https://www.versioneye.com/clojure/matchbox:matchbox)
 
 The goal of this library is not to expose all functionality offered by Firebase, but to provide opinionated convenient.
 
