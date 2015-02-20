@@ -1,8 +1,8 @@
-(defproject sunog "0.0.5-SNAPSHOT"
+(defproject matchbox "0.0.5-SNAPSHOT"
   :description "Convenience library for using Firebase with Clojure and Clojurescript"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :url "http://github.com/crisptrutski/sunog"
+  :url "http://github.com/crisptrutski/matchbox"
   :author "verma"
   :min-lein-version "2.5.0"
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
@@ -33,7 +33,7 @@
                                                "test,"
                                                "cljsbuild" "once" "test"]}}}
 
-  :aot [sunog.clojure.android-stub]
+  :aot [matchbox.clojure.android-stub]
 
   :cljsbuild {:builds [{:id "om-value-changes"
                         :source-paths ["examples/cljs/om-value-changes/src" "src" "target/classes"]

@@ -1,5 +1,5 @@
-(ns sunog.async
-  (:require [sunog.core :as p]
+(ns matchbox.async
+  (:require [matchbox.core :as p]
             #+clj [clojure.core.async :refer [<! >! chan put! close!]]
             #+cljs [cljs.core.async :refer [<! >! chan put! close!]]))
 

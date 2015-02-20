@@ -24,7 +24,7 @@
                  [leiningen "2.5.1"]
                  [figwheel "0.1.6-SNAPSHOT"]
 
-                 [sunog "0.0.4-SNAPSHOT"]
+                 [matchbox "0.0.4-SNAPSHOT"]
                  [cljsjs/firebase "2.1.2-1"]]
 
   :plugins [

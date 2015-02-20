@@ -1,9 +1,9 @@
-# Sunog ([pending](https://github.com/crisptrutski/sunog/issues/1))
+# Sunog ([pending](https://github.com/crisptrutski/matchbox/issues/1))
 
 A convenience library to access Firebase from Clojurescript.
 
-[![Build Status](https://travis-ci.org/crisptrutski/sunog.svg?branch=master)](https://travis-ci.org/crisptrutski/sunog)
-[![Dependency Status](https://www.versioneye.com/clojure/sunog:sunog/0.0.4/badge.svg)](https://www.versioneye.com/clojure/sunog:sunog/0.0.4)
+[![Build Status](https://travis-ci.org/crisptrutski/matchbox.svg?branch=master)](https://travis-ci.org/crisptrutski/matchbox)
+[![Dependency Status](https://www.versioneye.com/clojure/matchbox:matchbox/0.0.4/badge.svg)](https://www.versioneye.com/clojure/matchbox:matchbox/0.0.4)
 
 The goal of this library is not to expose all functionality offered by Firebase, but to provide opinionated convenient.
 
@@ -11,7 +11,7 @@ The goal of this library is not to expose all functionality offered by Firebase,
 
 The library is in its formative years.
 
-[![Clojars Project](http://clojars.org/sunog/latest-version.svg)](http://clojars.org/sunog)
+[![Clojars Project](http://clojars.org/matchbox/latest-version.svg)](http://clojars.org/matchbox)
 
 
 # Features
@@ -26,11 +26,11 @@ This library, for now, is entirely based on how I intend to use this library (ma
 
 # Usage
 
-Require `sunog`:
+Require `matchbox`:
 
-    (:require [sunog.core :as p])          ; for clojurescript
-    (:require [sunog.async :as pa])        ; for clojurescript
-    (:require [sunog.clojure.core :as p])  ; for clojure, until v0.0.5
+    (:require [matchbox.core :as p])          ; for clojurescript
+    (:require [matchbox.async :as pa])        ; for clojurescript
+    (:require [matchbox.clojure.core :as p])  ; for clojure, until v0.0.5
 
 Create a root object:
 
