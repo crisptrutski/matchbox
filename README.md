@@ -1,4 +1,4 @@
-# Sunog ([pending](https://github.com/crisptrutski/matchbox/issues/1))
+# Matchbox
 
 A convenience library to access Firebase from Clojurescript.
 
