@@ -28,9 +28,8 @@ This library, for now, is entirely based on how I intend to use this library (ma
 
 Require `matchbox`:
 
-    (:require [matchbox.core :as p])          ; for clojurescript
-    (:require [matchbox.async :as pa])        ; for clojurescript
-    (:require [matchbox.clojure.core :as p])  ; for clojure, until v0.0.5
+    (:require [matchbox.core :as p])
+    (:require [matchbox.async :as pa]) ;; if wanting to use with core.async
 
 Create a root object:
 
