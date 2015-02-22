@@ -1,13 +1,13 @@
 (set-env!
  :source-paths   #{"src"}
  :resource-paths #{}
- :dependencies '[[adzerk/boot-cljs      "0.0-2411-3" :scope "test"]
-                 [adzerk/boot-cljs-repl "0.1.7"      :scope "test"]
+ :dependencies '[[adzerk/boot-cljs      "0.0-2814-1" :scope "test"]
+                 [adzerk/boot-cljs-repl "0.1.9"      :scope "test"]
                  [adzerk/boot-reload    "0.2.0"      :scope "test"]
                  [pandeiro/boot-http    "0.3.0"      :scope "test"]
                  [deraen/boot-cljx      "0.2.2"      :scope "test"]
 
-                 [adzerk/bootlaces    "0.1.8"       :scope "test"]
+                 [adzerk/bootlaces    "0.1.10"       :scope "test"]
 
                  [org.clojure/core.async           "0.1.346.0-17112a-alpha"]
                  [cljsjs/firebase                  "2.1.2-1"]
