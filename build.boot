@@ -8,6 +8,7 @@
                  [deraen/boot-cljx      "0.2.2"      :scope "test"]
 
                  [adzerk/bootlaces    "0.1.10"       :scope "test"]
+                 [org.clojure/clojurescript "0.0-2755" :scope "provided"]
 
                  [org.clojure/core.async           "0.1.346.0-17112a-alpha"]
                  [cljsjs/firebase                  "2.1.2-1"]
