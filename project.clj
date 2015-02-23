@@ -8,7 +8,9 @@
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
                  [org.clojure/clojurescript "0.0-2755" :scope "provided"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [com.firebase/firebase-client-jvm "2.2.0"]
+
+                 [com.firebase/firebase-client-jvm "2.2.0" :exclusions [org.apache.httpcomponents/httpclient]]
+                 [org.apache.httpcomponents/httpclient "4.1.2"]
 
                  [cljsjs/firebase "2.1.2-1"]]
   :deploy-repositories [["releases" :clojars]]
