@@ -40,6 +40,15 @@
     (p/reset! ref val)
     (is (= [(last path) val] @p))))
 
+(deftest deref-test
+  (let [path (mapv str [(rand-int 500) (rand-int 500)])
+        ref  (p/get-in (p/connect firebase-url) path)
+        val  (rand-int 1000)
+        p    (promise)]
+    (p/deref ref #(deliver p %))
+    (p/reset! ref val)
+    (is (= [(last path) val] @p))))
+
 (deftest conj-test!
   (let [path (mapv str [(rand-int 500) (rand-int 500)])
         ref  (p/get-in (p/connect firebase-url) path)
