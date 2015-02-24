@@ -285,7 +285,7 @@
 (defn dissoc-in! [ref korks & [cb]]
   (dissoc! (get-in ref korks) cb))
 
-(def remove-in! remove-in!)
+(def remove-in! dissoc-in!)
 
 (defn set-priority-in! [ref korks priority & [cb]]
   (set-priority! (get-in ref korks) priority cb))
