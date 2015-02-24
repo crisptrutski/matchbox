@@ -4,18 +4,19 @@
  :dependencies '[[adzerk/boot-cljs      "0.0-2814-1" :scope "test"]
                  [adzerk/boot-cljs-repl "0.1.9"      :scope "test"]
                  [adzerk/boot-reload    "0.2.4"      :scope "test"]
-                 [pandeiro/boot-http    "0.3.0"      :scope "test"]
+                 ;;[pandeiro/boot-http    "0.6.0"      :scope "test"]
                  [deraen/boot-cljx      "0.2.2"      :scope "test"]
                  [adzerk/boot-test      "1.0.3"      :scope "test"]
                  [adzerk/bootlaces      "0.1.10"     :scope "test"]
 
-                 ;;[pandeiro/boot-test-cljs "0.1.0-SNAPSHOT" :scope "test"]
+                 [pandeiro/boot-test-cljs "0.1.0-SNAPSHOT" :scope "test"]
+                 [com.cemerick/clojurescript.test "0.3.1" :scope "test"]
 
                  [org.clojure/clojurescript "0.0-2913" :scope "provided"]
 
                  [org.clojure/core.async           "0.1.346.0-17112a-alpha"]
                  [cljsjs/firebase                  "2.1.2-1"]
-                 [com.firebase/firebase-client-jvm "2.2.0"]])
+                 #_[com.firebase/firebase-client-jvm "2.2.0"]])
 
 (require '[adzerk.bootlaces :refer :all])
 
@@ -35,14 +36,14 @@
  '[adzerk.boot-reload    :refer [reload]]
  '[adzerk.boot-test      :refer :all]
  '[boot.pod              :refer [make-pod]]
- '[pandeiro.http         :refer [serve]]
+ ;'[pandeiro.http         :refer [serve]]
  '[deraen.boot-cljx      :refer [cljx]]
- ;;'[pandeiro.boot-test-cljs :refer [test-cljs]]
+ '[pandeiro.boot-test-cljs :refer [test-cljs]]
  )
 
 (deftask dev []
   (comp
-    (serve :dir "target/")
+    ;(serve :dir "target/")
     (aot :namespace #{'matchbox.clojure.android-stub})
     (watch)
     (speak)
@@ -50,6 +51,13 @@
     (cljx)
     (cljs-repl)
     (cljs :unified-mode true :source-map true :optimizations :none)))
+
+(deftask browser-repl []
+  (comp
+    (watch)
+    (cljx)
+    (cljs-repl)
+    (cljs :source-map true :optimizations :whitespace)))
 
 (defn define-node-repl-launcher []
   (fn [handler]
@@ -86,9 +94,13 @@
    (wait)))
 
 (deftask autotest []
+  (set-env! :source-paths #(conj % "test"))
   (watch)
   (cljx)
-  (make-pod
-    (update-in (get-env) [:source-paths]
-               conj "test")
-    (test)))
+  (test))
+
+(deftask autotest-cljs []
+  (set-env! :source-paths #(conj % "test"))
+  (watch)
+  (cljx)
+  (test-cljs :namespaces #{'matchbox.core-test}))
