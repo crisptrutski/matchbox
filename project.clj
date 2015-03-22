@@ -1,23 +1,22 @@
 (defproject matchbox "0.0.5-SNAPSHOT"
-  :description "Convenience library for using Firebase with Clojure and Clojurescript"
+  :description "Firebase bindings for Clojure(Script)"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :url "http://github.com/crisptrutski/matchbox"
   :author "verma"
   :min-lein-version "2.5.0"
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
-                 [org.clojure/clojurescript "0.0-2755" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-3126" :scope "provided"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-
-                 [com.firebase/firebase-client-jvm "2.2.0" :exclusions [org.apache.httpcomponents/httpclient]]
-                 [org.apache.httpcomponents/httpclient "4.1.2"]
+                 [com.firebase/firebase-client-jvm "2.2.3" :exclusions [org.apache.httpcomponents/httpclient]]
+                 [org.apache.httpcomponents/httpclient "4.4"]
 
                  [cljsjs/firebase "2.1.2-1"]]
   :deploy-repositories [["releases" :clojars]]
 
   :plugins [[lein-cljsbuild "1.0.3" :scope "test"]
-            [com.cemerick/clojurescript.test "0.3.1" :scope "test"]
-            [com.keminglabs/cljx "0.5.0" :exclusions [com.cemerick/piggieback]]
+            [com.cemerick/clojurescript.test "0.3.3" :scope "test"]
+            [com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
             [com.cemerick/piggieback "0.1.5"]]
 
   :jar-exclusions [#"\.cljx|\.swp|\.swo|\.DS_Store"]
@@ -30,7 +29,7 @@
                    :repl-options {:nrepl-middleware
                                   [cljx.repl-middleware/wrap-cljx
                                    cemerick.piggieback/wrap-cljs-repl]}
-                   :plugins [[com.keminglabs/cljx "0.5.0"]]
+                   :plugins [[com.keminglabs/cljx "0.6.0"]]
                    :aliases {"test-all"  ["do" "cljx" "once,"
                                                "test,"
                                                "cljsbuild" "once" "test"]}}}

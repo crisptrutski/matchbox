@@ -12,3 +12,5 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
+.noderepl/*
+.nrepl-history

@@ -1,87 +1,211 @@
 # Matchbox
 
-A convenience library to access Firebase from Clojurescript.
+Firebase bindings for Clojure(Script)
 
 [![Build Status](https://travis-ci.org/crisptrutski/matchbox.svg?branch=master)](https://travis-ci.org/crisptrutski/matchbox)
 [![Dependency Status](https://www.versioneye.com/clojure/matchbox:matchbox/badge.svg)](https://www.versioneye.com/clojure/matchbox:matchbox)
 
-The goal of this library is not to expose all functionality offered by Firebase, but to provide opinionated convenient.
-
 # Current version
-
-The library is in its formative years.
 
 [![Clojars Project](http://clojars.org/matchbox/latest-version.svg)](http://clojars.org/matchbox)
 
 
 # Features
 
-Pani offers several benefits over raw JS interop:
+Matchbox offers more than just bindings:
 
- * Idiomatic constructs
- * Async channels or callbacks for change notifications
- * Javascript objects abstraction
+ * Clojure data in/out
+ * Cursor/Atom-like abstraction over Firebase references
+ * Nested versions of all operations
+ * Optional core.async based API
+ * Multiplexed event channels and/or callbacks
 
-This library, for now, is entirely based on how I intend to use this library (may be with Om etc.) and would grow as I discover more things I'd like it to do.  Pull requests welcome!
 
-# Usage
+# Example usage
 
-Require `matchbox`:
 
-    (:require [matchbox.core :as p])
-    (:require [matchbox.async :as pa]) ;; if wanting to use with core.async
+```clojure
+;; Load and alias
+(require '[matchbox.core :as m])
 
-Create a root object:
+;; Create a printer (this is platform dependent)
 
-	(def r (p/connect "https://your-app.firebaseio.com/"))
+;; cljs
+(enable-console-print!)
+(def safe-prn (partial prn "> "))
 
-Bind a callback to recieve callback notifications when a `value` notification occurs:
+;; clj
+(def safe-prn (partial matchbox.utils/prn "> "))
 
-    (p/listen-to r :ago :value #(log %1))
+;; Get a reference the root (update the URI with your app's name)
+(def r (m/connect "https://<your-app>.firebaseio.com/"))
 
-The `listen-to` call accepts either a key or a seq of keys (`get-in` style):
+;; Let's write some data
+(m/reset! r {:deep {:route "secret"}})
 
-	(p/listen-to r [:info :world] :value #(log %1))
+;; Let's read that data back
+;; Note: We'll get a tuple with the parent key too, or nil if root
+(m/deref r safe-prn) ;; => [nil {:deep {:route "secret"}}]
 
-You can also listen to other Firebase notification events, e.g. the `child-added` notification:
+;; We can also pass a callback, eg. to know once the value is persisted
+;; The callback will receive the reference written to.
+(m/reset! r {:deep {:route "better-secret"}} safe-prn)
 
-	(p/listen-to r :messages :child-added #(log %1))
+;; We can get child references, and read just that portion
+;; Note: going forward I'm omitting key portion in output comments
+(def child (m/get-in r [:deep :route]))
+(m/deref child safe-prn) ;; => "better-secret"
 
-If no callback is specified, the `listen-to` call returns an async channel:
+;; Where it makes sense, you can add `-in` to the operation name to
+;; operate on children directly through their parent reference.
+;;
+;; These variants take an extra argument, in second position, for the path
+(m/reset-in! r [:deep :route] "s3krit")
+(m/deref-in r [:deep :route] safe-prn)
 
-    (let [c (p/listen-to r :messages :child_added)]
-      (go-loop [msg (<! c)]
-        (.log js/console "New message (go-loop):" (:message msg))
-        (recur (<! c))))
+;; Note that paths are very forgiving, keywords and strings word also:
+(m/deref-in r :deep safe-prn)        ;; => {:route "s3krit"}
+(m/deref-in r "deep/route" safe-prn) ;; => "s3krit"
 
-Use the `reset!` call to set a value, like `bind` this function accepts either a single key or a seq of keys:
+;; Now lets add a persistent listener, so we can keep abreast of changes to our root:
+(m/listen-to r :value (partial safe-prn "listener: "))
 
-	(p/reset-in! r [:info :world] "welcome")
-	(p/reset-in! r :age 100)
+;; Lets see how else we can mutate data
+(m/reset! r {:something "else"}) ;; => Note that :deep was lost
+(m/merge! r {:less "extreme"})   ;; => This time :something is retained
+(m/conj! r "another value")      ;; => A "strange" key was generated
+(def child (m/get-in r :less))
+(defn rev-str [x] (apply str (reverse x)))
+(m/swap! child rev-str)          ;; => Like an atom - value is now "emertxe"
+(m/remove! child)                ;; => Only :less was removed
 
-Use the `conj!` function to push values into a collection:
+;; Note that `remove!` has an alias `dissoc!`, to fit with `-in` case:
+(m/dissoc-in! r [:something]) ;; => Only :something was removed
 
-	(p/conj! r {:message "hello"})
+;; If you're wondering about the random key created by `conj!`, you may want to
+;; read this: https://www.firebase.com/blog/2014-04-28-best-practices-arrays-in-firebase.html
 
-Finally, use the `get-in` function to get a new child node:
+;; Coming from writes back to observers, let's take a deeper look at `listen-to`
+;; TODO: add note and example about other event types and how it hadnles -in case
 
-	(def messages-root (p/get-in r :messages))
-	(p/listen-to messages-root :child-added #(log %1))
+;; There is also listen-children, which multiplexes across all children events
+;; TODO: add an example
 
-## Clojurescript Examples
-***Note that***, most examples will require you to add your Firebase app url to the example.  You'd most likely have to edit a line like the following in one of the source files (most likely `core.cljs`):
+;; TODO: provide notes and examples around using "priority"
 
-	;; TODO: Set this to a firebase app URL
-	(def firebase-app-url "https://your-app.firebaseio.com/")
+;; TODO: provide notes and examples around using auth
 
+;; Lets look quickly at the core.async variants of the various functions
+(:require [matchbox.async :as ma])
+
+;; TODO: mention which ops are in async namespace, the naming convention (`<`, `-in<`)
+
+;; TODO: update this example to fit into narrative, and add some around other ops
+(let [c (ma/listen-to< r :messages :child_added)]
+  (go-loop [msg (<! c)]
+    (.log js/console "New message (go-loop):" (:message msg))
+    (recur (<! c))))
+
+```
+
+## TODO: Clojure Examples
+
+## ClojureScript Examples
+
+;; TODO Update all examples to use a common sandpit app, isolated to their own directories
+;; TODO Update reagent app to latest version of project
 
 All examples are available under the `examples` directory.  To run a Clojurescript example just run the respective `lein` command to build it:
 
-    lein cljsbuild once <example-name>
+```clojure
+lein cljsbuild once <example-name>
+```
 
-This should build and place a `main.js` file along with an `out` directory in the example's directory.  You should now be able to go to the example's directory and open the `index.html` file in a web-browser.
+
+This should build and place a `main.js` file along with an `out` directory in the example's directory.
+
+You should now be able to go to the example's directory and open the
+`index.html` file in a web-browser.
+
+## Gotchas
+
+1. Swap! takes callback in non-standard way
+
+   Since it's common to pass additional arguments to an update function,
+   a pragmatic choice was made. We try so support both, by aluding to the
+   common inline-keywords style supported by `& {...}`  destructuring:
+
+   ```clojure
+   (eg. `(my-function :has "keyword" :style "arguments")`).
+   ```
+
+   In our case, we allow `:callback callback-fn` at the end of the args, eg:
+
+   ```clojure
+   (m/swap! r f)                  ;; call (f <val>),     no callback
+   (m/swap! r f b c)              ;; call (f <val> b c), no callback
+   (m/swap! r f :callback cb)     ;; call (f <val>),     with callback `cb`
+   (m/swap! r f b c :callback cb) ;; call (f <val> b c), with callback `cb`
+   ```
+
+   Note that `:callback` MUST appear as the second-last argument.
+
+2. Java callbacks
+
+   Depending on your (environment and
+   config)[https://www.firebase.com/docs/java-api/javadoc/com/firebase/client/Config.html#setEventTarget(com.firebase.client.EventTarget)],
+   callbacks may be triggered on another thread.
+
+   This can be confusing if debugging with `prn` in callbacks, as
+   `*out*` will not be to the REPL's writer. We define `matchbox.utils/prn` as a simple
+   helper to ensure output is visible.
+
+3. Serialization
+
+   Since Firebase is a JSON-like store, we automatically convert keys in nested
+   maps to strings. No metadata about initial type is stored, and keys are
+   always read as keywords.
+
+   Maps are not restricted to just keywords and strings though, but the case of
+   rich keyws has not been handled. On the JVM passing using such values will
+   result in a `ClassCastExceoption`, and in JS you can always cast, so you'll
+   pull back a keyword, like `:32` or perhaps `:[object Object]`.
+
+   Coming to values, you're at the mercy of the platform and little work has
+   been done to manage the semantics. Luckily they work pretty well, but less
+   fortunately they are inconsistent between the two platforms.
+
+   We leverage `java.util.Collection` and `cljs->js` respectively between the
+   JVM and JS. That means that almost everything becomes an array, and most
+   primitives stay the same. The most notable difference is that `cljs->js`
+   turns keywords into strings, but we're making no such cast on the JVM.
+
+   Strings and boolean are stable.
+
+   Numbers are stable in JS. On the JVM Numbers are stable for the core cases of
+   Long and Double, although  more exotic types like `java.math.BigDec` will be
+   cast down.
+
+   Keywords are reduced to names in JS. On the JVM things get more "interesting":
+   they're picked up as associative data, and become maps. The look something
+   like (`{:sym {"name" "b", "namespace" "a"}, :name "b", :namespace "a"}` if
+   you must know. Perhaps a better behaviour would be to store them as colon
+   prefixed strings, and have some magic to automatically hydrate such strings
+   as keywords.
+
+   Records are saved as regular maps. Types defined with `deftype` also cast
+   down to maps, but their attributes for some reason are `under_scored` rather
+   than `kebab-styled`.
+
+   For more advanced types, you're likely to have a bad time. JavaScript will
+   probably do something very lossy, and Java to throw a type error.
+
+   If there's interest, some extensible system for adding readers/writers for
+   custom types could be added, probably looking something like those found in
+   the EDN or Transit libraries.
+
+   Otherwise you can manually wrap your writes and callbacks / channels.
 
 ## License
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.

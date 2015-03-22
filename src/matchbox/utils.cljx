@@ -1,4 +1,5 @@
 (ns matchbox.utils
+  (:refer-clojure :exclude [prn])
   (:require [clojure.string :as str]))
 
 (defn- kebab->underscore [keyword]
@@ -19,3 +20,15 @@
            (= (first (take-last 2 args)) :callback))
     [(last args) (drop-last 2 args)]
     [nil args]))
+
+;;
+
+#+clj
+(def repl-out *out*)
+
+#+clj
+(defn prn
+  "Like clojure.core/prn, but always bound to root thread's *out*"
+  [& args]
+  (binding [*out* repl-out]
+    (apply clojure.core/prn args)))

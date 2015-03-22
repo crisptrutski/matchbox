@@ -29,6 +29,20 @@
    :child-moved
    :child-removed])
 
+#+clj
+(def logger-levels
+  {:debug com.firebase.client.Logger$Level/DEBUG
+   :info  com.firebase.client.Logger$Level/INFO
+   :warn  com.firebase.client.Logger$Level/WARN
+   :error com.firebase.client.Logger$Level/ERROR
+   :none  com.firebase.client.Logger$Level/NONE})
+
+#+clj
+(defn set-logger-level! [key]
+  (assert (contains? logger-levels key) (format "Unknown logger level: `%s`" key))
+  (.setLogLevel (Firebase/getDefaultConfig)
+                (logger-levels key)))
+
 (def all-events
   (conj child-events :value))
 
@@ -87,9 +101,15 @@
 (defn- strip-prefix [type]
   (-> type name (str/replace #"^.+\-" "") keyword))
 
+#+clj
+(defn- hydrate* [x]
+  (cond (instance? java.util.HashMap x)   (recur (into {} x))
+        (instance? java.util.ArrayList x) (recur (into [] x))
+        (map? x)                          (zipmap (map keyword (keys x)) (vals x))
+        :else                             x))
 
 (defn hydrate [v]
-  #+clj (if (map? v) (walk/keywordize-keys v) v)
+  #+clj (walk/prewalk hydrate* v)
   #+cljs (js->clj v :keywordize-keys true))
 
 (defn serialize [v]
@@ -150,10 +170,11 @@
     (.setValue ref (serialize val) (wrap-cb cb)))
   #+cljs (.set ref (serialize val) (or cb undefined)))
 
-;; FIXME: support for JVM
-#+cljs
 (defn reset-with-priority! [ref val priority & [cb]]
-  (.setWithPriority ref (serialize val) priority (or cb undefined)))
+  #+clj (if-not cb
+          (.setValue ref (serialize val) priority)
+          (.setValue ref (serialize val) priority (wrap-cb cb)))
+  #+cljs (.setWithPriority ref (serialize val) priority cb))
 
 (defn merge! [ref val & [cb]]
   #+clj
@@ -263,7 +284,7 @@
 
 ;; nested variants
 
-(defn deref-in [ref korks & [cb]]
+(defn deref-in [ref korks cb]
   (deref (get-in ref korks) cb))
 
 (defn reset-in! [ref korks val & [cb]]
@@ -279,8 +300,8 @@
 (defn conj-in! [ref korks val & [cb]]
   (conj! (get-in ref korks) val cb))
 
-(defn swap-in! [ref korks f & [cb]]
-  (swap! (get-in ref korks) f cb))
+(defn swap-in! [ref korks f & args]
+  (apply swap! (get-in ref korks) f args))
 
 (defn dissoc-in! [ref korks & [cb]]
   (dissoc! (get-in ref korks) cb))
