@@ -26,9 +26,11 @@
     (is (contains? tran "hello"))
     (is (not (contains? tran :hello))))
   ;; values are unchanged
-  (testing "bool, long, float, vector, string, keyword, set, list"
-    (doseq [x [true [1 2 3 4] 150.0 "hello" :a #{1 2 3} '(3 2 1)]]
-      (is (= x (m/serialize x))))))
+  (testing "bool, long, float, vector, string, set, list"
+    (doseq [x [true [1 2 3 4] 150.0 "hello" #{1 2 3} '(3 2 1)]]
+      (is (= x (m/serialize x)))))
+  (testing "keyword"
+    (is (= ":a" (m/serialize :a)))))
 
 (deftest hydrate-test
   ;; map keys from strings -> keywords
@@ -62,8 +64,8 @@
     (is (= "feeling myself" (round-trip "feeling myself"))))
 
   (testing "keyword"
-    ;; FIXME: inconsistent with CLJS
-    (is (= {:sym {:name "a"}, :name "a"} (round-trip :a))))
+    (is (= :a (round-trip :a)))
+    (is (= :ns/key (round-trip :ns/key))))
 
   (testing "map"
     (is (= {:a 1, :b 2}

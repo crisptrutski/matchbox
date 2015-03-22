@@ -101,20 +101,33 @@
 (defn- strip-prefix [type]
   (-> type name (str/replace #"^.+\-" "") keyword))
 
+(defn- keywords->strings [x]
+  (if (keyword? x) (str x) x))
+
+(defn- hydrate-keywords [x]
+  (if (and (string? x) (= \: (first x)))
+    (keyword (apply str (rest x)))
+    x))
+
 #+clj
 (defn- hydrate* [x]
   (cond (instance? java.util.HashMap x)   (recur (into {} x))
         (instance? java.util.ArrayList x) (recur (into [] x))
         (map? x)                          (zipmap (map keyword (keys x)) (vals x))
-        :else                             x))
+        :else                             (hydrate-keywords x)))
 
 (defn hydrate [v]
   #+clj (walk/prewalk hydrate* v)
-  #+cljs (js->clj v :keywordize-keys true))
+  #+cljs (walk/postwalk
+          hydrate-keywords
+          (js->clj v :keywordize-keys true)))
 
 (defn serialize [v]
-  #+clj (if (map? v) (walk/stringify-keys v) v)
-  #+cljs (clj->js v))
+  ;; FIXME: refactor to require single pass instead of 2/3
+  (->> v
+       (walk/stringify-keys)
+       (walk/postwalk keywords->strings)
+       #+cljs (clj->js)))
 
 (defn key
   "Last segment in reference or snapshot path"

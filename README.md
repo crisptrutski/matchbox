@@ -175,18 +175,13 @@ You should now be able to go to the example's directory and open the
    primitives stay the same. The most notable difference is that `cljs->js`
    turns keywords into strings, but we're making no such cast on the JVM.
 
-   Strings and boolean are stable.
+   Strings and boolean are stable, and stored using the corresponding
+   primitives. Keywords are also stable, but are stored as colon-prefixed
+   strings, which are "auto-magically" rehydrated.
 
    Numbers are stable in JS. On the JVM Numbers are stable for the core cases of
    Long and Double, although  more exotic types like `java.math.BigDec` will be
    cast down.
-
-   Keywords are reduced to names in JS. On the JVM things get more "interesting":
-   they're picked up as associative data, and become maps. The look something
-   like (`{:sym {"name" "b", "namespace" "a"}, :name "b", :namespace "a"}` if
-   you must know. Perhaps a better behaviour would be to store them as colon
-   prefixed strings, and have some magic to automatically hydrate such strings
-   as keywords.
 
    Records are saved as regular maps. Types defined with `deftype` also cast
    down to maps, but their attributes for some reason are `under_scored` rather
