@@ -29,6 +29,20 @@
    :child-moved
    :child-removed])
 
+#+clj
+(def logger-levels
+  {:debug com.firebase.client.Logger$Level/DEBUG
+   :info  com.firebase.client.Logger$Level/INFO
+   :warn  com.firebase.client.Logger$Level/WARN
+   :error com.firebase.client.Logger$Level/ERROR
+   :none  com.firebase.client.Logger$Level/NONE})
+
+#+clj
+(defn set-logger-level! [key]
+  (assert (contains? logger-levels key) (format "Unknown logger level: `%s`" key))
+  (.setLogLevel (Firebase/getDefaultConfig)
+                (logger-levels key)))
+
 (def all-events
   (conj child-events :value))
 
