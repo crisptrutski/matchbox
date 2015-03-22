@@ -63,7 +63,7 @@ Matchbox offers more than just bindings:
 (m/reset-in! r [:deep :route] "s3krit")
 (m/deref-in r [:deep :route] safe-prn)
 
-;; Note that paths are very forgiving, keywords and strings word also:
+;; Note that paths are very forgiving, keywords and strings work also:
 (m/deref-in r :deep safe-prn)        ;; => {:route "s3krit"}
 (m/deref-in r "deep/route" safe-prn) ;; => "s3krit"
 
@@ -152,8 +152,8 @@ You should now be able to go to the example's directory and open the
 
 2. Java callbacks
 
-   Depending on your (environment and
-   config)[https://www.firebase.com/docs/java-api/javadoc/com/firebase/client/Config.html#setEventTarget(com.firebase.client.EventTarget)],
+   Depending on your [environment and
+   config](https://www.firebase.com/docs/java-api/javadoc/com/firebase/client/Config.html#setEventTarget(com.firebase.client.EventTarget)),
    callbacks may be triggered on another thread.
 
    This can be confusing if debugging with `prn` in callbacks, as
