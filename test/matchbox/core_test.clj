@@ -2,7 +2,22 @@
   (:require [clojure.test :refer :all]
             [matchbox.core :as m]))
 
+;; helpers
+
 (def firebase-url "https://luminous-torch-5788.firebaseio.com/")
+
+(defn- rand-ref []
+  (let [path (mapv str [(rand-int 500) (rand-int 500)])]
+    (m/get-in (m/connect firebase-url) path)))
+
+(defn round-trip [data]
+  (let [p   (promise)
+        ref (rand-ref)]
+    (m/deref ref #(deliver p (second %)))
+    (m/reset! ref data)
+    @p))
+
+;;
 
 (deftest serialize-test
   ;; map keys from keywords -> strings
@@ -25,6 +40,38 @@
   (testing "bool, long, float, vector, string, keyword, set, list"
     (doseq [x [true [1 2 3 4] 150.0 "hello" :a #{1 2 3} '(3 2 1)]]
       (is (= x (m/hydrate x))))))
+
+(deftest roundtrip-test
+  (testing "numbers"
+    (is (= 42 (round-trip 42)))
+    (is (= 41.3 (round-trip 41.3)))
+    ;; Cast down from extended types though
+    (is (= 3 (round-trip 3N)))
+    (is (= 4.3E90 (round-trip 4.3E90M))))
+
+  (testing "strings"
+    (is (= "feeling myself" (round-trip "feeling myself"))))
+
+  (testing "keyword"
+    ;; FIXME: inconsistent with CLJS
+    (is (= {:sym {"name" "a"}, :name "a"} (round-trip :a))))
+
+  (testing "map"
+    (is (= {:a 1, :b 2}
+           (round-trip {"a" 1, :b 2}))))
+
+  (testing "list"
+    (is (= [1 2 3 4]
+           (round-trip '(1 2 3 4)))))
+
+  (testing "vector"
+    (is (= [1 2 3 4]
+           (round-trip [1 2 3 4]))))
+
+  (testing "set"
+    (let [result (round-trip #{1 2 3 4})]
+      (is (instance? java.util.ArrayList result))
+      (is (= [1 2 3 4] (sort result))))))
 
 (deftest get-in-test
   (let [r (m/connect "https://some-app.firebaseio.com/")]
