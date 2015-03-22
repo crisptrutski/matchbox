@@ -41,12 +41,21 @@
     (doseq [x [true [1 2 3 4] 150.0 "hello" :a #{1 2 3} '(3 2 1)]]
       (is (= x (m/hydrate x))))))
 
+(defrecord ARecord [a-field])
+(deftype AType [an-attr])
+
 (deftest roundtrip-test
   (testing "numbers"
     (is (= 42 (round-trip 42)))
     (is (= 41.3 (round-trip 41.3)))
+    ;; Floating point survives "JSON" phase
+    (is (= 41.0 (round-trip 41.0)))
     ;; Cast down from extended types though
     (is (= 3 (round-trip 3N)))
+    ;; Strangely BigDecimal can cast all the way down to a long
+    (is (instance? java.lang.Long (round-trip 4M)))
+    ;; Unless the decimal portion is explicit..
+    (is (instance? java.lang.Double (round-trip 4.0M)))
     (is (= 4.3E90 (round-trip 4.3E90M))))
 
   (testing "strings"
@@ -58,7 +67,10 @@
 
   (testing "map"
     (is (= {:a 1, :b 2}
-           (round-trip {"a" 1, :b 2}))))
+           (round-trip {"a" 1, :b 2})))
+    ;; FIXME: nested maps keys returned as strings
+    (is (= {:nested {"data" 4}}
+           (round-trip {"nested" {:data 4}}))))
 
   (testing "list"
     (is (= [1 2 3 4]
@@ -70,8 +82,12 @@
 
   (testing "set"
     (let [result (round-trip #{1 2 3 4})]
-      (is (instance? java.util.ArrayList result))
-      (is (= [1 2 3 4] (sort result))))))
+      (is (vector? result))
+      (is (= [1 2 3 4] (sort result)))))
+
+  (testing "richer data"
+    (is (= {:a-field [2]} (round-trip (ARecord. [2]))))
+    (is (= {:an_attr [3]} (round-trip (AType. #{3}))))))
 
 (deftest get-in-test
   (let [r (m/connect "https://some-app.firebaseio.com/")]
