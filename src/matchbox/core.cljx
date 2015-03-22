@@ -164,10 +164,11 @@
     (.setValue ref (serialize val) (wrap-cb cb)))
   #+cljs (.set ref (serialize val) (or cb undefined)))
 
-;; FIXME: support for JVM
-#+cljs
 (defn reset-with-priority! [ref val priority & [cb]]
-  (.setWithPriority ref (serialize val) priority (or cb undefined)))
+  #+clj (if-not cb
+          (.setValue ref (serialize val) priority)
+          (.setValue ref (serialize val) priority (wrap-cb cb)))
+  #+cljs (.setWithPriority ref (serialize val) priority cb))
 
 (defn merge! [ref val & [cb]]
   #+clj
