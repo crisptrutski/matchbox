@@ -63,14 +63,13 @@
 
   (testing "keyword"
     ;; FIXME: inconsistent with CLJS
-    (is (= {:sym {"name" "a"}, :name "a"} (round-trip :a))))
+    (is (= {:sym {:name "a"}, :name "a"} (round-trip :a))))
 
   (testing "map"
     (is (= {:a 1, :b 2}
            (round-trip {"a" 1, :b 2})))
-    ;; FIXME: nested maps keys returned as strings
-    (is (= {:nested {"data" 4}}
-           (round-trip {"nested" {:data 4}}))))
+    (is (= {:nested {:data 4}}
+           (round-trip {"nested" {"data" 4}}))))
 
   (testing "list"
     (is (= [1 2 3 4]

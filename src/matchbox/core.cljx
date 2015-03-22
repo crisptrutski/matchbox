@@ -102,18 +102,14 @@
   (-> type name (str/replace #"^.+\-" "") keyword))
 
 #+clj
-(defn java-map? [x]
-  (instance? java.util.HashMap x))
-
-#+clj
-(defn java-list? [x]
-  (instance? java.util.ArrayList x))
+(defn- hydrate* [x]
+  (cond (instance? java.util.HashMap x)   (recur (into {} x))
+        (instance? java.util.ArrayList x) (recur (into [] x))
+        (map? x)                          (zipmap (map keyword (keys x)) (vals x))
+        :else                             x))
 
 (defn hydrate [v]
-  #+clj (cond (java-map? v)  (hydrate (into {} v))
-              (java-list? v) (hydrate (into [] v))
-              (map? v)       (walk/keywordize-keys v)
-              :else          v)
+  #+clj (walk/prewalk hydrate* v)
   #+cljs (js->clj v :keywordize-keys true))
 
 (defn serialize [v]
