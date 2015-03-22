@@ -101,9 +101,19 @@
 (defn- strip-prefix [type]
   (-> type name (str/replace #"^.+\-" "") keyword))
 
+#+clj
+(defn java-map? [x]
+  (instance? java.util.HashMap x))
+
+#+clj
+(defn java-list? [x]
+  (instance? java.util.ArrayList x))
 
 (defn hydrate [v]
-  #+clj (if (map? v) (walk/keywordize-keys v) v)
+  #+clj (cond (java-map? v)  (hydrate (into {} v))
+              (java-list? v) (hydrate (into [] v))
+              (map? v)       (walk/keywordize-keys v)
+              :else          v)
   #+cljs (js->clj v :keywordize-keys true))
 
 (defn serialize [v]
