@@ -300,8 +300,8 @@
 (defn conj-in! [ref korks val & [cb]]
   (conj! (get-in ref korks) val cb))
 
-(defn swap-in! [ref korks f & [cb]]
-  (swap! (get-in ref korks) f cb))
+(defn swap-in! [ref korks f & args]
+  (apply swap! (get-in ref korks) f args))
 
 (defn dissoc-in! [ref korks & [cb]]
   (dissoc! (get-in ref korks) cb))
