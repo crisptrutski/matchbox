@@ -278,7 +278,7 @@
 
 ;; nested variants
 
-(defn deref-in [ref korks & [cb]]
+(defn deref-in [ref korks cb]
   (deref (get-in ref korks) cb))
 
 (defn reset-in! [ref korks val & [cb]]
