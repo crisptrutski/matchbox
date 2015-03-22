@@ -108,12 +108,7 @@ Matchbox offers more than just bindings:
 
 ```
 
-## TODO: Clojure Examples
-
 ## ClojureScript Examples
-
-;; TODO Update all examples to use a common sandpit app, isolated to their own directories
-;; TODO Update reagent app to latest version of project
 
 All examples are available under the `examples` directory.  To run a Clojurescript example just run the respective `lein` command to build it:
 
