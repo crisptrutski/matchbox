@@ -15,7 +15,7 @@
     ref))
 
 (deftest serialize-hydrate-test
-  (is (= {:a 1, :b ["b" "a"]}
+  (is (= {:a 1, :b [:b :a]}
          (p/hydrate
           (p/serialize {"a" 1, "b" #{:a :b}})))))
 
