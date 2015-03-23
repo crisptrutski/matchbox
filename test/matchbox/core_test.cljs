@@ -105,7 +105,7 @@
     (p/reset-with-priority-in! ref "b" 2 0)
     (p/reset-in! ref "c" 3)
     (p/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done)))
-    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1000)))
+    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1500)))
 
 (deftest disconnect!-reconnect!-test
   ;; default is connected
