@@ -123,10 +123,10 @@
 (deftest ^:async auth-anon-test
   (let [ref (random-ref)]
     (is (nil? (p/auth-info ref)))
-    ;; not a happy test right now, haven't figured why tests don't connect
     (p/auth-anon ref (fn [error auth-data]
-                       (is (nil? auth-data))
-                       (is (and error
-                                (= (.-message error)
-                                   "Unable to contact the Firebase server.")))
+                       (is (= "anonymous" (:provider auth-data)))
+                       (is (not error))
+                       (is (= (p/auth-info ref) auth-data))
+                       (p/unauth ref)
+                       (is (nil? (p/auth-info ref)))
                        (done)))))
