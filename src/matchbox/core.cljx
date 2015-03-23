@@ -14,7 +14,7 @@
   (:require [clojure.string :as str]
             [matchbox.utils :as utils]
             [matchbox.registry :refer [register-listener]]
-            #+clj [clojure.walk :as walk]
+            [clojure.walk :as walk]
             #+cljs cljsjs.firebase))
 
 ;; TODO: JVM register + unsubscribe listeners
@@ -187,7 +187,7 @@
   #+clj (if-not cb
           (.setValue ref (serialize val) priority)
           (.setValue ref (serialize val) priority (wrap-cb cb)))
-  #+cljs (.setWithPriority ref (serialize val) priority cb))
+  #+cljs (.setWithPriority ref (serialize val) priority (or cb undefined)))
 
 (defn merge! [ref val & [cb]]
   #+clj
@@ -303,7 +303,6 @@
 (defn reset-in! [ref korks val & [cb]]
   (reset! (get-in ref korks) val cb))
 
-#+cljs
 (defn reset-with-priority-in! [ref korks val priority & [cb]]
   (reset-with-priority! (get-in ref korks) val priority cb))
 
