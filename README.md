@@ -160,7 +160,7 @@ You should now be able to go to the example's directory and open the
   `#{}` | JSON with numeric keys | No, comes back as a vector
   `"string"` | string | Yes
   `:a/keyword` | ":a/keyword" | Yes
-  Number | Number | Yes
+  Number | Number | Pretty much, with nits for `java.math.*` types
   Record | JSON | No, reads vanilla map
   (def)Type | JSON | No, reads vanilla map
   Other | Depends on platform | Expect useless strings (JS) or serious downcasting (JVM)
