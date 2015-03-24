@@ -152,17 +152,17 @@ You should now be able to go to the example's directory and open the
 
 3. Serialization
 
-  Data | Storage | Stable? 
+  Data | Storage | Reads back as it writes?
   --- | --- | ---
   `{}`, nameable keys | JSON  | Not unless all keys are keywords (rest are coerced)
   `{}`, richer keys | Not supported | N/A
   `[]` | JSON with numeric keys | Yes
-  `#{}` | JSON with numeric keys | No, comes back as a vector
+  `#{}` | JSON with numeric keys | No, reads back as a vector
   `"string"` | string | Yes
   `:a/keyword` | ":a/keyword" | Yes
   Number | Number | Pretty much, with nits for `java.math.*` types
-  Record | JSON | No, reads vanilla map
-  (def)Type | JSON | No, reads vanilla map
+  Record | JSON | No, reads back as vanilla map
+  (def)Type | JSON | No, reads back as vanilla map
   Other | Depends on platform | Expect useless strings (JS) or serious downcasting (JVM)
 
    Since Firebase is a JSON-like store, we automatically convert keys in nested
