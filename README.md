@@ -140,7 +140,7 @@ You should now be able to go to the example's directory and open the
 
    Note that `:callback` MUST appear as the second-last argument.
 
-2. Java callbacks
+2. JVM callbacks on side thread
 
    Depending on your [environment and
    config](https://www.firebase.com/docs/java-api/javadoc/com/firebase/client/Config.html#setEventTarget(com.firebase.client.EventTarget)),
@@ -155,40 +155,42 @@ You should now be able to go to the example's directory and open the
   Data | Storage | Stable? 
   --- | --- | ---
   `{}`, nameable keys | JSON  | Not unless all keys are keywords (rest are coerced)
-  `{}`, richer keys | EXPLOSION | N/A
+  `{}`, richer keys | Not supported | N/A
   `[]` | JSON with numeric keys | Yes
-  `#{}` | JSON with numberic keys | No, comes back as a vector
+  `#{}` | JSON with numeric keys | No, comes back as a vector
   `"string"` | string | Yes
   `:a/keyword` | ":a/keyword" | Yes
   Number | Number | Yes
   Record | JSON | No, reads vanilla map
   (def)Type | JSON | No, reads vanilla map
+  Other | Depends on platform | Expect useless strings (JS) or serious downcasting (JVM)
 
    Since Firebase is a JSON-like store, we automatically convert keys in nested
    maps to strings. No metadata about initial type is stored, and keys are
    always read as keywords.
 
    Maps are not restricted to just keywords and strings though, but the case of
-   rich keyws has not been handled. On the JVM passing using such values will
-   result in a `ClassCastExceoption`, and in JS you can always cast, so you'll
+   rich keys has not been handled. On the JVM passing using such values will
+   result in a `ClassCastException`, and in JS you can always cast, so you'll
    pull back a keyword, like `:32` or perhaps `:[object Object]`.
 
    Coming to values, you're at the mercy of the platform and little work has
-   been done to manage the semantics. Luckily they work pretty well, but less
-   fortunately they are inconsistent between the two platforms.
+   been done to manage the semantics. For basic data types they are at least
+   consistent between platforms, and mostly lossless or "almost-lossless".
 
    We leverage `java.util.Collection` and `cljs->js` respectively between the
    JVM and JS. That means that almost everything becomes an array, and most
    primitives stay the same. The most notable difference is that `cljs->js`
    turns keywords into strings, but we're making no such cast on the JVM.
 
-   Strings and boolean are stable, and stored using the corresponding
-   primitives. Keywords are also stable, but are stored as colon-prefixed
-   strings, which are "auto-magically" rehydrated.
+   Strings, booleans and keywords are stable, and stored either as the 
+   associated JSON type, or as an EDN string in the case of keywords. We 
+   may support symbols, dates etc also as EDN in future.
 
-   Numbers are stable in JS. On the JVM Numbers are stable for the core cases of
-   Long and Double, although  more exotic types like `java.math.BigDec` will be
-   cast down.
+   Numbers are mostly stable. For JS, floats-only is a gotcha but par for the course. 
+   On the JVM Numbers are stable for the core cases of Long and Double, although  more 
+   exotic types like `java.math.BigDec` will be cast down. One strange behaviour is that while
+   `4.0` will read back as a Double, `4M` will read back as a Long.
 
    Records are saved as regular maps. Types defined with `deftype` also cast
    down to maps, but their attributes for some reason are `under_scored` rather
