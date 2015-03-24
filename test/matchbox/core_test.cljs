@@ -15,7 +15,7 @@
     ref))
 
 (deftest serialize-hydrate-test
-  (is (= {:a 1, :b ["b" "a"]}
+  (is (= {:a 1, :b [:b :a]}
          (p/hydrate
           (p/serialize {"a" 1, "b" #{:a :b}})))))
 
@@ -105,7 +105,7 @@
     (p/reset-with-priority-in! ref "b" 2 0)
     (p/reset-in! ref "c" 3)
     (p/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done)))
-    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1000)))
+    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1500)))
 
 (deftest disconnect!-reconnect!-test
   ;; default is connected
@@ -123,10 +123,10 @@
 (deftest ^:async auth-anon-test
   (let [ref (random-ref)]
     (is (nil? (p/auth-info ref)))
-    ;; not a happy test right now, haven't figured why tests don't connect
     (p/auth-anon ref (fn [error auth-data]
-                       (is (nil? auth-data))
-                       (is (and error
-                                (= (.-message error)
-                                   "Unable to contact the Firebase server.")))
+                       (is (= "anonymous" (:provider auth-data)))
+                       (is (not error))
+                       (is (= (p/auth-info ref) auth-data))
+                       (p/unauth ref)
+                       (is (nil? (p/auth-info ref)))
                        (done)))))

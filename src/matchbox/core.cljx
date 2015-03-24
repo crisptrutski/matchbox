@@ -14,7 +14,7 @@
   (:require [clojure.string :as str]
             [matchbox.utils :as utils]
             [matchbox.registry :refer [register-listener]]
-            #+clj [clojure.walk :as walk]
+            [clojure.walk :as walk]
             #+cljs cljsjs.firebase))
 
 ;; TODO: JVM register + unsubscribe listeners
@@ -101,20 +101,33 @@
 (defn- strip-prefix [type]
   (-> type name (str/replace #"^.+\-" "") keyword))
 
+(defn- keywords->strings [x]
+  (if (keyword? x) (str x) x))
+
+(defn- hydrate-keywords [x]
+  (if (and (string? x) (= \: (first x)))
+    (keyword (apply str (rest x)))
+    x))
+
 #+clj
 (defn- hydrate* [x]
   (cond (instance? java.util.HashMap x)   (recur (into {} x))
         (instance? java.util.ArrayList x) (recur (into [] x))
         (map? x)                          (zipmap (map keyword (keys x)) (vals x))
-        :else                             x))
+        :else                             (hydrate-keywords x)))
 
 (defn hydrate [v]
   #+clj (walk/prewalk hydrate* v)
-  #+cljs (js->clj v :keywordize-keys true))
+  #+cljs (walk/postwalk
+          hydrate-keywords
+          (js->clj v :keywordize-keys true)))
 
 (defn serialize [v]
-  #+clj (if (map? v) (walk/stringify-keys v) v)
-  #+cljs (clj->js v))
+  ;; FIXME: refactor to require single pass instead of 2/3
+  (->> v
+       (walk/stringify-keys)
+       (walk/postwalk keywords->strings)
+       #+cljs (clj->js)))
 
 (defn key
   "Last segment in reference or snapshot path"
@@ -174,7 +187,7 @@
   #+clj (if-not cb
           (.setValue ref (serialize val) priority)
           (.setValue ref (serialize val) priority (wrap-cb cb)))
-  #+cljs (.setWithPriority ref (serialize val) priority cb))
+  #+cljs (.setWithPriority ref (serialize val) priority (or cb undefined)))
 
 (defn merge! [ref val & [cb]]
   #+clj
@@ -290,7 +303,6 @@
 (defn reset-in! [ref korks val & [cb]]
   (reset! (get-in ref korks) val cb))
 
-#+cljs
 (defn reset-with-priority-in! [ref korks val priority & [cb]]
   (reset-with-priority! (get-in ref korks) val priority cb))
 
