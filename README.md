@@ -1,6 +1,4 @@
-# Matchbox
-
-Firebase bindings for Clojure(Script)
+![Matchbox - Firebase bindings for Clojure(script)](https://cloud.githubusercontent.com/assets/881351/6807041/c6d72cbe-d254-11e4-896f-b75d2153d197.png)
 
 [![Build Status](https://travis-ci.org/crisptrutski/matchbox.svg?branch=master)](https://travis-ci.org/crisptrutski/matchbox)
 [![Dependency Status](https://www.versioneye.com/clojure/matchbox:matchbox/badge.svg)](https://www.versioneye.com/clojure/matchbox:matchbox)
@@ -9,20 +7,17 @@ Firebase bindings for Clojure(Script)
 
 [![Clojars Project](http://clojars.org/matchbox/latest-version.svg)](http://clojars.org/matchbox)
 
-
 # Features
 
 Matchbox offers more than just bindings:
 
  * Clojure data in/out
- * Cursor/Atom-like abstraction over Firebase references
+ * Cursor-like abstraction over Firebase references
  * Nested versions of all operations
  * Optional core.async based API
  * Multiplexed event channels and/or callbacks
 
-
 # Example usage
-
 
 ```clojure
 ;; Load and alias
@@ -156,6 +151,18 @@ You should now be able to go to the example's directory and open the
    helper to ensure output is visible.
 
 3. Serialization
+
+  Data | Storage | Stable? 
+  --- | --- | ---
+  `{}`, nameable keys | JSON  | Not unless all keys are keywords (rest are coerced)
+  `{}`, richer keys | EXPLOSION | N/A
+  `[]` | JSON with numeric keys | Yes
+  `#{}` | JSON with numberic keys | No, comes back as a vector
+  `"string"` | string | Yes
+  `:a/keyword` | ":a/keyword" | Yes
+  Number | Number | Yes
+  Record | JSON | No, reads vanilla map
+  (def)Type | JSON | No, reads vanilla map
 
    Since Firebase is a JSON-like store, we automatically convert keys in nested
    maps to strings. No metadata about initial type is stored, and keys are
