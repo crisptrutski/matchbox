@@ -148,17 +148,19 @@
 
 ;; API
 
-(defn connect
-  "Create a reference for firebase"
-  [url]
-  #+clj (Firebase. url)
-  #+cljs (js/Firebase. url))
-
 (defn get-in
   "Obtain child reference from base by following korks"
   [ref korks]
   (let [path (utils/korks->path korks)]
     (if-not (seq path) ref (.child ref path))))
+
+(defn connect
+  "Create a reference for firebase"
+  ([url]
+   #+clj (Firebase. url)
+   #+cljs (js/Firebase. url))
+  ([url korks]
+   (get-in (connect url) korks)))
 
 (defn parent
   "Immediate ancestor of reference, if any"
@@ -241,7 +243,7 @@
   #+cljs (.goOnline js/Firebase)
   (clojure.core/reset! connected true))
 
-(defn check-connected?
+(defn connected?
   "Returns boolean around whether client is set to synchronise with server.
    Says nothing about actual connectivity."
   []
@@ -326,29 +328,30 @@
 ;; ------------------
 ;; subscriptions
 
-(defn- -listen-to [ref type cb]
-  (assert (some #{type} all-events) (str "Unknown type: " type))
+(defn --listen-to [ref type cb]
   #+clj
-  (if-not (some #{type} child-events)
-    (.addValueEventListener ref (reify-value-listener cb))
-    (.addChildEventListener ref (reify-child-listener
-                                  (hash-map (strip-prefix type) cb))))
+  (let [listener (if-not (some #{type} child-events)
+                   ;; subscribe
+                   (.addValueEventListener ref (reify-value-listener cb))
+                   (.addChildEventListener ref (reify-child-listener
+                                                (hash-map (strip-prefix type) cb))))]
+    ;; build unsubsubscribe fn
+    (fn [] (.removeEventListener ref listener)))
   #+cljs
   (let [type (utils/kebab->underscore type)]
-    (let [cb' (comp cb wrap-snapshot)
-          unsub! #(.off ref type cb')]
-      (.on ref type cb')
-      (register-listener ref type unsub!)
-      unsub!)))
+    (let [listener (comp cb wrap-snapshot)]
+      ;; subscribe
+      (.on ref type listener)
+      ;; build unsubsubscribe fn
+      (fn [] (.off ref type listener)))))
+
+(defn- -listen-to [ref type cb]
+  (assert (some #{type} all-events) (str "Unknown type: " type))
+  (let [unsub! (--listen-to ref type cb)]
+    (register-listener ref type unsub!)
+    unsub!))
 
 (defn- -listen-children [ref cb]
-  #+clj
-  (let [bases (map strip-prefix child-events)
-        cbs (zipmap bases (->> child-events
-                            (map (fn [type] #(vector type %)))
-                            (map #(comp cb %))))]
-    (.addChildEventListener ref (reify-child-listener cbs)))
-  #+cljs
   (let [cbs (->> child-events
                  (map (fn [type] #(vector type %)))
                  (map #(comp cb %)))
