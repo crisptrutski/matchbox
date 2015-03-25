@@ -19,6 +19,32 @@ Matchbox offers more than just bindings:
 
 # Usage
 
+Quick spin to get some basic flavour:
+
+```clojure
+(require '[matchbox.core :as m])
+
+(def root (m/connect "https://<app>.firebaseio.com"))
+
+(m/auth-anon root)
+
+(m/listen-children
+  root [:users :mike :friends]
+  (fn [event-type data] (prn data)))
+
+(def mikes-friends (m/get-in root [:users :mike :friends]))
+(m/reset! mikes-friends [{:name "Kid A"} {:name "Kid B"}])
+(m/conj! mikes-friends {:name "Jean"})
+
+(m/deref
+  mikes-friends
+  (fn [key value]
+    (m/reset-in! root [:users :mike :num-friends]
+                 (count value))))]
+
+(m/unauth)
+```
+
 Take a look at the [quick intro](docs/quick_intro.cljx) to for a lightning tour.
 
 ## ClojureScript demos
