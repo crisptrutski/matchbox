@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
   #+clj
   (:import [com.firebase.client
+            AuthData
             ServerValue
             Firebase
             FirebaseError
@@ -17,9 +18,7 @@
             [clojure.walk :as walk]
             #+cljs cljsjs.firebase))
 
-;; TODO: JVM register + unsubscribe listeners
 ;; TODO: JVM connect/discconet/on-disconnect
-;; TODO: JVM auth
 
 ;; constants
 
@@ -268,39 +267,64 @@
            #js {:remember "sessionOnly"}
            undefined))
 
+(defn- ensure-kw-map
+  "Coerce java.util.HashMap and friends to keywordized maps"
+  [data]
+  (walk/keywordize-keys (into {} data)))
+
+(defn- auth-data->map [auth-data]
+  #+cljs (hydrate auth-data)
+  #+clj  (if auth-data
+           {:uid           (.getUid auth-data)
+            :provider      (keyword (.getProvider auth-data))
+            :token         (.getToken auth-data)
+            :expires       (.getExpires auth-data)
+            :auth          (ensure-kw-map (.getAuth auth-data))
+            :provider-data (ensure-kw-map (.getProviderData auth-data))}))
+
 (defn- wrap-auth-cb [cb]
-  #+cljs (if cb
-           (fn [err info]
-             (cb err (hydrate info)))
-           undefined))
+  #+cljs
+  (if cb
+    (fn [err info]
+      (cb err (hydrate info)))
+    undefined)
+  #+clj
+  (reify com.firebase.client.Firebase$AuthResultHandler
+    (^void onAuthenticated [_ ^AuthData auth-data]
+      (if cb (cb nil (auth-data->map auth-data))))
+    (^void onAuthenticationError [_ ^FirebaseError err]
+      (if cb (cb err nil)))))
 
 (defn auth [ref email password & [cb session-only?]]
-  #+cljs (.authWithPassword
-          ref
-          #js {:email email, :password password}
-          (wrap-auth-cb cb)
-          (build-opts session-only?)))
+  (.authWithPassword ref
+                     #+cljs #js {:email email, :password password}
+                     #+clj email #+clj password
+                     (wrap-auth-cb cb)
+                     #+cljs (build-opts session-only?)))
 
 (defn auth-anon [ref & [cb session-only?]]
-  #+cljs (.authAnonymously
-          ref
-          (wrap-auth-cb cb)
-          (build-opts session-only?)))
+  (.authAnonymously ref
+                    (wrap-auth-cb cb)
+                    ;; Note: session-only? ignored on JVM
+                    #+cljs (build-opts session-only?)))
 
 (defn auth-info
   "Returns a map of uid, provider, token, expires - or nil if there is no session"
   [ref]
-  #+cljs (hydrate (.getAuth ref)))
+  (auth-data->map (.getAuth ref)))
 
 ;; onAuth and offAuth are not wrapped yet
 
 (defn unauth [ref]
-  #+cljs (.unauth ref))
+  (.unauth ref))
 
 ;; nested variants
 
 (defn deref-in [ref korks cb]
   (deref (get-in ref korks) cb))
+
+(defn deref-list-in [ref korks cb]
+  (deref-list (get-in ref korks) cb))
 
 (defn reset-in! [ref korks val & [cb]]
   (reset! (get-in ref korks) val cb))
