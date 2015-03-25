@@ -3,7 +3,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :url "http://github.com/crisptrutski/matchbox"
-  :author "verma"
+  :authors ["verma", "crisptrutski"]
   :min-lein-version "2.5.0"
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
                  [org.clojure/clojurescript "0.0-3126" :scope "provided"]
