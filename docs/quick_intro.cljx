@@ -4,8 +4,9 @@
             [matchbox.registry :as mr]
             ;; these are optional, can use matchbox without core.asyn in project
             [matchbox.async :as ma]
-            #+clj [clojure.core.async :as async]
-            #+cljs [cljs.core.async :as async]))
+            [#+clj clojure.core.async
+             #+cljs cljs.core.async
+             :as async]))
 
 
 ;; Create thread-safe pretty printer, with clear separation
@@ -23,6 +24,15 @@
         (clojure.pprint/pprint msg)))
     (println " ")
     (recur)))
+
+
+;; JVM only - you can adjust log level, but only before first API call
+;; Let's set it to the most verbose settings
+#+clj (try (m/set-logger-level! :debug)
+           (catch Throwable e "Too late to set log level"))
+
+;; Supported logger levels
+#+clj (prn (keys m/logger-levels))
 
 
 ;; Get a reference the root (update the URI with your app's name)
@@ -70,7 +80,9 @@
 (def child (m/get-in r :less))
 (defn rev-str [x] (apply str (reverse x)))
 
+
 ;; Now lets see all the basic mutating verbs:
+
 (m/reset! r {:something "else"}) ;; => Note that :deep was lost
 (m/merge! r {:less "extreme"})   ;; => This time :something is retained
 (m/conj! r "another value")      ;; => A "strange" key was generated
@@ -93,22 +105,90 @@
 ;; See (clojure.repl/doc mr/disable-listeners!)
 
 
+;; Now lets look at working with ordered data and priorites
 
-;; That's all for now, but here's a quick summary of what we haven't covered:
-;;
-;; TODO: lets update this ns to give light coverage to these cases
-;;
-;; `listen-to` can also refer directly to children, but no -in suffix required
-;; `listen-to` can also handle children-events, which are like typed diffs
-;; `listen-children` returns a listener multiplexing over all children-events
-;;
-;; `set-priority!` and `reset-with-priority!` tap into Firebase's metadata
-;;    for explicit ordering of keys within a map
-;;
-;; `auth` provides credential based authentication
-;; `auth-anon` provides anonymous authentication
-;; `auth-info` returns a map with current identity
-;;
+(def c (m/get-in r [:todos]))
+(m/remove! c)
+(m/reset-with-priority-in! c :c "Release next version" 4)
+(m/reset-with-priority-in! c :b "Clean up docs" 2)
+(m/reset-with-priority-in! c :a "Finish this intro" 3)
+(m/reset-with-priority-in! c :d "Go to sleep" 1)
+
+;; lets try read that..
+(m/deref c safe-prn)
+
+;; oh darn, map lost the order.. let's try another getter
+(println "Original order\n\n")
+(m/deref-list c safe-prn)
+
+(m/set-priority-in! c :a -500)
+
+(println "Reordered\n\n")
+(m/deref-list c safe-prn)
+
+
+;; Let's quickly look at some other ways we can order things:
+
+(m/deref-list (m/order-by-priority c) safe-prn)
+(m/deref-list (m/order-by-value c) safe-prn)
+(m/deref-list (m/order-by-key c) safe-prn)
+
+;; And one more example, that requires map data for children
+
+(def c (m/get-in r [:potential-dates]))
+(m/remove! c)
+(m/conj! c {:name "James", :age 32})
+(m/conj! c {:name "Jamie", :age 12})
+(m/conj! c {:name "Jebediah", :age 3212})
+
+(m/deref-list (m/order-by-child c :age) safe-prn)
+(m/deref-list (m/order-by-child c :name) safe-prn)
+
+
+;; Let's go back to the observer, `listen-to`
+
+;; It can also refer directly to deep children, but no "-in" suffix is used:
+(m/listen-to r [:a :b :c :d :e] :value safe-prn)
+(m/reset-in! r [:a :b :c :d :e] "boo")
+(mr/disable-listeners!)
+
+;; It can also listen to more granular children events, for example:
+(m/listen-to r :abcde :child-added safe-prn)
+(doseq [i [1 3 3 7]]
+  (m/conj-in! r :abcdee i))
+(mr/disable-listeners!)
+
+;; The listen of child events handled:
+(prn m/child-events)
+
+;; You can also listen to all child-events with a single callback,
+;; receiving [type value] pairs instead of just values.
+(def c (m/get-in r :edcba))
+(m/listen-children c safe-prn)
+(m/conj! c 42)
+(m/merge! c {:d 45})
+(m/set-priority-in! c :d -10)
+(m/dissoc-in! c :d)
+(mr/disable-listeners!)
+
+
+;; Let's look at sessions now
+
+;; We'll create an anonymous session.
+;; You could also log in with `(m/auth r <email> <password)`,
+;; and in future we'll support the other options too.
+(m/auth-anon r (fn [err auth-data]
+                 (safe-prn auth-data
+                           ;; Once authenticated, this info is also availabel
+                           ;; via any ref on the app
+                           (m/auth-info r))))
+
+(m/auth r "jeffpalentine@gmail.com" "KwfDwHPr*xvrmr4AhK+JTD8smFphhsE8zbUCND" safe-prn)
+
+;; Let's close the session, not going into security here
+(m/unauth r)
+
+
 ;; `disconnect!` and `reconnect!` allow control of whether data should sync
 ;; `connected?` returns whether data should sync (but does not test connection)
 ;; `on-disconnect` adds callbacks for when connection drops
@@ -148,7 +228,6 @@
   (loop []
     (let [[key msg] (async/<! baby-chan)]
       (safe-prn '[listen-to<] (:message msg))
-      (safe-prn (and msg (not= "oh" (:message msg))))
       (if (and msg (not= "oh" (:message msg)))
         (recur))))
 
