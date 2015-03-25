@@ -2,6 +2,8 @@
   ;; Load and alias
   (:require [matchbox.core :as m]
             [matchbox.registry :as mr]
+            ;; who can live without this guy
+            [clojure.string :as str]
             ;; these are optional, can use matchbox without core.asyn in project
             [matchbox.async :as ma]
             [#+clj clojure.core.async
@@ -59,6 +61,13 @@
 (def child (m/get-in r [:deep :route]))
 (m/deref child safe-prn)
 ;; => ["route" "better-secret"]
+
+;; We can also get back to parents (unlike a cursor)
+(= r (-> child m/parent m/parent))
+
+;; And get the whole ancestor chain in one go
+(for [ref (m/parents child)]
+  (str/replace (str ref) #"^.*?firebaseio\.com" ""))
 
 ;; Where it makes sense, you can add `-in` to the operation name to
 ;; operate on children directly through their parent reference.
