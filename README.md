@@ -27,7 +27,7 @@ There are some demos in the  `examples` directory.
 
 Those in the `cljs` folder can be compiled from the main project via `lein cljsbuild once <example-name>`, and then run by opening the 'index.html' found in the example directory in a browser.
 
-There is also a stand-alone demo project, `reagent-example`. This example can be launched by executing `lein run` from its directory, but is slightly out of date and may have  issues.
+There is also a stand-alone demo project, `reagent-example`. This example can be launched by executing `lein run`, and opening "http://localhost:3000" in a browser.
 
 ## Gotchas
 
