@@ -11,11 +11,11 @@
 
 Matchbox offers more than just bindings:
 
+ * Atom/Zipper/Cursor-ish abstraction over Firebase references
  * Clojure data in/out
- * Cursor-like abstraction over Firebase references
- * Nested versions of all operations
+ * Uniform API for JVM and JS platforms
  * Optional core.async based API
- * Multiplexed event channels and/or callbacks
+ * Multiplexed children event channels and/or callbacks
 
 # Usage
 
@@ -23,31 +23,26 @@ Take a look at the [quick intro](docs/quick_intro.cljx) to for a lightning tour.
 
 ## ClojureScript demos
 
-All examples are available under the `examples` directory.  To run a Clojurescript example just run the respective `lein` command to build it:
+There are some demos in the  `examples` directory.  
 
-```clojure
-lein cljsbuild once <example-name>
-```
+Those in the `cljs` folder can be compiled from the main project via `lein cljsbuild once <example-name>`, and then run by opening the 'index.html' found in the example directory in a browser.
 
-
-This should build and place a `main.js` file along with an `out` directory in the example's directory.
-
-You should now be able to go to the example's directory and open the
-`index.html` file in a web-browser.
+There is also a stand-alone demo project, `reagent-example`. This example can be launched by executing `lein run` from its directory, but is slightly out of date and may have  issues.
 
 ## Gotchas
 
 1. Swap! takes callback in non-standard way
 
-   Since it's common to pass additional arguments to an update function,
-   a pragmatic choice was made. We try so support both, by aluding to the
-   common inline-keywords style supported by `& {...}`  destructuring:
+   Since we support passing additional arguments to an update function,
+   we can't use an optional argument for the callback.
+   
+   Our solution draws inspiration from "kwargs" style signatures:
 
    ```clojure
    (eg. `(my-function :has "keyword" :style "arguments")`).
    ```
 
-   In our case, we allow `:callback callback-fn` at the end of the args, eg:
+   Coming back to `swap!`, we support `:callback callback-fn` at end of arg list:
 
    ```clojure
    (m/swap! r f)                  ;; call (f <val>),     no callback
@@ -64,9 +59,9 @@ You should now be able to go to the example's directory and open the
    config](https://www.firebase.com/docs/java-api/javadoc/com/firebase/client/Config.html#setEventTarget(com.firebase.client.EventTarget)),
    callbacks may be triggered on another thread.
 
-   This can be confusing if debugging with `prn` in callbacks, as
-   `*out*` will not be to the REPL's writer. We define `matchbox.utils/prn` as a simple
-   helper to ensure output is visible.
+   This can be confusing when debugging with `prn` in callbacks, as
+   `*out*` will not be to the REPL's writer. We provide `matchbox.utils/prn` as a simple
+   helper to ensure output is visible. 
 
 3. Serialization
 
