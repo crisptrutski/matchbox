@@ -8,24 +8,23 @@
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.facebook/react "0.12.2.4"]
-                 [reagent "0.4.3"]
-                 [reagent-forms "0.4.3"]
-                 [reagent-utils "0.1.2"]
-                 [secretary "1.2.1"]
-                 [org.clojure/clojurescript "0.0-2816" :scope "provided"]
+                 [reagent "0.5.0"]
+                 [reagent-forms "0.4.6"]
+                 [reagent-utils "0.1.4"]
+                 [secretary "1.2.2"]
+                 [org.clojure/clojurescript "0.0-3149" :scope "provided"]
                  [com.cemerick/piggieback "0.1.5"]
-                 [weasel "0.5.0"]
+                 [weasel "0.6.0"]
                  [ring "1.3.2"]
-                 [ring/ring-defaults "0.1.3"]
-                 [prone "0.8.0"]
-                 [compojure "1.3.1"]
-                 [selmer "0.8.0"]
+                 [ring/ring-defaults "0.1.4"]
+                 [prone "0.8.1"]
+                 [compojure "1.3.2"]
+                 [selmer "0.8.2"]
                  [environ "1.0.0"]
-                 [leiningen "2.5.1"]
-                 [figwheel "0.1.6-SNAPSHOT"]
+                 [leiningen "2.5.1" :exclusions [org.apache.httpcomponents/httpcore]]
+                 [figwheel "0.2.5"]
 
-                 [matchbox "0.0.4-SNAPSHOT"]
-                 [cljsjs/firebase "2.1.2-1"]]
+                 [matchbox "0.0.5-SNAPSHOT"]]
 
   :plugins [
             [lein-cljsbuild "1.0.4"]
@@ -60,9 +59,9 @@
 
                    :dependencies [[ring-mock "0.1.5"]
                                   [ring/ring-devel "1.3.2"]
-                                  [pjstadig/humane-test-output "0.6.0"]]
+                                  [pjstadig/humane-test-output "0.7.0"]]
 
-                   :plugins [[lein-figwheel "0.2.0-SNAPSHOT"]]
+                   :plugins [[lein-figwheel "0.2.5"]]
 
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]

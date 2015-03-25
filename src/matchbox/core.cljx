@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
   #+clj
   (:import [com.firebase.client
+            AuthData
             ServerValue
             Firebase
             FirebaseError
@@ -17,9 +18,7 @@
             [clojure.walk :as walk]
             #+cljs cljsjs.firebase))
 
-;; TODO: JVM register + unsubscribe listeners
 ;; TODO: JVM connect/discconet/on-disconnect
-;; TODO: JVM auth
 
 ;; constants
 
@@ -59,18 +58,23 @@
 (declare reset!)
 
 #+clj
-(defn- wrap-cb [cb]
-  (reify com.firebase.client.Firebase$CompletionListener
-    (^void onComplete [this ^FirebaseError err ^Firebase ref]
-      (if err (throw err) (cb ref)))))
+(defn throw-fb-error [err & [msg]]
+  (throw (ex-info (or msg "FirebaseError") {:err err})))
 
 #+clj
-(defn- reify-value-listener [cb]
-  (reify ValueEventListener
-    (^void onDataChange [_ ^DataSnapshot ds]
-      (cb (wrap-snapshot ds)))
-    (^void onCancelled [_ ^FirebaseError err]
-      (throw err))))
+(defn- wrap-cb [cb]
+  (reify com.firebase.client.Firebase$CompletionListener
+    (^void onComplete [_ ^FirebaseError err ^Firebase ref]
+      (if err (throw-fb-error err "Cancelled") (cb ref)))))
+
+#+clj
+(defn- reify-value-listener [cb & [ds-wrapper]]
+  (let [ds-wrapper (or ds-wrapper wrap-snapshot)]
+    (reify ValueEventListener
+      (^void onDataChange [_ ^DataSnapshot ds]
+        (cb (ds-wrapper ds)))
+      (^void onCancelled [_ ^FirebaseError err]
+        (if err (throw-fb-error err "Cancelled") (cb ref))))))
 
 #+clj
 (defn- build-tx-handler [f args cb]
@@ -95,7 +99,7 @@
     (^void onChildRemoved [_ ^DataSnapshot d]
       (if removed (removed (wrap-snapshot d))))
     (^void onCancelled [_ ^FirebaseError err]
-      (throw err))))
+      (throw-fb-error err "Cancelled"))))
 
 #+clj
 (defn- strip-prefix [type]
@@ -148,17 +152,19 @@
 
 ;; API
 
-(defn connect
-  "Create a reference for firebase"
-  [url]
-  #+clj (Firebase. url)
-  #+cljs (js/Firebase. url))
-
 (defn get-in
   "Obtain child reference from base by following korks"
   [ref korks]
   (let [path (utils/korks->path korks)]
     (if-not (seq path) ref (.child ref path))))
+
+(defn connect
+  "Create a reference for firebase"
+  ([url]
+   #+clj (Firebase. url)
+   #+cljs (js/Firebase. url))
+  ([url korks]
+   (get-in (connect url) korks)))
 
 (defn parent
   "Immediate ancestor of reference, if any"
@@ -175,6 +181,11 @@
 (defn deref [ref cb]
   #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb))
   #+cljs (.once ref "value" (comp cb value)))
+
+(defn deref-list [ref cb]
+  #+clj (let [get-children (fn [ds] (mapv value (.getChildren ds)))]
+          (.addListenerForSingleValueEvent ref (reify-value-listener cb get-children)))
+  #+cljs (.once ref "value" (comp cb #(.getChildren %))))
 
 (defn reset! [ref val & [cb]]
   #+clj
@@ -231,6 +242,20 @@
 
 ;;
 
+(defn order-by-priority [ref]
+  (.orderByPriority ref))
+
+(defn order-by-key [ref]
+  (.orderByKey ref))
+
+(defn order-by-value [ref]
+  (.orderByValue ref))
+
+(defn order-by-child [ref key]
+  (.orderByChild ref (name key)))
+
+;;
+
 (defonce connected (atom true))
 
 (defn disconnect! []
@@ -241,7 +266,7 @@
   #+cljs (.goOnline js/Firebase)
   (clojure.core/reset! connected true))
 
-(defn check-connected?
+(defn connected?
   "Returns boolean around whether client is set to synchronise with server.
    Says nothing about actual connectivity."
   []
@@ -266,39 +291,64 @@
            #js {:remember "sessionOnly"}
            undefined))
 
+(defn- ensure-kw-map
+  "Coerce java.util.HashMap and friends to keywordized maps"
+  [data]
+  (walk/keywordize-keys (into {} data)))
+
+(defn- auth-data->map [auth-data]
+  #+cljs (hydrate auth-data)
+  #+clj  (if auth-data
+           {:uid           (.getUid auth-data)
+            :provider      (keyword (.getProvider auth-data))
+            :token         (.getToken auth-data)
+            :expires       (.getExpires auth-data)
+            :auth          (ensure-kw-map (.getAuth auth-data))
+            :provider-data (ensure-kw-map (.getProviderData auth-data))}))
+
 (defn- wrap-auth-cb [cb]
-  #+cljs (if cb
-           (fn [err info]
-             (cb err (hydrate info)))
-           undefined))
+  #+cljs
+  (if cb
+    (fn [err info]
+      (cb err (hydrate info)))
+    undefined)
+  #+clj
+  (reify com.firebase.client.Firebase$AuthResultHandler
+    (^void onAuthenticated [_ ^AuthData auth-data]
+      (if cb (cb nil (auth-data->map auth-data))))
+    (^void onAuthenticationError [_ ^FirebaseError err]
+      (if cb (cb err nil)))))
 
 (defn auth [ref email password & [cb session-only?]]
-  #+cljs (.authWithPassword
-          ref
-          #js {:email email, :password password}
-          (wrap-auth-cb cb)
-          (build-opts session-only?)))
+  (.authWithPassword ref
+                     #+cljs #js {:email email, :password password}
+                     #+clj email #+clj password
+                     (wrap-auth-cb cb)
+                     #+cljs (build-opts session-only?)))
 
 (defn auth-anon [ref & [cb session-only?]]
-  #+cljs (.authAnonymously
-          ref
-          (wrap-auth-cb cb)
-          (build-opts session-only?)))
+  (.authAnonymously ref
+                    (wrap-auth-cb cb)
+                    ;; Note: session-only? ignored on JVM
+                    #+cljs (build-opts session-only?)))
 
 (defn auth-info
   "Returns a map of uid, provider, token, expires - or nil if there is no session"
   [ref]
-  #+cljs (hydrate (.getAuth ref)))
+  (auth-data->map (.getAuth ref)))
 
 ;; onAuth and offAuth are not wrapped yet
 
 (defn unauth [ref]
-  #+cljs (.unauth ref))
+  (.unauth ref))
 
 ;; nested variants
 
 (defn deref-in [ref korks cb]
   (deref (get-in ref korks) cb))
+
+(defn deref-list-in [ref korks cb]
+  (deref-list (get-in ref korks) cb))
 
 (defn reset-in! [ref korks val & [cb]]
   (reset! (get-in ref korks) val cb))
@@ -326,32 +376,34 @@
 ;; ------------------
 ;; subscriptions
 
-(defn- -listen-to [ref type cb]
-  (assert (some #{type} all-events) (str "Unknown type: " type))
+(defn --listen-to [ref type cb]
   #+clj
-  (if-not (some #{type} child-events)
-    (.addValueEventListener ref (reify-value-listener cb))
-    (.addChildEventListener ref (reify-child-listener
-                                  (hash-map (strip-prefix type) cb))))
+  (let [listener (if-not (some #{type} child-events)
+                   ;; subscribe
+                   (.addValueEventListener ref (reify-value-listener cb))
+                   (.addChildEventListener ref (reify-child-listener
+                                                (hash-map (strip-prefix type) cb))))]
+    ;; build unsubsubscribe fn
+    (fn [] (.removeEventListener ref listener)))
   #+cljs
   (let [type (utils/kebab->underscore type)]
-    (let [cb' (comp cb wrap-snapshot)
-          unsub! #(.off ref type cb')]
-      (.on ref type cb')
-      (register-listener ref type unsub!)
-      unsub!)))
+    (let [listener (comp cb wrap-snapshot)]
+      ;; subscribe
+      (.on ref type listener)
+      ;; build unsubsubscribe fn
+      (fn [] (.off ref type listener)))))
+
+(defn- -listen-to [ref type cb]
+  (assert (some #{type} all-events) (str "Unknown type: " type))
+  (let [unsub! (--listen-to ref type cb)]
+    (register-listener ref type unsub!)
+    unsub!))
 
 (defn- -listen-children [ref cb]
-  #+clj
-  (let [bases (map strip-prefix child-events)
-        cbs (zipmap bases (->> child-events
-                            (map (fn [type] #(vector type %)))
-                            (map #(comp cb %))))]
-    (.addChildEventListener ref (reify-child-listener cbs)))
-  #+cljs
   (let [cbs (->> child-events
                  (map (fn [type] #(vector type %)))
                  (map #(comp cb %)))
+        ;; NOTE: JVM implementation could create a single listener
         unsubs (doall (map -listen-to (repeat ref) child-events cbs))]
     (fn []
       (doseq [unsub! unsubs]

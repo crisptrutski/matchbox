@@ -40,6 +40,9 @@
 (defn deref< [ref]
   (with-chan #(p/deref ref (chan->cb-once %))))
 
+(defn deref-list< [ref]
+  (with-chan #(p/deref-list ref (chan->cb-once %))))
+
 (defn reset!< [ref val]
   (with-chan #(p/reset! ref val (chan->cb-once %))))
 
@@ -67,6 +70,9 @@
 
 (defn deref-in< [ref korks]
   (deref< (p/get-in ref korks)))
+
+(defn deref-list-in< [ref korks]
+  (deref-list< (p/get-in ref korks)))
 
 (defn reset-in!< [ref korks val]
   (reset!< (p/get-in ref korks) val))

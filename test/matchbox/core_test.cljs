@@ -109,16 +109,16 @@
 
 (deftest disconnect!-reconnect!-test
   ;; default is connected
-  (is (p/check-connected?))
+  (is (p/connected?))
   ;; do things in twos to show idempotent
   (p/disconnect!)
-  (is (not (p/check-connected?)))
+  (is (not (p/connected?)))
   (p/disconnect!)
-  (is (not (p/check-connected?)))
+  (is (not (p/connected?)))
   (p/reconnect!)
-  (is (p/check-connected?))
+  (is (p/connected?))
   (p/reconnect!)
-  (is (p/check-connected?)))
+  (is (p/connected?)))
 
 (deftest ^:async auth-anon-test
   (let [ref (random-ref)]
