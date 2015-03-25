@@ -242,6 +242,20 @@
 
 ;;
 
+(defn order-by-priority [ref]
+  (.orderByPriority ref))
+
+(defn order-by-key [ref]
+  (.orderByKey ref))
+
+(defn order-by-value [ref]
+  (.orderByValue ref))
+
+(defn order-by-child [ref key]
+  (.orderByChild ref (name key)))
+
+;;
+
 (defonce connected (atom true))
 
 (defn disconnect! []
