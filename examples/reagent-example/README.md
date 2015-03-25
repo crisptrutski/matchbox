@@ -1,1 +1,1 @@
-May require `lein install` from base Pani directory before `checkouts` version will be loaded.
+May require `lein install` from base Matchbox directory before `checkouts` version will be loaded.
