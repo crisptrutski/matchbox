@@ -68,10 +68,11 @@
       (if err (throw-fb-error err "Cancelled") (cb ref)))))
 
 #+clj
-(defn- reify-value-listener [cb]
-  (reify ValueEventListener
-    (^void onDataChange [_ ^DataSnapshot ds]
-      (cb (wrap-snapshot ds)))
+(defn- reify-value-listener [cb & [ds-wrapper]]
+  (let [ds-wrapper (or ds-wrapper wrap-snapshot)]
+    (reify ValueEventListener
+      (^void onDataChange [_ ^DataSnapshot ds]
+        (cb (ds-wrapper ds)))
       (^void onCancelled [_ ^FirebaseError err]
         (if err (throw-fb-error err "Cancelled") (cb ref))))))
 
@@ -180,6 +181,11 @@
 (defn deref [ref cb]
   #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb))
   #+cljs (.once ref "value" (comp cb value)))
+
+(defn deref-list [ref cb]
+  #+clj (let [get-children (fn [ds] (mapv value (.getChildren ds)))]
+          (.addListenerForSingleValueEvent ref (reify-value-listener cb get-children)))
+  #+cljs (.once ref "value" (comp cb #(.getChildren %))))
 
 (defn reset! [ref val & [cb]]
   #+clj
