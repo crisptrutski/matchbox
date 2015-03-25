@@ -57,7 +57,7 @@ There is also a stand-alone demo project, `reagent-example`. This example can be
 
 ## Gotchas
 
-1. Swap! takes callback in non-standard way
+1. `swap!` takes callback in non-standard way
 
    Since we support passing additional arguments to an update function,
    we can't use an optional argument for the callback.
