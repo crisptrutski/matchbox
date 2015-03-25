@@ -58,18 +58,22 @@
 (declare reset!)
 
 #+clj
+(defn throw-fb-error [err & [msg]]
+  (throw (ex-info (or msg "FirebaseError") {:err err})))
+
+#+clj
 (defn- wrap-cb [cb]
   (reify com.firebase.client.Firebase$CompletionListener
-    (^void onComplete [this ^FirebaseError err ^Firebase ref]
-      (if err (throw err) (cb ref)))))
+    (^void onComplete [_ ^FirebaseError err ^Firebase ref]
+      (if err (throw-fb-error err "Cancelled") (cb ref)))))
 
 #+clj
 (defn- reify-value-listener [cb]
   (reify ValueEventListener
     (^void onDataChange [_ ^DataSnapshot ds]
       (cb (wrap-snapshot ds)))
-    (^void onCancelled [_ ^FirebaseError err]
-      (throw err))))
+      (^void onCancelled [_ ^FirebaseError err]
+        (if err (throw-fb-error err "Cancelled") (cb ref))))))
 
 #+clj
 (defn- build-tx-handler [f args cb]
@@ -94,7 +98,7 @@
     (^void onChildRemoved [_ ^DataSnapshot d]
       (if removed (removed (wrap-snapshot d))))
     (^void onCancelled [_ ^FirebaseError err]
-      (throw err))))
+      (throw-fb-error err "Cancelled"))))
 
 #+clj
 (defn- strip-prefix [type]
@@ -379,6 +383,7 @@
   (let [cbs (->> child-events
                  (map (fn [type] #(vector type %)))
                  (map #(comp cb %)))
+        ;; NOTE: JVM implementation could create a single listener
         unsubs (doall (map -listen-to (repeat ref) child-events cbs))]
     (fn []
       (doseq [unsub! unsubs]
