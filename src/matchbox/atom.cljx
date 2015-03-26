@@ -32,7 +32,7 @@
   (fn [[key val]]
     (reset! atom val)))
 
-(defn- -swap-atom [atom]
+(defn- -merge-atom [atom]
   (fn [[key val]]
     (swap! atom merge val)))
 
@@ -41,13 +41,20 @@
     (when (not= o n)
       (m/reset! ref n))))
 
+(defn- -swap-failover [cache f args]
+  ;; Fallback to local write if non syncing back
+  (if-not (:matchbox-unsub (meta cache))
+    (apply swap! cache f args)))
+
 (defn- -swap-ref-local [ref cache]
   (fn [f & args]
-    (m/reset! ref (apply f @cache args))))
+    (or (-swap-failover cache f args)
+        (m/reset! ref (apply f @cache args)))))
 
-(defn- -swap-ref-remote [ref]
+(defn- -swap-ref-remote [ref cache]
   (fn [f & args]
-    (apply m/swap! ref f args)))
+    (or (-swap-failover cache f args)
+        (apply m/swap! ref f args))))
 
 ;; We have types too
 
@@ -83,6 +90,8 @@
 ;; Watcher/Listener management
 
 ;; IDEA: replace or complement with global listener registry
+
+;; FIXME: don't let more than atom sync with a ref, or solve coordination
 
 (defn <-ref [ref atom f]
   (let [unsub (m/listen-to ref :value f)]
@@ -134,8 +143,8 @@
   (let [cache (ensure-cache atom-)]
     (if atom- (m/merge! ref @atom-))
     (fire-atom ref cache
-               (-swap-ref-remote ref)
-               (-swap-atom cache))))
+               (-swap-ref-remote ref cache)
+               (-merge-atom cache))))
 
 ;; IDEA: minimal-merge-atom
 ;; Rather than single merges at the roots, use a diff to make
@@ -150,53 +159,3 @@
 ;;
 ;; Perhaps an option to automatically cascade (up to some limit?)
 ;; to track children's children as data gets synced.
-
-
-;; quick repl tests
-
-(comment
-
-  (def r (m/connect "https://luminous-torch-5788.firebaseio.com/atom-test"))
-
-  (m/reset! r nil)
-
-  (def c1 (m/get-in r "1"))
-  (def c2 (m/get-in r "2"))
-  (def c3 (m/get-in r "3"))
-  (def c4 (m/get-in r "4"))
-  (def c5 (m/get-in r "5"))
-  (def c6 (m/get-in r "6"))
-
-  (def atom-1 (brute-atom c1))
-  (def atom-2 (brute-atom c2 (atom {:initial "state"})))
-  (def atom-3 (reset-atom c3))
-  (def atom-4 (reset-atom c4 (atom {:data (rand)})))
-  (def atom-5 (merge-atom c5))
-  (def atom-6 (merge-atom c6 (atom {:some {:inital "data"}, :here "because"})))
-
-  (swap! atom-1 assoc :a 'write)
-  (swap! atom-2 assoc :a 'write)
-  (-swap! atom-3 assoc :a 'write)
-  (-swap! atom-4 assoc :a 'write)
-  (-swap! atom-5 assoc :a 'write)
-  (-swap! atom-6 assoc :a 'write)
-
-  (-deref atom-1)
-  (-deref atom-2)
-  (-deref atom-3)
-  (-deref atom-4)
-  (-deref atom-5)
-  (-deref atom-6)
-
-  (m/reset-in! c6 :b 40)
-
-  (unlink! atom-1)
-  (unlink! atom-2)
-  (unlink! atom-3)
-  (unlink! atom-4)
-  (unlink! atom-5)
-  (unlink! atom-6)
-
-  (m/reset-in! c6 :b 4)
-
-  (mr/disable-listeners!))
