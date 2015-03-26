@@ -47,7 +47,7 @@
   (with-chan #(p/reset! ref val (chan->cb-once %))))
 
 (defn reset-with-priority!< [ref val priority]
-  (with-chan #(p/reset! ref val priority (chan->cb-once %))))
+  (with-chan #(p/reset-with-priority! ref val priority (chan->cb-once %))))
 
 (defn merge!< [ref val]
   (with-chan #(p/merge! ref val (chan->cb-once %))))
