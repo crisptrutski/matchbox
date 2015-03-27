@@ -135,8 +135,26 @@
 (println "Reordered\n\n")
 (m/deref-list c safe-prn)
 
+;; There's also a listener version of `deref-list`, and lets
+;; throw in
+(def listener (m/listen-list (m/take c 3) safe-prn))
 
-;; Let's quickly look at some other ways we can order things:
+;; lets make a change and see the listener get called
+(m/set-priority-in! c :a 5)
+
+;; Note that it was called twice - since two child-events
+;; were processed by Firebase to update the state of the associated
+;; query.
+
+;; let's add a value at the end, note that it isn't called
+(m/reset-with-priority-in! c :f "Mow the lawn" 20)
+
+;; and a value at the start to shunt another value out
+(m/reset-with-priority-in! c :f "Wrap up this example" -1000)
+
+(mr/disable-listener! listener)
+
+;; Let's look at one more way we can order things:
 
 (m/deref-list (m/order-by-priority c) safe-prn)
 (m/deref-list (m/order-by-value c) safe-prn)
