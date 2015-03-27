@@ -425,28 +425,29 @@
 ;; ------------------
 ;; subscriptions
 
-(defn --listen-to [ref type cb]
+(defn --listen-to [ref type cb render-fn]
   #+clj
   (let [listener (if-not (some #{type} child-events)
                    ;; subscribe
-                   (.addValueEventListener ref (reify-value-listener cb))
+                   (.addValueEventListener ref (reify-value-listener cb render-fn))
                    (.addChildEventListener ref (reify-child-listener
                                                 (hash-map (strip-prefix type) cb))))]
     ;; build unsubsubscribe fn
     (fn [] (.removeEventListener ref listener)))
   #+cljs
   (let [type (utils/kebab->underscore type)]
-    (let [listener (comp cb wrap-snapshot)]
+    (let [listener (comp cb render-fn)]
       ;; subscribe
       (.on ref type listener)
       ;; build unsubsubscribe fn
       (fn [] (.off ref type listener)))))
 
-(defn- -listen-to [ref type cb]
-  (assert (some #{type} all-events) (str "Unknown type: " type))
-  (let [unsub! (--listen-to ref type cb)]
-    (register-listener ref type unsub!)
-    unsub!))
+(defn- -listen-to [ref type cb & [render-fn]]
+  (let [render-fn (or render-fn wrap-snapshot)]
+    (assert (some #{type} all-events) (str "Unknown type: " type))
+    (let [unsub! (--listen-to ref type cb render-fn)]
+      (register-listener ref type unsub!)
+      unsub!)))
 
 (defn- -listen-children [ref cb]
   (let [cbs (->> child-events
@@ -459,11 +460,21 @@
         (unsub!)))))
 
 (defn listen-to
-  "Subscribe to notifications of given type"
+  "Subscribe to notifications of given type
+   Callback receives [<key> <value>] as only argument
+   Returns an unsubscribe function"
   ([ref type cb] (-listen-to ref type cb))
   ([ref korks type cb] (-listen-to (get-in ref korks) type cb)))
 
+(defn listen-list
+  "Subscribe to updates containing full vector or children"
+  ([ref cb] (let [get-children (fn [ds] (mapv value (.getChildren ds)))]
+              (-listen-to ref :value cb get-children)))
+  ([ref korks cb] (listen-list (get-in ref korks) cb )))
+
 (defn listen-children
-  "Subscribe to all children notifications on a reference, and return an unsubscribe"
+  "Subscribe to all children notifications on a reference.
+   Callback receives [:event-type [<key> <value>]] as only argument
+   Returns an unsubscribe function"
   ([ref cb] (-listen-children ref cb))
   ([ref korks cb] (-listen-children (get-in ref korks) cb)))
