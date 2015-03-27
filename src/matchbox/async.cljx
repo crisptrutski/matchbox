@@ -56,6 +56,7 @@
   (with-chan #(p/conj! ref val (chan->cb-once %))))
 
 (defn swap!< [ref f & args]
+  (assert (every? #(not= :callback %)) args)
   (with-chan #(apply p/swap! ref f (into (vec args) [:callback (chan->cb-once %)]))))
 
 (defn dissoc!< [ref]
