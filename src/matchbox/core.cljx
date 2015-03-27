@@ -1,5 +1,6 @@
 (ns matchbox.core
-  (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key])
+  (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key
+                            take take-last])
   #+clj
   (:import [com.firebase.client
             AuthData
@@ -253,6 +254,54 @@
 
 (defn order-by-child [ref key]
   (.orderByChild ref (name key)))
+
+;;
+
+(defn start-at
+  "Limit query to start at `value` (inclusive). By default `value` is compared against
+   priorities, but reacts to the `order-by-*` scope. This also affects what types
+   `value can take on.
+
+   `key` is the child key to start at, and is supported only when ordering by priority."
+  [ref value & [key]]
+  (let [value (if (number? value) (double value) value)]
+       (if key
+         (.startAt ref value (name key))
+         (.startAt ref value))))
+
+(defn end-at
+  "Limit query to end at `value` (inclusive). By default `value` is compared against
+   priorities, but reacts to the `order-by-*` scope. This also affects what types
+   `value can take on.
+
+   `key` is the child key to end at, and is supported only when ordering by priority."
+  [ref value & [key]]
+  (let [value (if (number? value) (double value) value)]
+      (if key
+        (.endAt ref value (name key))
+        (.endAt ref value))))
+
+(defn equal-to
+  "Limit query to `value` (inclusive). By default `value` is compared against
+   priorities, but reacts to the `order-by-*` scope. This also affects what types
+   `value can take on.
+
+  `key` is the child key to end at, and is supported only when ordering by priority."
+  [ref value & [key]]
+  (let [value (if (number? value) (double value) value)]
+       (if key
+         (.equalTo ref value (name key))
+         (.equalTo ref value))))
+
+(defn take
+  "Limit scope to the first `limit` items"
+  [ref limit]
+  (.limitToFirst ref limit))
+
+(defn take-last
+  "Limit scope to the last `limit` items"
+  [ref limit]
+  (.limitToLast ref limit))
 
 ;;
 
