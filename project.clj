@@ -24,7 +24,7 @@
   :auto-clean false
 
   :profiles {:dev {:dependencies [[om "0.7.3"]
-                                  [com.keminglabs/cljx "0.5.0" :exclusions [com.cemerick/piggieback]]
+                                  [com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
                                   [com.cemerick/piggieback "0.1.5"]]
                    :repl-options {:nrepl-middleware
                                   [cljx.repl-middleware/wrap-cljx
