@@ -11,10 +11,11 @@
   (swap! unsubs update-in [(str ref) type] #(set (conj % unsub!)))
   (swap! unsubs-flat assoc unsub! [(str ref) type]))
 
-(defn- flatten-vals [xs]
-  (if-not (map? xs)
-    xs
-    (reduce into (map flatten-vals (vals xs)))))
+(defn- flatten-vals [xss]
+  (if-not (map? xss)
+    xss
+    (if-let [xs (seq (map flatten-vals (vals xss)))]
+      (reduce into xs))))
 
 (defn- disable-all! [fs]
   (apply swap! unsubs-flat dissoc fs)
