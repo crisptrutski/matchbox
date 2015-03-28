@@ -1,16 +1,19 @@
 (ns matchbox.common-test
-  #+cljs (:require-macros [cemerick.cljs.test :refer [is deftest done block-or-done]])
+  #+cljs (:require-macros
+          [cemerick.cljs.test :refer [deftest is testing done block-or-done]]
+          [cljs.core.async.macros :refer [go]])
   (:require #+cljs [cemerick.cljs.test :as t]
             #+clj [clojure.test :as t :refer [deftest is testing]]
             #+clj [cemerick.cljs.test :refer [block-or-done]]
             [matchbox.core :as m]
             [matchbox.async :as ma]
             [matchbox.registry :as mr]
-            [matchbox.testing :refer [#+clj block-test random-ref is=]
+            [matchbox.testing :refer [random-ref #+clj is= #+clj block-test]
+             #+cljs :refer-macros #+cljs [is= block-test]
              #+cljs :include-macros #+cljs true]
             [#+clj clojure.core.async
              #+cljs cljs.core.async
-             :refer [chan <! >! go]]))
+             :refer [chan <! >! #+clj go]]))
 
 (defn people-fixtures []
   (let [r (random-ref)]
@@ -37,14 +40,18 @@
 
 (def query-fixtures-2 (number-fixtures))
 
+#+cljs (enable-console-print!)
 
-(deftest ^:async order-by-value-test
+(deftest ^:async order-by-value-test-a
   (testing "Null hypothesis"
     (is= [3.0 9 1 33.2]
-         (ma/deref-list< query-fixtures-2)))
+         (ma/deref-list< query-fixtures-2))))
+
+(deftest ^:asnyc order-by-value-test-b
   (testing "Orders by value"
     (is= [1 3.0 9 33.2]
          (ma/deref-list< (m/order-by-value query-fixtures-2)))))
+
 
 (deftest ^:async order-by-priority-test
   (testing "Orders by priority"
@@ -73,31 +80,41 @@
                  (<!)
                  (map :name)))))))
 
-(deftest ^:async start-at-test
+
+(deftest ^:async start-at-test-a
   (testing "Is inclusive"
     (is= [{:age 53, :name "Carly"} {:age 2, :name "Timmy"}]
-         (ma/deref-list< (m/start-at query-fixtures 7.0))))
+         (ma/deref-list< (m/start-at query-fixtures 7.0)))))
+
+(deftest ^:async start-at-test-b
   (testing "Second parameter is a start"
     (is= [{:age 2, :name "Timmy"}]
          (ma/deref-list< (m/start-at query-fixtures 7.0 :c)))))
 
-(deftest ^:async end-at-test
+
+(deftest ^:async end-at-test-a
   (testing "Is inclusive"
     (is= [{:age 18, :name "Joel"}
           {:age 22, :name "Frank"}
           {:age 12, :name "Billy"}]
-         (ma/deref-list< (m/end-at query-fixtures 4))))
+         (ma/deref-list< (m/end-at query-fixtures 4)))))
+
+(deftest ^:async end-at-test-b
   (testing "Second parameter is an end"
     (is= [{:age 18, :name "Joel"}]
          (ma/deref-list< (m/end-at query-fixtures 3 :c)))))
 
-(deftest ^:async equal-to-test
+
+(deftest ^:async equal-to-test-a
   (testing "Includes all separate yet equal"
     (is= [{:age 18, :name "Joel"} {:age 22, :name "Frank"}]
-         (ma/deref-list< (m/equal-to query-fixtures 3))))
+         (ma/deref-list< (m/equal-to query-fixtures 3)))))
+
+(deftest ^:async equal-to-test-b
   (testing "Second parameter is a start"
     (is= [{:age 22, :name "Frank"}]
          (ma/deref-list< (m/equal-to query-fixtures 3 :d)))))
+
 
 (deftest ^:async take-test
   (testing "Takes from the start"

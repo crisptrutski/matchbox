@@ -1,10 +1,5 @@
 (ns matchbox.testing
-  #+cljs (:require-macros [cemerick.cljs.test :refer [block-or-done]])
-  (:require [matchbox.core :as m]
-            #+clj [cemerick.cljs.test :refer [block-or-done]]
-            [#+clj clojure.core.async
-             #+cljs cljs.core.async
-             :refer [chan <! >! go]]))
+  (:require [matchbox.core :as m]))
 
 (def db-uri "https://luminous-torch-5788.firebaseio.com/")
 
@@ -15,35 +10,34 @@
     (-> ref m/on-disconnect m/remove!)
     ref))
 
-;; #+clj
-;; (defmacro deliver-cb [& body]
-;;   `(let [p# (promise)
-;;          ~'cb #(deliver p# %)]
-;;      ~@body
-;;      @p#))
-
-;; #+clj
-;; (defmacro eval-async
-;;   "Support running expectations against exactly one async value"
-;;   [expr & expectations]
-;;   `(let [#+clj p# #+clj (promise)
-;;          ~'*cb*
-;;          #+cljs #(let [~'*res* %]
-;;                    ~@expectations
-;;                    (done))
-;;          #+clj #(deliver p# %)]
-;;      ~expr
-;;      #+clj (let [~'*res* @p#]
-;;              ~@expectations)))
+#+clj
+(defn cljs-env?
+  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  [env]
+  (boolean (:ns env)))
 
 #+clj
-(defmacro block-test [& body]
-  `(let [complete# (chan)]
-     (go (let [res# (or (try ~@body (catch #+cljs js/Object #+clj Exception e# e#))
-                        true)]
-           (~'>! complete# res#)))
-     (block-or-done complete#)))
+(defmacro if-cljs
+  "Return then if we are generating cljs code and else for Clojure code.
+   https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ"
+  [then else]
+  (if (cljs-env? &env) then else))
 
-(defmacro is= [expect expr]
+#+clj
+(defmacro block-test
+  "Ensuring blocking or continuation, run forms within a go block"
+  [& body]
+  `(let [complete# (~'chan)]
+     (~'go (let [res# (or (try ~@body
+                               ~(if-cljs
+                                  '(catch js/Object e# e#)
+                                  '(catch Exception e# e#)))
+                          true)]
+             (~'>! complete# res#)))
+     (~'block-or-done complete#)))
+
+(defmacro is=
+  "Test next value delivered from channel matches expectation"
+  [expect expr]
   `(block-test
-    (~'is (= ~expect (<! ~expr)))))
+    (~'is (= ~expect (~'<! ~expr)))))
