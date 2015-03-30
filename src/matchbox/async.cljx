@@ -68,6 +68,12 @@
 (defn set-priority!< [ref priority]
   (with-chan #(m/set-priority! ref priority (chan->cb-once %))))
 
+(defn export< [ref-or-ds]
+  (with-chan #(m/export ref-or-ds (chan->cb-once %))))
+
+(defn priority< [ref-or-ds]
+  (with-chan #(m/priority ref-or-ds (chan->cb-once %))))
+
 ;; async + in
 
 (defn deref-in< [ref korks]
@@ -100,6 +106,12 @@
 
 (defn set-priority-in!< [ref korks priority]
   (set-priority!< (get-in ref korks) priority))
+
+(defn export-in< [ref-or-ds korks]
+  (with-chan #(m/export-in ref-or-ds korks (chan->cb-once %))))
+
+(defn priority-in< [ref-or-ds korks]
+  (with-chan #(m/priority-in ref-or-ds korks (chan->cb-once %))))
 
 ;; subscriptions
 

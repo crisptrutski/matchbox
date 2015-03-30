@@ -42,6 +42,24 @@
 
 #+cljs (enable-console-print!)
 
+(deftest ^:asnyc export-test
+  (testing "Includes metadata"
+    (let [r (random-ref)]
+      (m/reset-with-priority-in! r :a "A" 32.3)
+      (m/reset-with-priority-in! r [:b :c] "BC" "prior")
+      (is= {"a" {".priority" 32.3
+                 ".value"    "A"},
+            "b" {"c" {".priority" "prior"
+                      ".value"    "BC"}}}
+           (ma/export< r)))))
+
+(deftest ^:asnyc priority-test
+  (testing "Includes metadata"
+    (let [r (random-ref)]
+      (m/reset-with-priority! r {:some 'data} "s3krit")
+      (is= "s3krit"
+           (ma/priority< r)))))
+
 (deftest ^:async order-by-value-test-a
   (testing "Null hypothesis"
     (is= [3.0 9 1 33.2]
