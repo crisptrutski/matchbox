@@ -251,6 +251,45 @@
 
 ;;
 
+(defn ref? [x]
+  (instance? #+clj Firebase #+cljs js/Firebase x))
+
+(defn- with-ds [ref-or-ds f & [cb]]
+  (if (ref? ref-or-ds)
+    (let [ref ref-or-ds]
+      (assert cb "Callback required when called against reference")
+      #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb f))
+      #+cljs (.once ref "value" (comp cb f)))
+    (let [ds ref-or-ds
+          v  (f ds)]
+      (if cb (cb v) v))))
+
+(defn- -export [ds]
+  #+clj  (.getValue ds true)
+  #+cljs (.exportValue ds))
+
+(defn- -priority [ds]
+  #+clj  (.getPriority ds)
+  #+cljs (.priority ds))
+
+(defn export [ref-or-ds & [cb]]
+  (with-ds ref-or-ds -export cb))
+
+(defn priority [ref-or-ds & [cb]]
+  (with-ds ref-or-ds -priority cb))
+
+(defn export-in [ref-or-ds korks & [cb]]
+  (if (ref? ref-or-ds)
+    (export (get-in ref-or-ds korks) cb)
+    (export ref-or-ds (comp cb #(get-in % korks)))))
+
+(defn priority-in [ref-or-ds korks & [cb]]
+  (if (ref? ref-or-ds)
+    (priority (get-in ref-or-ds korks) cb)
+    (priority ref-or-ds (comp cb #(get-in % korks)))))
+
+;;
+
 (defn order-by-priority [ref]
   (.orderByPriority ref))
 
