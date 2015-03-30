@@ -183,10 +183,18 @@
   #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb))
   #+cljs (.once ref "value" (comp cb value)))
 
+(defn- get-children [snapshot]
+  (mapv value
+        #+clj (.getChildren snapshot)
+        ;; perhaps use js array if too much latency here for larger lists
+        #+cljs (let [kids (atom [])]
+                 ;; must return falsey else iteration ends
+                 (.forEach snapshot #(do (clojure.core/swap! kids conj %) undefined))
+                 @kids)))
+
 (defn deref-list [ref cb]
-  #+clj (let [get-children (fn [ds] (mapv value (.getChildren ds)))]
-          (.addListenerForSingleValueEvent ref (reify-value-listener cb get-children)))
-  #+cljs (.once ref "value" (comp cb #(.getChildren %))))
+  #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb get-children))
+  #+cljs (.once ref "value" (comp cb #(get-children %))))
 
 (defn reset! [ref val & [cb]]
   #+clj
@@ -468,8 +476,7 @@
 
 (defn listen-list
   "Subscribe to updates containing full vector or children"
-  ([ref cb] (let [get-children (fn [ds] (mapv value (.getChildren ds)))]
-              (-listen-to ref :value cb get-children)))
+  ([ref cb] (-listen-to ref :value cb get-children))
   ([ref korks cb] (listen-list (get-in ref korks) cb )))
 
 (defn listen-children
