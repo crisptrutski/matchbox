@@ -47,10 +47,10 @@
     (let [r (random-ref)]
       (m/reset-with-priority-in! r :a "A" 32.3)
       (m/reset-with-priority-in! r [:b :c] "BC" "prior")
-      (is= {"a" {".priority" 32.3
-                 ".value"    "A"},
-            "b" {"c" {".priority" "prior"
-                      ".value"    "BC"}}}
+      (is= {:a {:.priority 32.3
+                :.value    "A"},
+            :b {:c {:.priority "prior"
+                    :.value    "BC"}}}
            (ma/export< r)))))
 
 (deftest ^:asnyc priority-test

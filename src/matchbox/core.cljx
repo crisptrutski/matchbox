@@ -265,8 +265,9 @@
       (if cb (cb v) v))))
 
 (defn- -export [ds]
-  #+clj  (.getValue ds true)
-  #+cljs (.exportValue ds))
+  (hydrate
+   #+clj  (.getValue ds true)
+   #+cljs (.exportValue ds)))
 
 (defn- -priority [ds]
   #+clj  (.getPriority ds)
