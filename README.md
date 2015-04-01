@@ -77,7 +77,7 @@ Matchbox | Firebase.js | Differences
 `listen-list` | `.on` | Like `deref-list` for `listen-to`
 `listen-children` | `.on` | Listen to all child events, multiplexed.
 
-Additionally, there are two variations of most functions:
+Additionally, there are up to three variations of most functions:
 
 1. `*-in` variants take an optional second parameter of `korks`, to refer directly to a child. 
    These exist for all "ending-with-a-bang" functions, as well as `deref` and `deref-list`.
@@ -85,7 +85,7 @@ Additionally, there are two variations of most functions:
    These exist for all functions that would take a callback.
 3. `*-in<` combine decoration of (1) and (2), and exist where applicable.
 
-
+The last two, if they exist are defined in `matchbox.async`. This is so that Matchbox can be used without a `core.async` dependency.
 
 # Examples
 
