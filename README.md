@@ -15,8 +15,10 @@ Matchbox offers more than just bindings:
  * Atom/Zipper/Cursor-ish abstraction over Firebase references
  * Clojure data in/out
  * Uniform API for JVM and JS platforms
+ * Optional sequence abstraction - work with lists not sorted maps
  * Optional core.async based API
  * Multiplexed children event channels and/or callbacks
+ * Registry for listeners simplifies scoped or global cleanup
 
 # Usage
 
