@@ -52,7 +52,7 @@ Take a look at the [quick intro](docs/quick_intro.cljx) to for a lightning tour.
 
 # Overview
 
-For brevity, comparing to the Firbase's JavaScript API only. 
+For brevity, comparing to the JS Firebase API only. 
 
 Notes: 
 
