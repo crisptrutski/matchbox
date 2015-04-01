@@ -50,9 +50,46 @@ Quick spin to get some basic flavour:
 
 Take a look at the [quick intro](docs/quick_intro.cljx) to for a lightning tour.
 
-## ClojureScript demos
+# Overview
 
-There are some demos in the  `examples` directory.  
+For brevity, comparing to the Firbase's JavaScript API only. 
+
+Notes: 
+
+1. Almost all functions accept callbacks, and those callbacks will be intercepted to receive hydrated data.
+2. This list is not complete, notably it does not cover connectivity control and hooks, queries, auth, logging and other aspects also wrapped by Matchbox.
+
+Matchbox | Firebase.js | Differences
+-------- | -------- | ------
+`connect` | `Firebase.` | Supports optional korks as second parameter
+`get-in` | `.child` | Supports symbols, keywords and sequences also (korks)
+`parent` | `.parent` | -
+`deref` | `.once` | Fixed to a "value" subscription
+`deref-list` | `.once` | Returns ordered values rather than a map. Query compatible.
+`reset!` | `.set` | Data automatically serialized in a sensible manner
+`reset-with-priority!` | `.setWithPriority` | ..
+`merge!` | `.update` | ..
+`conj!` | `.push` | ..
+`swap!` | `.transaction` | Always applied locally, supports additional arguments.
+`dissoc!` or `remove!` | `.remove` | -
+`set-priority!` | `.setPriority` | -
+`listen-to` | `.on` | Stored in registry for easy unsubscription
+`listen-list` | `.on` | Like `deref-list` for `listen-to`
+`listen-children` | `.on` | Listen to all child events, multiplexed.
+
+Additionally, there are two variations of most functions:
+
+1. `*-in` variants take an optional second parameter of `korks`, to refer directly to a child. 
+   These exist for all "ending-with-a-bang" functions, as well as `deref` and `deref-list`.
+2. `*<` variants return a channel of results instead of taking a callback.
+   These exist for all functions that would take a callback.
+3. `*-in<` combine decoration of (1) and (2), and exist where applicable.
+
+
+
+# Examples
+
+There are some ClojureScript demos in the  `examples` directory.  
 
 Those in the `cljs` folder can be compiled from the main project via `lein cljsbuild once <example-name>`, and then run by opening the 'index.html' found in the example directory in a browser.
 
