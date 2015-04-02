@@ -29,7 +29,7 @@
   [& body]
   `(let [complete# (~'chan)]
      (~'go (let [res# (or (try ~@body
-                               ~(if-cljs
+                               (if-cljs
                                   '(catch js/Object e# e#)
                                   '(catch Exception e# e#)))
                           true)]
