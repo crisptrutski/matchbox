@@ -267,11 +267,10 @@
 (defn- -export [ds]
   (hydrate
    #+clj  (.getValue ds true)
-   #+cljs (.exportValue ds)))
+   #+cljs (.exportVal ds)))
 
 (defn- -priority [ds]
-  #+clj  (.getPriority ds)
-  #+cljs (.priority ds))
+  (.getPriority ds))
 
 (defn export [ref-or-ds & [cb]]
   (with-ds ref-or-ds -export cb))
