@@ -22,7 +22,7 @@
 
   :profiles {:dev {:dependencies [[om "0.7.3"]
                                   [com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
-                                  [com.cemerick/piggieback "0.1.5"]]
+                                  [com.cemerick/piggieback "0.2.0"]]
                    :repl-options {:nrepl-middleware
                                   [cljx.repl-middleware/wrap-cljx
                                    cemerick.piggieback/wrap-cljs-repl]}
@@ -31,7 +31,7 @@
                              [lein-cljsbuild "1.0.3" :scope "test"]
                              [com.cemerick/clojurescript.test "0.3.3" :scope "test"]
                              [com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
-                             [com.cemerick/piggieback "0.1.5"]]
+                             [com.cemerick/piggieback "0.2.0"]]
 
                    :aliases {"test-all"  ["do" "cljx" "once,"
                                                "test,"
