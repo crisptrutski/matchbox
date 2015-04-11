@@ -2,10 +2,10 @@
   (:refer-clojure :exclude [prn])
   (:require [clojure.string :as str]))
 
-(defn- kebab->underscore [keyword]
+(defn kebab->underscore [keyword]
   (-> keyword name (str/replace "-" "_")))
 
-(defn- underscore->kebab [string]
+(defn underscore->kebab [string]
   (-> string (str/replace "_" "-") keyword))
 
 (defn korks->path [korks]
