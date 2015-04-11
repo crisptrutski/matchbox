@@ -90,7 +90,7 @@
     (once-synced
      (is (= (-deref atom-6) {:some {:inital "data"}, :here "because", :a "write", :b 40}))
      (let [p (promise)]
-       (m/deref-in c6 :b #(deliver p (second %)))
+       (m/deref-in c6 :b #(deliver p %))
        (is (= 4 @p))))
 
     (-swap! atom-6 assoc :b 50)
@@ -98,7 +98,7 @@
     (once-synced
      (is (= (:b (-deref atom-6)) 50))
      (let [p (promise)]
-       (m/deref-in c6 :b #(deliver p (second %)))
+       (m/deref-in c6 :b #(deliver p %))
        (is (= 4 @p))))
 
     ;; should rather assert no listeners
