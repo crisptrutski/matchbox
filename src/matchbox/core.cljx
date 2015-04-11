@@ -180,7 +180,7 @@
   (take-while identity (iterate parent (parent ref))))
 
 (defn deref [ref cb]
-  #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb))
+  #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb value))
   #+cljs (.once ref "value" (comp cb value)))
 
 (defn- get-children [snapshot]
