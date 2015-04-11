@@ -6,7 +6,7 @@
   :authors ["verma", "crisptrutski"]
   :min-lein-version "2.5.0"
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
-                 [org.clojure/clojurescript "0.0-3169" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-3196" :scope "provided"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.firebase/firebase-client-jvm "2.2.3" :exclusions [org.apache.httpcomponents/httpclient]]
                  [org.apache.httpcomponents/httpclient "4.4.1"]
@@ -29,6 +29,7 @@
                    :plugins [[com.keminglabs/cljx "0.6.0"]
                              [quickie "0.3.6"]
                              [lein-cljsbuild "1.0.3" :scope "test"]
+                              [com.jakemccrary/lein-test-refresh "0.6.0"]
                              [com.cemerick/clojurescript.test "0.3.3" :scope "test"]
                              [com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
                              [com.cemerick/piggieback "0.2.0"]]
