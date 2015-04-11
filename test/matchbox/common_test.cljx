@@ -8,12 +8,59 @@
             [matchbox.core :as m]
             [matchbox.async :as ma]
             [matchbox.registry :as mr]
-            [matchbox.testing :refer [random-ref #+clj is= #+clj block-test]
+            [matchbox.testing :refer [db-uri random-ref #+clj is= #+clj block-test]
              #+cljs :refer-macros #+cljs [is= block-test]
              #+cljs :include-macros #+cljs true]
             [#+clj clojure.core.async
              #+cljs cljs.core.async
              :refer [chan <! >! #+clj go]]))
+
+(deftest ^:async reset-test!
+  (testing "Set value with reset!"
+    (let [ref (random-ref)
+          val (rand-int 1000)]
+      (m/reset! ref val)
+      (is= val (ma/deref< ref)))))
+
+;; Rely on implicit testing via other tests for cljs
+#+clj
+(deftest deref-test
+  (testing "Read value with deref"
+    (let [ref  (random-ref)
+          val  (rand-int 1000)
+          p    (promise)]
+      (m/deref ref #(deliver p %))
+      (m/reset! ref val)
+      (is (= val @p)))))
+
+;; Must still be ported to cljs
+#+clj
+(deftest ^:async conj-test!
+  (let [ref  (random-ref)
+        val  (rand-int 1000)
+        p1   (promise)
+        p2   (promise)]
+    (m/listen-to ref :child-added #(deliver p1 %))
+    (m/conj! ref val)
+    (is (= val (last @p1)))
+    (m/listen-to ref (first @p1) :value #(deliver p2 %))
+    (is (= @p1 @p2))))
+
+(deftest ^:async swap!-test
+  (testing "Transact value with swap"
+    (let [ref  (random-ref)
+          val  (rand-int 1000)]
+      (m/swap! ref vector val 512)
+      (is= [nil val 512] (ma/deref< ref)))))
+
+(deftest key-parent-get-in-test
+  (let [root (m/connect db-uri)
+        baby (m/get-in root [:a :b :c])]
+    (is (nil? (m/key root)))
+    (is (nil? (m/parent root)))
+    (is (= "b" (m/key (m/parent baby))))
+    (is (= "z" (m/key (m/get-in root :z))))
+    (is (= ["b" "a" nil] (map m/key (m/parents baby))))))
 
 (defn people-fixtures []
   (let [r (random-ref)]

@@ -4,36 +4,7 @@
   (:require [cemerick.cljs.test :as t]
             [cljs.core.async :refer [<!]]
             [matchbox.core :as m]
-            [matchbox.utils :as utils]
-            [matchbox.testing :refer [db-uri random-ref]]))
-
-(deftest serialize-hydrate-test
-  (is (= {:a 1, :b [:b :a]}
-         (m/hydrate
-          (m/serialize {"a" 1, "b" #{:a :b}})))))
-
-(deftest kebab->underscore-test
-  (is (= "a_cromulent_name" (utils/kebab->underscore :a-cromulent-name))))
-
-(deftest underscore->kebab-test
-  (is (= :a-tasty-skewer (utils/underscore->kebab "a_tasty_skewer"))))
-
-(deftest korks->path-test
-  (is (= nil   (utils/korks->path nil)))
-  (is (= ""    (utils/korks->path "")))
-  (is (= ""    (utils/korks->path [])))
-  (is (= "a"   (utils/korks->path :a)))
-  (is (= "a"   (utils/korks->path ["a"])))
-  (is (= "a/b" (utils/korks->path "a/b")))
-  (is (= "a/b" (utils/korks->path [:a :b]))))
-
-(deftest key-parent-get-in-test
-  (let [root (m/connect db-uri)
-        baby (m/get-in root [:a :b :c])]
-    (is (nil? (m/key root)))
-    (is (nil? (m/parent root)))
-    (is (= "b" (m/key (m/parent baby))))
-    (is (= ["b" "a" nil] (map m/key (m/parents baby))))))
+            [matchbox.testing :refer [random-ref]]))
 
 (deftest ^:async reset!-test
   (let [ref (random-ref)]
@@ -90,7 +61,7 @@
     (m/set-priority! child-1 "a")
     (m/set-priority-in! ref (m/key child-2) 0)
     (m/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done)))
-    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1000)))
+    (js/setTimeout (fn [] (is (not "timeout")) (done)) 5000)))
 
 (deftest ^:async reset-with-priority!-test
   (let [ref (random-ref)]
@@ -98,7 +69,7 @@
     (m/reset-with-priority-in! ref "b" 2 0)
     (m/reset-in! ref "c" 3)
     (m/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done)))
-    (js/setTimeout (fn [] (is (not "timeout")) (done)) 1500)))
+    (js/setTimeout (fn [] (is (not "timeout")) (done)) 5000)))
 
 (deftest disconnect!-reconnect!-test
   ;; default is connected

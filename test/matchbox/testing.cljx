@@ -41,3 +41,23 @@
   [expect expr]
   `(block-test
     (~'is (= ~expect (~'<! ~expr)))))
+
+(defmacro with<
+  "Test next value delivered from channel matches expectation"
+  [ref bind & body]
+  `(block-test
+     (let [~bind (~'<! (ma/deref< ~ref))]
+       ~@body)))
+
+(defmacro round-trip= [expectation data]
+  `(block-test
+     (let [ref# (random-ref)]
+       (m/reset! ref# ~data)
+       (let [result# (~'<! (ma/deref< ref#))]
+         (~'is (= ~expectation result#))))))
+
+(defmacro round-trip< [data bind & body]
+  `(let [ref# (random-ref)]
+     (m/reset! ref# ~data)
+     (with< ref# ~bind ~@body)))
+
