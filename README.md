@@ -6,6 +6,8 @@
 
 # Current version
 
+[![Join the chat at https://gitter.im/crisptrutski/matchbox](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/crisptrutski/matchbox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Clojars Project](http://clojars.org/matchbox/latest-version.svg)](http://clojars.org/matchbox)
 
 # Features
