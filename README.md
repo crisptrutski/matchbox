@@ -44,7 +44,7 @@ Quick spin to get some basic flavour:
   mikes-friends
   (fn [key value]
     (m/reset-in! root [:users :mike :num-friends]
-                 (count value))))]
+                 (count value))))
 
 (m/unauth)
 ```
