@@ -419,12 +419,12 @@
   (.authWithPassword ref
                      #+cljs #js {:email email, :password password}
                      #+clj email #+clj password
-                     (wrap-auth-cb cb)
+                     (or (wrap-auth-cb cb) identity)
                      #+cljs (build-opts session-only?)))
 
 (defn auth-anon [ref & [cb session-only?]]
   (.authAnonymously ref
-                    (wrap-auth-cb cb)
+                    (or (wrap-auth-cb cb) identity)
                     ;; Note: session-only? ignored on JVM
                     #+cljs (build-opts session-only?)))
 
