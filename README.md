@@ -53,9 +53,9 @@ Take a look at the [quick intro](docs/quick_intro.cljx) to for a lightning tour.
 
 # Overview
 
-For brevity, comparing to the JS Firebase API only. 
+For brevity, comparing to the JS Firebase API only.
 
-Notes: 
+Notes:
 
 1. Almost all functions accept callbacks, and those callbacks will be intercepted to receive hydrated data.
 2. This list is not complete, notably it does not cover connectivity control and hooks, queries, auth, logging and other aspects also wrapped by Matchbox.
@@ -80,7 +80,7 @@ Matchbox | Firebase.js | Differences
 
 Additionally, there are up to three variations of most functions:
 
-1. `*-in` variants take an optional second parameter of `korks`, to refer directly to a child. 
+1. `*-in` variants take an optional second parameter of `korks`, to refer directly to a child.
    These exist for all "ending-with-a-bang" functions, as well as `deref` and `deref-list`.
 2. `*<` variants return a channel of results instead of taking a callback.
    These exist for all functions that would take a callback.
@@ -90,7 +90,7 @@ The last two, if they exist are defined in `matchbox.async`. This is so that Mat
 
 # Examples
 
-There are some ClojureScript demos in the  `examples` directory.  
+There are some ClojureScript demos in the  `examples` directory.
 
 Those in the `cljs` folder can be compiled from the main project via `lein cljsbuild once <example-name>`, and then run by opening the 'index.html' found in the example directory in a browser.
 
@@ -102,7 +102,7 @@ There is also a stand-alone demo project, `reagent-example`. This example can be
 
    Since we support passing additional arguments to an update function,
    we can't use an optional argument for the callback.
-   
+
    Our solution draws inspiration from "kwargs" style signatures:
 
    ```clojure
@@ -128,7 +128,7 @@ There is also a stand-alone demo project, `reagent-example`. This example can be
 
    This can be confusing when debugging with `prn` in callbacks, as
    `*out*` will not be to the REPL's writer. We provide `matchbox.utils/prn` as a simple
-   helper to ensure output is visible. 
+   helper to ensure output is visible.
 
 3. Serialization
 
