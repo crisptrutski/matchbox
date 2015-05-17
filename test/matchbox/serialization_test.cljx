@@ -66,11 +66,10 @@
     ;; Floating point survives "JSON" phase
     (round-trip= 41.0 41.0)
     ;; Cast down from extended types though
-    (round-trip= 3 3N)
-    ;; Strangely BigDecimal can cast all the way down to a long
+    (round-trip= 3.0 3N)
     (round-trip< 4M value
                  #+clj
-                 (is (instance? java.lang.Long value))
+                 (is (instance? java.lang.Double value))
                  #+cljs
                  (is (= js/Number (type value))))
     ;; Unless the decimal portion is explicit..
