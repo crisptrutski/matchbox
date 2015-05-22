@@ -24,7 +24,7 @@
 (defn- -cleanup! [data]
   (walk/postwalk
    (fn [x]
-     (if-not (and (coll? x) (empty? x))
+     (when-not (and (coll? x) (empty? x))
        (if (map? x)
          (if-let [remains (seq (filter second x))]
            (into (empty x) remains))

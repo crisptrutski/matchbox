@@ -14,3 +14,4 @@ pom.xml.asc
 /.nrepl-port
 .noderepl/*
 .nrepl-history
+docs/*

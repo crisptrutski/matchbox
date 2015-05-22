@@ -20,8 +20,7 @@
 
   :auto-clean false
 
-  :profiles {:dev {:dependencies [[om "0.7.3"]
-                                  [com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
+  :profiles {:dev {:dependencies [[com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
                                   [com.cemerick/piggieback "0.2.1"]]
                    :repl-options {:nrepl-middleware
                                   [cljx.repl-middleware/wrap-cljx
@@ -40,13 +39,7 @@
 
   :aot [matchbox.clojure.android-stub]
 
-  :cljsbuild {:builds [{:id "om-value-changes"
-                        :source-paths ["examples/cljs/om-value-changes/src" "src" "target/classes"]
-                        :compiler {:output-to "examples/cljs/om-value-changes/main.js"
-                                   :output-dir "examples/cljs/om-value-changes/out"
-                                   :source-map true
-                                   :optimizations :none }}
-                       {:id "test"
+  :cljsbuild {:builds [{:id "test"
                         :source-paths ["src", "test", "target/classes", "target/test-classes"]
                         :notify-command ["phantomjs" :cljs.test/runner "target/cljs/test.js"]
                         :compiler {:output-to "target/cljs/test.js"
