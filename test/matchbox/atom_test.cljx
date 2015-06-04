@@ -15,15 +15,7 @@
 (def c5 (m/get-in r "5"))
 (def c6 (m/get-in r "6"))
 
-;; TODO: tests (by type)
-;; 1. data read implicitly on creating (with/without cache)
-;; 2. date writen implicitly on creating (with/without cache)
-;; 3. remote updates (deep, shallow) sync localy
-;; 4. local updates (depp, shallow) sync remotely
-;; 5. unlinking works
-
-;; FIXME: figure out agnostic pattern for async tests (promise vs ^:async done)
-;; FIXME: figure out agnostic pattern for running after next sync (promise vs cps?)
+;; FIXME: port this trick so tests run on CLJS also
 #+clj
 (defmacro once-synced
   [& body]
@@ -42,12 +34,12 @@
 
     (def rnd (rand))
 
-    (def atom-1 (a/brute-atom c1))
-    (def atom-2 (a/brute-atom c2 (atom {:initial "state"})))
-    (def atom-3 (a/reset-atom c3))
-    (def atom-4 (a/reset-atom c4 (atom {:data rnd})))
-    (def atom-5 (a/merge-atom c5))
-    (def atom-6 (a/merge-atom c6 (atom {:some {:inital "data"}, :here "because"})))
+    (def atom-1 (a/sync-rw (atom nil) c1))
+    (def atom-2 (a/sync-rw (atom {:initial "state"}) c2))
+    (def atom-3 (a/wrap-atom (atom nil) c3))
+    (def atom-4 (a/wrap-atom (atom {:data rnd}) c4))
+    (def atom-5 (a/wrap-atom (atom nil) c5))
+    (def atom-6 (a/wrap-atom (atom {:some {:inital "data"}, :here "because"}) c6))
 
     (once-synced
      ;; white swapping around helped with alignment, makes error messages confusing
@@ -76,7 +68,8 @@
     (m/reset-in! c6 :b 40)
 
     (once-synced
-     (is (= (-deref atom-6) {:some {:inital "data"}, :here "because", :a "write", :b 40})))
+     (is (= {:some {:inital "data"}, :here "because", :a "write", :b 40}
+            (-deref atom-6))))
 
     (a/unlink! atom-1)
     (a/unlink! atom-2)
@@ -88,7 +81,8 @@
     (m/reset-in! c6 :b 4)
 
     (once-synced
-     (is (= (-deref atom-6) {:some {:inital "data"}, :here "because", :a "write", :b 40}))
+     (is (= {:some {:inital "data"}, :here "because", :a "write", :b 40}
+            (-deref atom-6)))
      (let [p (promise)]
        (m/deref-in c6 :b #(deliver p %))
        (is (= 4 @p))))

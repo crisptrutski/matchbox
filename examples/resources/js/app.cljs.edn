@@ -1,0 +1,2 @@
+{:require  [matchbox-reagent.app]
+ :init-fns [matchbox-reagent.app/init]}

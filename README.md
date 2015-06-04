@@ -86,15 +86,19 @@ Additionally, there are up to three variations of most functions:
    These exist for all functions that would take a callback.
 3. `*-in<` combine decoration of (1) and (2), and exist where applicable.
 
-The last two, if they exist are defined in `matchbox.async`. This is so that Matchbox can be used without a `core.async` dependency.
+The last two, if they exist are defined in `matchbox.async`. This is so that
+Matchbox can be used without a `core.async` dependency.
 
 # Examples
 
 There are some ClojureScript demos in the  `examples` directory.
 
-Those in the `cljs` folder can be compiled from the main project via `lein cljsbuild once <example-name>`, and then run by opening the 'index.html' found in the example directory in a browser.
+Those in the `cljs` folder can be compiled from the main project via
+`lein cljsbuild once <example-name>`, and then run by opening the 'index.html'
+found in the example directory in a browser.
 
-There is also a stand-alone demo project, `reagent-example`. This example can be launched by executing `lein run`, and opening "http://localhost:3000" in a browser.
+There is also a stand-alone demo project, `reagent-example`. This example can be
+launched by executing `lein run`, and opening "http://localhost:3000" in a browser.
 
 ## Gotchas
 

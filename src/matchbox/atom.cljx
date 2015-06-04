@@ -1,8 +1,9 @@
 (ns matchbox.atom
-  (:require [matchbox.core :as m]
+  (:require [clojure.walk :refer [postwalk]]
+            [matchbox.core :as m]
             [matchbox.registry :as mr]))
 
-;; First, pay penance to the elder-platform gods
+;; Shim CLJS-style prototypes into CLJ
 
 #+clj
 (defprotocol ISwap
@@ -26,37 +27,92 @@
   (-add-watch [_ k f])
   (-remove-watch [_ k]))
 
-;; Update strategies
+;; Watch strategies
 
-(defn- -reset-atom [atom]
+(def ^:dynamic *local-sync*)
+
+(def ^:dynamic *remote-sync*)
+
+(defn- strip-nils [data]
+  (postwalk
+   (fn [x]
+     (if (map? x)
+       (into (empty x) (remove (comp nil? second) x))
+       x))
+   data))
+
+(defn- reset-atom
+  "Generate ref listener to sync values back to atom"
+  [atom]
   (fn [[key val]]
-    (reset! atom val)))
+    (when-not (= atom *local-sync*)
+      (binding [*remote-sync* atom]
+        (reset! atom val)))))
 
-(defn- -merge-atom [atom]
+(defn- reset-in-atom
+  "Generate ref listener to sync values back to atom. Scoped to path inside atom."
+  [atom path]
   (fn [[key val]]
-    (swap! atom merge val)))
+    (when-not (= atom *local-sync*)
+      (binding [*remote-sync* atom]
+        (let [val (if (nil? val)
+                    (let [old (get-in @atom path)]
+                      (if (coll? old) (empty old)))
+                    val)]
+          (swap! atom assoc-in path val))))))
 
-(defn- -reset-ref [ref]
-  (fn [_ _ o n]
-    (when (not= o n)
-      (m/reset! ref n))))
+(defn- cascade
+  "Cascade deletes locally, but do not remove the root (keep type and existence stable)"
+  [o n]
+  (or (strip-nils n)
+      (if (coll? n) (empty n))
+      (if (coll? o) (empty o))))
 
-(defn- -swap-failover [cache f args]
-  ;; Fallback to local write if non syncing back
-  (if-not (:matchbox-unsub (meta cache))
+(defn- reset-ref
+  "Generate atom-watch function to sync values back to ref"
+  [ref]
+  (fn [_ atom o n]
+    (when-not (or (= o n) (= atom *remote-sync*))
+      (let [cascaded (cascade o n)]
+        (if-not (= cascaded n)
+          (binding [*remote-sync* atom]
+            (reset! atom cascaded))))
+
+      (binding [*local-sync* atom]
+        (m/reset! ref n)))))
+
+(defn- reset-in-ref
+  "Generate atom-watch function to sync values back to ref. Scoped to path inside atom."
+  [ref path]
+  (fn [_ atom o n]
+    (let [o (get-in o path)
+          n (get-in n path)]
+      (when-not (or (= o n) (= atom *remote-sync*))
+        (let [cascaded (cascade o n)]
+          (if-not (= cascaded n)
+            (binding [*remote-sync* atom]
+              (swap! atom assoc-in path cascaded))))
+
+        (binding [*local-sync* atom]
+          (m/reset! ref n))))))
+
+;; Proxy strategies
+
+(defn- swap-failover [cache f args]
+  (if-not (:matchbox-unsubs (meta cache))
     (apply swap! cache f args)))
 
-(defn- -swap-ref-local [ref cache]
+(defn- swap-ref-local [ref cache]
   (fn [f & args]
-    (or (-swap-failover cache f args)
+    (or (swap-failover cache f args)
         (m/reset! ref (apply f @cache args)))))
 
-(defn- -swap-ref-remote [ref cache]
+(defn- swap-ref-remote [ref cache]
   (fn [f & args]
-    (or (-swap-failover cache f args)
+    (or (swap-failover cache f args)
         (apply m/swap! ref f args))))
 
-;; We have types too
+;; Wrapper type
 
 (declare unlink!)
 
@@ -89,73 +145,90 @@
 
 ;; Watcher/Listener management
 
-;; IDEA: replace or complement with global listener registry
+(defn- attach-unsub [atom unsub]
+  (alter-meta! atom update-in [:matchbox-unsubs] #(conj % unsub)))
 
-;; FIXME: don't let more than atom sync with a ref, or solve coordination
+(defn <-ref
+  "Track changes in ref back to atom, via update function f."
+  [ref atom f]
+  (attach-unsub atom (m/listen-to ref :value f)))
 
-(defn <-ref [ref atom f]
-  (let [unsub (m/listen-to ref :value f)]
-    (alter-meta! atom assoc :matchbox-unsub unsub)))
-
-(defn ->ref [ref atom f]
+(defn ->ref
+  "Track changes in atom back to ref, via update function f."
+  [ref atom f]
   (let [id (gensym)]
     (alter-meta! atom assoc :matchbox-watch id)
     (add-watch atom id f)))
 
+;; Atom factories / decorators
+
+(defn- init-ref!
+  "Set ref with value, if value is not empty or nil."
+  [ref value update? update!]
+  (when-not (or (nil? value) (and (coll? value) (empty? value)))
+    (m/deref ref
+             ;; don't update if the ship has already sailed
+             #(when (update? value)
+                (if (nil? %)
+                  (m/reset! ref value)
+                  (update! %))))))
+
+;; Atom co-ordination
+
+(defn sync-r
+  "Set up one-way sync of atom tracking ref changes. Useful for queries."
+  [atom query & [xform]]
+  (<-ref query atom (reset-atom atom)))
+
+(defn sync-list
+  "Set up one-way sync of atom tracking ordered list of elements. Useful for queries."
+  [atom query & [xform]]
+  (attach-unsub atom (m/listen-list query #(reset! atom %))))
+
+(defn sync-rw
+  "Set up two-way data sync between ref and atom."
+  [atom ref]
+  (init-ref! ref @atom #(reset! atom %) #(= % @atom))
+  (<-ref ref atom (reset-atom atom))
+  (->ref ref atom (reset-ref ref)))
+
+(defn- update-path [atom path & [xform]]
+  #(swap! atom assoc-in path (if xform (xform %) %)))
+
+(defn sync-r-in [atom path query & [xform]]
+  (m/listen-to query :value (update-path atom path xform)))
+
+(defn sync-list-in [atom path query & [xform]]
+  (attach-unsub atom (m/listen-list query (update-path atom path xform))))
+
+(defn sync-rw-in [atom path ref]
+  (init-ref! ref (get-in @atom path)
+             (update-path atom path nil)
+             #(= % (get-in @atom path)))
+  (<-ref ref atom (reset-in-atom atom path))
+  (->ref ref atom (reset-in-ref ref path)))
+
+(defn atom-wrapper
+  "Build atom-proxy with given sync strategies."
+  [atom ref ->update <-update]
+  (<-ref ref atom <-update)
+  (FireAtom. ref atom ->update))
+
+(defn wrap-atom
+  "Build atom-proxy which synchronises with ref via brute force."
+  [atom ref]
+  (init-ref! ref @atom #(reset! atom %) #(= % @atom))
+  (atom-wrapper atom ref
+                (swap-ref-local ref atom)
+                (reset-atom atom)))
+
 (defn unlink!
-  "Stop synchronising atom with Firebase"
+  "Stop synchronising atom with Firebase."
   [atom]
   (if (instance? FireAtom atom)
     (-unlink atom)
-    (let [{id :matchbox-watch, unsub :matchbox-unsub} (meta atom)]
+    (let [{id :matchbox-watch, unsubs :matchbox-unsubs} (meta atom)]
       (when id (remove-watch atom id))
-      (when unsub (mr/disable-listener! unsub))
-      (alter-meta! atom dissoc :matchbox-watch :matchbox-unsub))))
-
-;; Atom factories / decorators
-
-(defn- ensure-cache [& [atom-]]
-  (or atom- (atom nil)))
-
-(defn fire-atom [ref cache ->update <-update]
-  (<-ref ref cache <-update)
-  (FireAtom. ref cache ->update))
-
-(defn brute-atom [ref & [atom-]]
-  (let [cache (ensure-cache atom-)]
-    (if atom- (m/reset! ref @atom-))
-    (<-ref ref cache (-reset-atom cache))
-    (->ref ref cache (-reset-ref ref))
-    cache))
-
-(defn reset-atom [ref & [atom-]]
-  (let [cache (ensure-cache atom-)]
-    (if atom- (m/reset! ref @atom-))
-    (fire-atom ref cache
-               (-swap-ref-local ref cache)
-               (-reset-atom cache))))
-
-;; IDEA: allow ignoring (or better yet, never receiving) first :value
-;;       this allows us to be lazy about pulling and holding a deep tree,
-;        just to sync some shallow read/writes
-
-(defn merge-atom [ref & [atom-]]
-  (let [cache (ensure-cache atom-)]
-    (if atom- (m/merge! ref @atom-))
-    (fire-atom ref cache
-               (-swap-ref-remote ref cache)
-               (-merge-atom cache))))
-
-;; IDEA: minimal-merge-atom
-;; Rather than single merges at the roots, use a diff to make
-;; a deep-merge via focussed m/merge! calls
-
-;; IDEA: fancy-pants-atom
-;; Rather than use a :value listener, build up children listeners
-;; on the various subnodes. Be smart about using vectors,
-;; and read with prioties there. Add listeners based on initial
-;; and local state updates, as well as clean up listeners when
-;; data is removed (locally or remotely).
-;;
-;; Perhaps an option to automatically cascade (up to some limit?)
-;; to track children's children as data gets synced.
+      (doseq [unsub unsubs]
+        (mr/disable-listener! unsub))
+      (alter-meta! atom dissoc :matchbox-watch :matchbox-unsubs))))
