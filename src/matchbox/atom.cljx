@@ -178,35 +178,41 @@
 (defn sync-r
   "Set up one-way sync of atom tracking ref changes. Useful for queries."
   [atom query & [xform]]
-  (<-ref query atom (reset-atom atom)))
+  (<-ref query atom (reset-atom atom))
+  atom)
 
 (defn sync-list
   "Set up one-way sync of atom tracking ordered list of elements. Useful for queries."
   [atom query & [xform]]
-  (attach-unsub atom (m/listen-list query #(reset! atom %))))
+  (attach-unsub atom (m/listen-list query #(reset! atom %)))
+  atom)
 
 (defn sync-rw
   "Set up two-way data sync between ref and atom."
   [atom ref]
   (init-ref! ref @atom #(reset! atom %) #(= % @atom))
   (<-ref ref atom (reset-atom atom))
-  (->ref ref atom (reset-ref ref)))
+  (->ref ref atom (reset-ref ref))
+  atom)
 
 (defn- update-path [atom path & [xform]]
   #(swap! atom assoc-in path (if xform (xform %) %)))
 
 (defn sync-r-in [atom path query & [xform]]
-  (m/listen-to query :value (update-path atom path xform)))
+  (m/listen-to query :value (update-path atom path xform))
+  atom)
 
 (defn sync-list-in [atom path query & [xform]]
-  (attach-unsub atom (m/listen-list query (update-path atom path xform))))
+  (attach-unsub atom (m/listen-list query (update-path atom path xform)))
+  atom)
 
 (defn sync-rw-in [atom path ref]
   (init-ref! ref (get-in @atom path)
              (update-path atom path nil)
              #(= % (get-in @atom path)))
   (<-ref ref atom (reset-in-atom atom path))
-  (->ref ref atom (reset-in-ref ref path)))
+  (->ref ref atom (reset-in-ref ref path))
+  atom)
 
 (defn atom-wrapper
   "Build atom-proxy with given sync strategies."
