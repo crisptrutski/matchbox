@@ -6,7 +6,8 @@
             [matchbox.atom :as a :refer [#+clj -deref #+clj -swap!]]
             [matchbox.registry :as mr]))
 
-(def r (m/connect "https://luminous-torch-5788.firebaseio.com/atom-test"))
+(def r (m/connect "https://luminous-torch-5788.firebaseio.com"
+                  [(str (rand-int 1000)) "atom-test"]))
 
 (def c1 (m/get-in r "1"))
 (def c2 (m/get-in r "2"))
