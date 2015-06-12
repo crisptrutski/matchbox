@@ -333,7 +333,7 @@
    priorities, but reacts to the `order-by-*` scope. This also affects what types
    `value can take on.
 
-  `key` is the child key to end at, and is supported only when ordering by priority."
+  `key` is the child key to compare on, and is supported only when ordering by priority."
   [ref value & [key]]
   (let [value (if (number? value) (double value) value)]
        (if key
