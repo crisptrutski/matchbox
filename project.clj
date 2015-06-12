@@ -11,7 +11,7 @@
                  [com.firebase/firebase-client-jvm "2.2.4" :exclusions [org.apache.httpcomponents/httpclient]]
                  [org.apache.httpcomponents/httpclient "4.4.1"]
 
-                 [cljsjs/firebase "2.2.3-0"]]
+                 [cljsjs/firebase "2.2.7-0"]]
   :deploy-repositories [["releases" :clojars]]
 
   :test-paths ["test", "target/test-classes"]
