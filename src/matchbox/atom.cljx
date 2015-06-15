@@ -43,11 +43,11 @@
 
 (defn- reset-atom
   "Generate ref listener to sync values back to atom"
-  [atom]
+  [atom & [xform]]
   (fn [[key val]]
     (when-not (= atom *local-sync*)
       (binding [*remote-sync* atom]
-        (reset! atom val)))))
+        (reset! atom (if xform (xform val) val))))))
 
 (defn- reset-in-atom
   "Generate ref listener to sync values back to atom. Scoped to path inside atom."
@@ -178,13 +178,13 @@
 (defn sync-r
   "Set up one-way sync of atom tracking ref changes. Useful for queries."
   [atom query & [xform]]
-  (<-ref query atom (reset-atom atom))
+  (<-ref query atom (reset-atom atom xform))
   atom)
 
 (defn sync-list
   "Set up one-way sync of atom tracking ordered list of elements. Useful for queries."
   [atom query & [xform]]
-  (attach-unsub atom (m/listen-list query #(reset! atom %)))
+  (attach-unsub atom (m/listen-list query #(reset! atom (if xform (xform %) %))))
   atom)
 
 (defn sync-rw
