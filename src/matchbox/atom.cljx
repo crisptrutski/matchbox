@@ -1,7 +1,8 @@
 (ns matchbox.atom
   (:require [clojure.walk :refer [postwalk]]
             [matchbox.core :as m]
-            [matchbox.registry :as mr]))
+            [matchbox.registry :as mr])
+  (:import (clojure.lang Atom)))
 
 ;; Shim CLJS-style prototypes into CLJ
 
@@ -19,7 +20,7 @@
 
 #+clj
 (extend-protocol IDeref
-  clojure.lang.Atom
+  Atom
   (-deref [this] @this))
 
 #+clj
@@ -35,16 +36,16 @@
 
 (defn- strip-nils [data]
   (postwalk
-   (fn [x]
-     (if (map? x)
-       (into (empty x) (remove (comp nil? second) x))
-       x))
-   data))
+    (fn [x]
+      (if (map? x)
+        (into (empty x) (remove (comp nil? second) x))
+        x))
+    data))
 
 (defn- reset-atom
   "Generate ref listener to sync values back to atom"
   [atom & [xform]]
-  (fn [[key val]]
+  (fn [[_ val]]
     (when-not (= atom *local-sync*)
       (binding [*remote-sync* atom]
         (reset! atom (if xform (xform val) val))))))
@@ -52,7 +53,7 @@
 (defn- reset-in-atom
   "Generate ref listener to sync values back to atom. Scoped to path inside atom."
   [atom path]
-  (fn [[key val]]
+  (fn [[_ val]]
     (when-not (= atom *local-sync*)
       (binding [*remote-sync* atom]
         (let [val (if (nil? val)
@@ -169,11 +170,11 @@
     (m/deref ref
              ;; don't update if the ship has already sailed
              #(when (update? value)
-                (if (nil? %)
-                  (m/reset! ref value)
-                  (update! %))))))
+               (if (nil? %)
+                 (m/reset! ref value)
+                 (update! %))))))
 
-;; Atom co-ordination
+;; Atom coordination
 
 (defn sync-r
   "Set up one-way sync of atom tracking ref changes. Useful for queries."

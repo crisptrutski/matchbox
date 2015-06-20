@@ -23,13 +23,13 @@
 
 (defn- -cleanup! [data]
   (walk/postwalk
-   (fn [x]
-     (when-not (and (coll? x) (empty? x))
-       (if (map? x)
-         (if-let [remains (seq (filter second x))]
-           (into (empty x) remains))
-         x)))
-   data))
+    (fn [x]
+      (when-not (and (coll? x) (empty? x))
+        (if (map? x)
+          (if-let [remains (seq (filter second x))]
+            (into (empty x) remains))
+          x)))
+    data))
 
 (defn- cleanup!
   "Remove empty branches in `unsubs`"

@@ -4,22 +4,25 @@
   #+clj
   (:import [com.firebase.client
             AuthData
-            ServerValue
+            ChildEventListener
+            Config
+            DataSnapshot
             Firebase
             FirebaseError
             MutableData
-            DataSnapshot
-            ValueEventListener
-            ChildEventListener
+            ServerValue
             Transaction
-            Transaction$Handler])
+            Transaction$Handler
+            ValueEventListener
+            Firebase$CompletionListener
+            Transaction$Result
+            Logger$Level Firebase$AuthResultHandler]
+           (java.util HashMap ArrayList))
   (:require [clojure.string :as str]
+            [clojure.walk :as walk]
             [matchbox.utils :as utils]
             [matchbox.registry :refer [register-listener]]
-            [clojure.walk :as walk]
-            #+cljs cljsjs.firebase))
-
-;; TODO: JVM connect/discconet/on-disconnect
+    #+cljs cljsjs.firebase))
 
 ;; constants
 
@@ -31,22 +34,23 @@
 
 #+clj
 (def logger-levels
-  {:debug com.firebase.client.Logger$Level/DEBUG
-   :info  com.firebase.client.Logger$Level/INFO
-   :warn  com.firebase.client.Logger$Level/WARN
-   :error com.firebase.client.Logger$Level/ERROR
-   :none  com.firebase.client.Logger$Level/NONE})
+  {:debug Logger$Level/DEBUG
+   :info  Logger$Level/INFO
+   :warn  Logger$Level/WARN
+   :error Logger$Level/ERROR
+   :none  Logger$Level/NONE})
 
 #+clj
 (defn set-logger-level! [key]
   (assert (contains? logger-levels key) (format "Unknown logger level: `%s`" key))
-  (.setLogLevel (Firebase/getDefaultConfig)
+  (.setLogLevel ^Config (Firebase/getDefaultConfig)
                 (logger-levels key)))
 
 (def all-events
   (conj child-events :value))
 
-#+cljs (def undefined) ;; firebase methods do not take kindly to nil callbacks
+;; Distinct from nil/null in CLJS, useful for opting out of callbacks
+#+cljs (def undefined)
 
 (def SERVER_TIMESTAMP
   #+clj ServerValue/TIMESTAMP
@@ -64,7 +68,7 @@
 
 #+clj
 (defn- wrap-cb [cb]
-  (reify com.firebase.client.Firebase$CompletionListener
+  (reify Firebase$CompletionListener
     (^void onComplete [_ ^FirebaseError err ^Firebase ref]
       (if err (throw-fb-error err "Cancelled") (cb ref)))))
 
@@ -80,7 +84,7 @@
 #+clj
 (defn- build-tx-handler [f args cb]
   (reify Transaction$Handler
-    (^com.firebase.client.Transaction$Result doTransaction [_ ^MutableData d]
+    (^Transaction$Result doTransaction [_ ^MutableData d]
       (let [current (hydrate (.getValue d))]
         (reset! d (apply f current args))
         (Transaction/success d)))
@@ -91,11 +95,11 @@
 #+clj
 (defn reify-child-listener [{:keys [added changed moved removed]}]
   (reify ChildEventListener
-    (^void onChildAdded [_ ^DataSnapshot d ^String previous-child-name]
+    (^void onChildAdded [_ ^DataSnapshot d ^String _]
       (if added (added (wrap-snapshot d))))
-    (^void onChildChanged [_ ^DataSnapshot d ^String previous-child-name]
+    (^void onChildChanged [_ ^DataSnapshot d ^String _]
       (if changed (changed (wrap-snapshot d))))
-    (^void onChildMoved [_ ^DataSnapshot d ^String previous-child-name]
+    (^void onChildMoved [_ ^DataSnapshot d ^String _]
       (if moved (moved (wrap-snapshot d))))
     (^void onChildRemoved [_ ^DataSnapshot d]
       (if removed (removed (wrap-snapshot d))))
@@ -116,19 +120,18 @@
 
 #+clj
 (defn- hydrate* [x]
-  (cond (instance? java.util.HashMap x)   (recur (into {} x))
-        (instance? java.util.ArrayList x) (recur (into [] x))
-        (map? x)                          (zipmap (map keyword (keys x)) (vals x))
-        :else                             (hydrate-keywords x)))
+  (cond (instance? HashMap x) (recur (into {} x))
+        (instance? ArrayList x) (recur (into [] x))
+        (map? x) (zipmap (map keyword (keys x)) (vals x))
+        :else (hydrate-keywords x)))
 
 (defn hydrate [v]
   #+clj (walk/prewalk hydrate* v)
   #+cljs (walk/postwalk
-          hydrate-keywords
-          (js->clj v :keywordize-keys true)))
+           hydrate-keywords
+           (js->clj v :keywordize-keys true)))
 
 (defn serialize [v]
-  ;; FIXME: refactor to require single pass instead of 2/3
   (->> v
        (walk/stringify-keys)
        (walk/postwalk keywords->strings)
@@ -148,7 +151,6 @@
     #+cljs (.val snapshot)))
 
 (defn- wrap-snapshot [snapshot]
-  ;; TODO: enhance with snapshot protocol
   [(key snapshot) (value snapshot)])
 
 ;; API
@@ -261,13 +263,13 @@
       #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb f))
       #+cljs (.once ref "value" (comp cb f)))
     (let [ds ref-or-ds
-          v  (f ds)]
+          v (f ds)]
       (if cb (cb v) v))))
 
 (defn- -export [ds]
   (hydrate
-   #+clj  (.getValue ds true)
-   #+cljs (.exportVal ds)))
+    #+clj (.getValue ds true)
+    #+cljs (.exportVal ds)))
 
 (defn- -priority [ds]
   (.getPriority ds))
@@ -312,9 +314,9 @@
    `key` is the child key to start at, and is supported only when ordering by priority."
   [ref value & [key]]
   (let [value (if (number? value) (double value) value)]
-       (if key
-         (.startAt ref value (name key))
-         (.startAt ref value))))
+    (if key
+      (.startAt ref value (name key))
+      (.startAt ref value))))
 
 (defn end-at
   "Limit query to end at `value` (inclusive). By default `value` is compared against
@@ -324,9 +326,9 @@
    `key` is the child key to end at, and is supported only when ordering by priority."
   [ref value & [key]]
   (let [value (if (number? value) (double value) value)]
-      (if key
-        (.endAt ref value (name key))
-        (.endAt ref value))))
+    (if key
+      (.endAt ref value (name key))
+      (.endAt ref value))))
 
 (defn equal-to
   "Limit query to `value` (inclusive). By default `value` is compared against
@@ -336,9 +338,9 @@
   `key` is the child key to compare on, and is supported only when ordering by priority."
   [ref value & [key]]
   (let [value (if (number? value) (double value) value)]
-       (if key
-         (.equalTo ref value (name key))
-         (.equalTo ref value))))
+    (if key
+      (.equalTo ref value (name key))
+      (.equalTo ref value))))
 
 (defn take
   "Limit scope to the first `limit` items"
@@ -368,9 +370,6 @@
   []
   @connected)
 
-;; FIXME: find a better abstraction
-;; https://github.com/crisptrutski/matchbox/issues/4
-
 (defn on-disconnect
   "Return an on"
   [ref]
@@ -394,13 +393,13 @@
 
 (defn- auth-data->map [auth-data]
   #+cljs (hydrate auth-data)
-  #+clj  (if auth-data
-           {:uid           (.getUid auth-data)
-            :provider      (keyword (.getProvider auth-data))
-            :token         (.getToken auth-data)
-            :expires       (.getExpires auth-data)
-            :auth          (ensure-kw-map (.getAuth auth-data))
-            :provider-data (ensure-kw-map (.getProviderData auth-data))}))
+  #+clj (if auth-data
+          {:uid           (.getUid auth-data)
+           :provider      (keyword (.getProvider auth-data))
+           :token         (.getToken auth-data)
+           :expires       (.getExpires auth-data)
+           :auth          (ensure-kw-map (.getAuth auth-data))
+           :provider-data (ensure-kw-map (.getProviderData auth-data))}))
 
 (defn- wrap-auth-cb [cb]
   #+cljs
@@ -409,7 +408,7 @@
       (cb err (hydrate info)))
     undefined)
   #+clj
-  (reify com.firebase.client.Firebase$AuthResultHandler
+  (reify Firebase$AuthResultHandler
     (^void onAuthenticated [_ ^AuthData auth-data]
       (if cb (cb nil (auth-data->map auth-data))))
     (^void onAuthenticationError [_ ^FirebaseError err]
@@ -478,7 +477,7 @@
                    ;; subscribe
                    (.addValueEventListener ref (reify-value-listener cb render-fn))
                    (.addChildEventListener ref (reify-child-listener
-                                                (hash-map (strip-prefix type) cb))))]
+                                                 (hash-map (strip-prefix type) cb))))]
     ;; build unsubsubscribe fn
     (fn [] (.removeEventListener ref listener)))
   #+cljs
@@ -516,7 +515,7 @@
 (defn listen-list
   "Subscribe to updates containing full vector or children"
   ([ref cb] (-listen-to ref :value cb get-children))
-  ([ref korks cb] (listen-list (get-in ref korks) cb )))
+  ([ref korks cb] (listen-list (get-in ref korks) cb)))
 
 (defn listen-children
   "Subscribe to all children notifications on a reference.

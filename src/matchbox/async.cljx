@@ -12,13 +12,13 @@
 (defn chan->cb
   "Create callback that pushes non-nil arguments onto given chan"
   [ch]
-  (fn [val] (if val (put! ch val))))
+  (fn [val] (when val (put! ch val))))
 
 (defn chan->cb-once
   "Create callback that pushes arguments onto chan at-most once"
   [ch]
   (fn [val]
-    (if val (put! ch val))
+    (when val (put! ch val))
     (close! ch)))
 
 (defn chan->auth-cb
