@@ -66,9 +66,10 @@
   (with-ref ref
     (m/set! ref 1)
     (m/swap-remote! ref inc)
-    ;; TODO: block on success rather than magic time
-    (Thread/sleep 900)
-    (is (= 2 (-> ref m/read m/<!!)))))
+    ;; TODO: block on success rather than magic time. Also will work
+    ;; with CLJS
+    #?(:clj [(Thread/sleep 900)
+             (is (= 2 (-> ref m/read m/<!!)))])))
 
 (deftest test-priority
   (with-ref ref
