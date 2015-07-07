@@ -1,16 +1,17 @@
 (set-env!
  :resource-paths #{"src" "lib/android-context"}
  :dependencies '[[adzerk/boot-cljs      "0.0-3308-0" :scope "test"]
-                 [adzerk/boot-cljs-repl "0.1.9"      :scope "test"]
+                 [adzerk/boot-cljs-repl "0.1.10-SNAPSHOT"      :scope "test"]
                  [adzerk/boot-reload    "0.3.1"      :scope "test"]
                  [adzerk/boot-test      "1.0.4"      :scope "test"]
-                 [adzerk/bootlaces      "0.1.11"     :scope "test"]
-                 ;;[pandeiro/boot-http    "0.6.0"      :scope "test"]
-                 ;[pandeiro/boot-test-cljs "0.1.0" :scope "test"]
+                 [adzerk/bootlaces      "0.1.11"              :scope "test"]
+                 [pandeiro/boot-http    "0.6.3-SNAPSHOT"      :scope "test"]
 
                  [crisptrutski/android-context-stub "0.0.1"]
 
-                 [org.clojure/clojurescript "0.0-3308" :scope "provided"]
+                 [org.clojure/tools.nrepl "0.2.10" :scope "provided"]
+
+                 [org.clojure/clojurescript        "0.0-3308" :scope "provided"]
                  [org.clojure/core.async           "0.1.346.0-17112a-alpha"]
                  [cljsjs/firebase                  "2.2.7-0"]
                  [com.firebase/firebase-client-jvm "2.3.1"]])
