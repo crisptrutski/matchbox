@@ -2,14 +2,15 @@
   (require [matchbox.coerce :refer [ensure-kw-map]])
   (:import [com.firebase.client Firebase FirebaseError Firebase$AuthResultHandler
                                 DataSnapshot Transaction Transaction$Handler AuthData
-                                MutableData ValueEventListener ChildEventListener]))
+                                MutableData ValueEventListener ChildEventListener Transaction$Result
+                                Firebase$CompletionListener]))
 
 (defn throw-err [err]
   (throw (ex-info "Firebase error" {:error err})))
 
-(defn completion-listene [handler err-handler]
+(defn completion-listener [handler err-handler]
   (assert err-handler)
-   (reify com.firebase.client.Firebase$CompletionListener
+   (reify Firebase$CompletionListener
      (^void onComplete [_ ^FirebaseError err ^Firebase ref]
        (if err
          (err-handler err)
@@ -39,9 +40,9 @@
 (defn tx-handler [xform handler err-handler]
   (assert err-handler)
   (reify Transaction$Handler
-    (^com.firebase.client.Transaction$Result doTransaction
+    (^Transaction$Result doTransaction
       [_ ^MutableData d]
-      (do (reset! d (xform (.getValue d)))
+      (do (.setValue d (xform (.getValue d)))
           (Transaction/success d)))
     (^void onComplete
       [_ ^FirebaseError err ^boolean committed ^DataSnapshot ds]
@@ -59,7 +60,7 @@
 
 (defn auth-handler [handler err-handler]
   (assert err-handler)
-  (reify com.firebase.client.Firebase$AuthResultHandler
+  (reify Firebase$AuthResultHandler
     (^void onAuthenticated [_ ^AuthData result]
       (handler result))
     (^void onAuthenticationError [_ ^FirebaseError err]

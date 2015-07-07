@@ -6,7 +6,7 @@
    (defn build-opts [session-only?]
      (if session-only?
        #js {:remember "sessionOnly"}
-       undefined)))
+       impl/undefined)))
 
 (defn- wrap-auth-cb [f]
   #?(:cljs 
@@ -16,7 +16,7 @@
        identity)
      :clj
      (let [g (if f (comp coerce/hydrate f) identity)]
-       (impl/auth-handler g impl/err-handler))))
+       (impl/auth-handler g impl/throw-err))))
 
 (defn auth [ref email password handler #?(:cljs session-only?)]
   (.authWithPassword ref
@@ -37,7 +37,6 @@
 
 ;; onAuth and offAuth are not wrapped yet
 
-;; this is a super worthwhile wrapper..
 (defn unauth [ref]
   (.unauth ref))
 
