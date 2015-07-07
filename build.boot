@@ -47,6 +47,7 @@
          :description "Workaround for https://groups.google.com/forum/#!searchin/firebase-talk/jvm/firebase-talk/XLbpLpqCdDI/mbXk1AMmOY8J"
          :url         "https://github.com/crisptrutski/matchbox/lib/android-context"
          :license     {"EPL" "http://www.eclipse.org/legal/epl-v10.html"})
+    (javac)
     (jar)
     (install)))
 
