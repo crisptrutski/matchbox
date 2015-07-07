@@ -9,9 +9,9 @@
        impl/undefined)))
 
 (defn- wrap-auth-cb [f]
-  #?(:cljs 
+  #?(:cljs
      ;; evil node-convention call style
-     (if cb
+     (if f
        (fn [err info] (f err (coerce/hydrate info)))
        identity)
      :clj
