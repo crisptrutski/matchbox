@@ -7,7 +7,6 @@
                  [adzerk/bootlaces      "0.1.11"              :scope "test"]
                  [pandeiro/boot-http    "0.6.3-SNAPSHOT"      :scope "test"]
 
-                 [crisptrutski/android-context-stub "0.0.1"]
 
                  [org.clojure/tools.nrepl "0.2.10" :scope "provided"]
 
@@ -52,7 +51,11 @@
     (jar)
     (install)))
 
+(defn add-android-stub []
+  (set-env! :dependencies #(conj % '[crisptrutski/android-context-stub "0.0.1"])))
+
 (deftask dev []
+  (add-android-stub)
   (comp
     ;(serve :dir "target/")
     (watch)
@@ -66,8 +69,3 @@
   (comp
    (watch)
    (test)))
-
-;(deftask autotest-cljs []
-  ;(set-env! :source-paths #(conj % "test"))
-  ;(watch)
-  ;(test-cljs :namespaces #{'matchbox.core-test}))
