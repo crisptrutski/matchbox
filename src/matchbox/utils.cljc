@@ -25,14 +25,15 @@
   "Apply transform to values coming off channel, returns new channel."
   [f in]
   (let [out (async/chan)]
-    (async/go-loop []
-      (let [v (async/<! in)]
-        (if (nil? v)
-          (async/close! out)
-          (let [o (f v)
-                oo (if (nil? o) -nil- o)]
-            (async/>! out oo)
-            (recur)))))
+    (async/go
+      (loop []
+        (let [v (async/<! in)]
+          (if (nil? v)
+            (async/close! out)
+            (let [o (f v)
+                  oo (if (nil? o) -nil- o)]
+              (async/>! out oo)
+              (recur))))))
     out))
 
 #?(:clj (defn normalize-url
