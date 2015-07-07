@@ -1,7 +1,8 @@
 (ns matchbox.coerce-test
-  (:require [clojure.string :as str]
-            [clojure.test :refer :all]
-            [matchbox.coerce :as mc]))
+  (:require #?(:clj [clojure.test :refer :all]
+               :cljs [cljs.test :as t])
+            [matchbox.coerce :as mc])
+  #?(:cljs (:require-macros [cljs.test :refer [deftest testing is]])))
 
 ;; test.check could be interesting here
 
