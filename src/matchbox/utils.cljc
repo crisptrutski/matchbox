@@ -1,6 +1,8 @@
 (ns matchbox.utils
+  #?(:cljs (:require-macros [cljs.core.async.macros :as async]))
   (:require
-    #?(:clj [clojure.core.async :as async]))
+   #?(:clj [clojure.core.async :as async]
+      :cljs [cljs.core.async :as async]))
   #?(:clj (:import [clojure.core.async.impl.channels ManyToManyChannel])))
 
 #?(:clj  (def -out- *out*))
@@ -16,7 +18,7 @@
 (defn safe-prn
   "Print to primary thread, only useful on JVM."
   [& xs]
-  (binding [*out* -out-]
+  (binding [#?@(:clj [*out* -out-])]
     (apply prn xs)))
 
 (defn fmap
@@ -37,4 +39,3 @@
           "Ensure that URL has a valid schema."
           [url]
           (if (re-find #"\w+://" url) url (str "https://" url))))
-
