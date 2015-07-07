@@ -121,7 +121,7 @@
 
 (deftest test-query
   (with-ref ref
-    (prn
-      (.getWireProtocolParams
-        (.getParams
-          (.getSpec (.limitToLast (.orderByValue ref) 30)))))))
+    (is (= {"vf" "r", "i" ".value", "l" 30}
+           (.getWireProtocolParams
+             (.getParams
+               (.getSpec (.limitToLast (.orderByValue ref) 30))))))))
