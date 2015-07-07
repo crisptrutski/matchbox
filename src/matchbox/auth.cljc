@@ -33,7 +33,7 @@
 (defn auth-info
   "Return map of {uid, provider, token, expires}, if there is a session"
   [ref]
-  (some-> ref .getAuth impl/parse-auth))
+  (some-> ref .getAuth #?(:clj impl/parse-auth, :cljs js->clj)))
 
 ;; onAuth and offAuth are not wrapped yet
 
