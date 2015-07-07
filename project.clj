@@ -24,8 +24,6 @@
                    :aliases      {"test-all" ["do" "test,"
                                               "cljsbuild" "once" "test"]}}}
 
-  :aot [matchbox.clojure.android-stub]
-
   :cljsbuild {:builds        [{:id             "test"
                                :source-paths   ["src", "test", "target/classes", "target/test-classes"]
                                :notify-command ["phantomjs" :cljs.test/runner "target/cljs/test.js"]
