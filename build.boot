@@ -6,13 +6,11 @@
                  [adzerk/boot-test      "1.0.4"      :scope "test"]
                  [adzerk/bootlaces      "0.1.11"     :scope "test"]
                  ;;[pandeiro/boot-http    "0.6.0"      :scope "test"]
+                 ;[pandeiro/boot-test-cljs "0.1.0" :scope "test"]
 
                  [crisptrutski/android-context-stub "0.0.1"]
 
-                 ;[pandeiro/boot-test-cljs "0.1.0" :scope "test"]
-
                  [org.clojure/clojurescript "0.0-3308" :scope "provided"]
-
                  [org.clojure/core.async           "0.1.346.0-17112a-alpha"]
                  [cljsjs/firebase                  "2.2.7-0"]
                  [com.firebase/firebase-client-jvm "2.3.1"]])
@@ -63,8 +61,9 @@
 
 (deftask autotest []
   (set-env! :source-paths #(conj % "test"))
-  (watch)
-  (test))
+  (comp
+   (watch)
+   (test)))
 
 ;(deftask autotest-cljs []
   ;(set-env! :source-paths #(conj % "test"))
