@@ -21,7 +21,8 @@
 
 ;; hacks
 
-(def <! (comp u/restore-nil async/<!))
+(def nilify u/restore-nil)
+
 #?(:clj (def <!! (comp u/restore-nil async/<!!)))
 
 ;; /end hacks
