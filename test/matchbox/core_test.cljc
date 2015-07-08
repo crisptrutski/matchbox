@@ -1,17 +1,34 @@
 (ns matchbox.core-test
-  (:require [clojure.string :as str]
+  (:require [matchbox.core :as m]
+    #?@(:clj  [
             [clojure.test :refer :all]
-            [matchbox.core :as m]))
+            [clojure.core.async :as async :refer [go <!]]]
+        :cljs [[cljs.test :as t]
+               [cljs.core.async :as async :refer [<!]]]))
+  #?(:cljs (:require-macros
+             [cljs.test :refer [deftest testing is async]]
+             [cljs.core.async.macros :as async :refer [go]]
+             [matchbox.core-test :refer [with-ref]])))
 
 (def base "http://luminous-torch-5788.firebaseio.com/")
 
-(defmacro with-ref [binding & body]
-  `(let [~binding (m/ref (str base (rand-int 1000)))]
-     ~@body
-     (m/delete! ~binding)))
+#?(:clj
+   (defmacro with-ref [binding & body]
+     `(let [~binding (m/ref (str base (rand-int 1000)))]
+        ~@body
+        (m/delete! ~binding))))
+
+#?(:clj
+   (defmacro async [binding & body]
+     `(let [c#       (async/chan)
+            ~binding #(async/put! c# true)]
+        ~@body
+        (async/<!! c#))))
 
 (deftest ref-test
-  (is (= "https://abc" (.toString (m/ref "abc")))))
+  ;; TODO: work out interop quirkly completely (require .firebaseio.com, add
+  ;; trailing slash), or drop the shim
+  (is (= "https://abc.firebaseio.com" (.toString (m/ref "abc.firebaseio.com")))))
 
 (deftest traverse-test
   (let [root (m/ref base)
@@ -32,27 +49,31 @@
 
 (deftest set!-test
   (with-ref ref
-    (m/set! ref {"key" 432})
+    (async done
+      (go
+        (m/set! ref {"key" 432})
+        (is (= 432 (-> ref (m/get :key) m/read       <!)))
+        ;(is (= 432 (-> ref (m/get :key) m/snapshot   <!           m/read)))
+        ;(is (= 432 (-> ref m/snapshot   (m/get :key) <!           m/read)))
+        ;(is (= 432 (-> ref m/snapshot   <!           (m/get :key) m/read)))
+        (done)))))
 
-    (is (= 432 (-> ref (m/get :key) (m/read) (m/<!!))))
-    (is (= 432 (-> ref (m/get :key) (m/snapshot) (m/<!!) (m/read))))
-    (is (= 432 (-> ref (m/snapshot) (m/get :key) (m/<!!) (m/read))))
-    (is (= 432 (-> ref (m/snapshot) (m/<!!) (m/get :key) (m/read))))))
+#?(:cljs (enable-console-print!))
 
 (deftest conj!-test
   (with-ref ref
-    (m/conj! ref 1)
-    (m/conj! ref 2)
-    (m/conj! ref 3)
+    (async done
+      (go
+        (m/conj! ref 1)
+        (m/conj! ref 2)
+        (m/conj! ref 3)
+        (is (= [1 2 3] (-> ref m/as-vec   <!)))
+        ;(is (= [1 2 3] (-> ref m/snapshot <! m/as-vec)))
+        (is (= #{1 2 3} (into #{} (vals (-> ref m/export <!)))))
+        (is (nil? (-> ref m/priority <! m/nilify)))
+        (done)))))
 
-    (is (= [1 2 3] (-> ref (m/as-vec) (m/<!!))))
-    (is (= [1 2 3] (-> ref (m/snapshot) (m/<!!) (m/as-vec))))
-    (is (= [1 2 3] (-> ref (m/snapshot) (m/<!!) (m/as-vec))))
-    (is (= [1 2 3] (-> ref (m/snapshot) (m/<!!) (m/as-vec))))
-
-    (is (= #{1 2 3} (into #{} (vals (-> ref m/export m/<!!)))))
-    (is (nil? (-> ref m/priority m/<!!)))))
-
+#?(:clj (do
 (deftest swap!-test
   (with-ref ref
     (m/set! ref 1)
@@ -125,3 +146,5 @@
            (.getWireProtocolParams
              (.getParams
                (.getSpec (.limitToLast (.orderByValue ref) 30))))))))
+
+))

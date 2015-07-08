@@ -1,11 +1,14 @@
 (ns matchbox.core
-  (:refer-clojure :exclude [ref key set! swap! conj! get get-in read])
+  (:refer-clojure :exclude [ref key set! swap! #?(:cljs -swap!) conj! get get-in read])
+  #?(:cljs  (:require-macros [cljs.core.async.macros :as asnyc]))
   (:require
-    #?(:cljs [cljsjs.firebase])
-    [matchbox.impl :as impl]
-    [matchbox.coerce :as c]
-    [matchbox.utils :as u]
-    #?(:clj [clojure.core.async :as async]))
+   #?(:cljs [cljsjs.firebase])
+   [matchbox.impl :as impl]
+   [matchbox.coerce :as c]
+   [matchbox.utils :as u]
+   #?(:clj [clojure.core.async :as async]
+      :cljs  [cljs.core.async :as async])
+   #?(:cljs [cljs.core.async.impl.channels :refer [ManyToManyChannel]]))
   #?(:clj
      (:import [com.firebase.client Firebase Query DataSnapshot ServerValue]
               [clojure.core.async.impl.channels ManyToManyChannel])))
@@ -71,6 +74,7 @@
   (get    [ref key]  (.child ref (name key)))
   (get-in [ref path] (reduce get ref path)))
 
+#?(:clj
 (extend-type DataSnapshot
   ITraversible
   (key    [ss]      (-> ss #?(:clj .getKey    :cljs .key) keyword))
@@ -78,6 +82,7 @@
   (parent [ss]      (-> ss #?(:clj .getParent :cljs .parent)))
   (get    [ss key]  (.child ss (name key)))
   (get-in [ss path] (reduce get ss path)))
+)
 
 ;; consider moving to "sugar" namespace
 
@@ -122,8 +127,9 @@
 
   (-swap! [ref f args local?]
     ;; TODO: replace safe-prn with sensible or omitted callbacks
-    (let [handler (impl/tx-handler #(apply f % args) u/safe-prn u/safe-prn)]
-      (.runTransaction ref handler local?)))
+    #?(:clj
+       (let [handler (impl/tx-handler #(apply f % args) u/safe-prn u/safe-prn)]
+         (.runTransaction ref handler local?))))
 
   (remove! [ref key]
     (-> ref (get key) delete!))
@@ -154,7 +160,7 @@
   (as-vec   [ch] (u/fmap as-vec ch))
   (export   [ch] (u/fmap export ch))
   (priority [ch] (u/fmap priority ch)))
-
+#?(:clj
 (extend-type DataSnapshot
   IReadable
   (snapshot [ss] ss)
@@ -165,6 +171,7 @@
   (as-vec   [ss] (mapv read (.getChildren ss)))
   (export   [ss] (c/hydrate (.getValue ss true)))
   (priority [ss] (.getPriority ss)))
+)
 
 
 ;; listen
@@ -182,16 +189,17 @@
       ;; TODO: assert types do not mix children- and value
       ;; TODO: strip child- prefix
       ;; TODO: move this ugliness down to impl
-      (if (and (not (coll? type_s)) (= "value" (name type_s)))
-        (.addListenerForSingleValueEvent
-              ref
-              (impl/value-listener #(do (async/put! ch %)
-                                        (async/close! ch))
-                                   #(do (prn 'err %))))
-        (let [types (if (string? type_s) [type_s] type_s)]
-          (.addChildEventListener ref
-                                  (impl/child-listener
-                                    (build-callbacks types ch)))))
+      #?(:clj
+         (if (and (not (coll? type_s)) (= "value" (name type_s)))
+           (.addListenerForSingleValueEvent
+            ref
+            (impl/value-listener #(do (async/put! ch %)
+                                      (async/close! ch))
+                                 #(do (prn 'err %))))
+           (let [types (if (string? type_s) [type_s] type_s)]
+             (.addChildEventListener ref
+                                     (impl/child-listener
+                                      (build-callbacks types ch))))))
       ch)))
 
 ;; re: off!
