@@ -2,3 +2,10 @@
 *.iml
 .nrepl-*
 target/
+.lein-*
+pom.xml.*
+.repl
+pom.xml
+.noderepl
+out
+testable.js
