@@ -1,5 +1,5 @@
 (set-env!
- :resource-paths #{"src" "lib/android-context"}
+ :resource-paths #{"src"}
  :dependencies '[[adzerk/boot-cljs      "0.0-3308-0" :scope "test"]
                  [adzerk/boot-cljs-repl "0.1.10-SNAPSHOT"      :scope "test"]
                  [adzerk/boot-reload    "0.3.1"      :scope "test"]
@@ -33,9 +33,9 @@
  '[adzerk.boot-reload    :refer [reload]]
  '[adzerk.boot-test      :refer :all]
  '[boot.pod              :refer [make-pod]]
- ;'[pandeiro.http         :refer [serve]]
- #_'[pandeiro.boot-test-cljs :refer [test-cljs]]
- )
+ '[pandeiro.boot-http    :refer [serve]]
+
+ '[doo.core              :as doo])
 
 (deftask build-android-stub []
   (set-env! :src-paths nil
@@ -55,14 +55,15 @@
   (set-env! :dependencies #(conj % '[crisptrutski/android-context-stub "0.0.1"])))
 
 (deftask dev []
+  (set-env! :source-paths (constantly #{"src" "test"}))
   (add-android-stub)
   (comp
-    ;(serve :dir "target/")
+    (serve :dir "target/")
     (watch)
     (speak)
     (reload)
     (cljs-repl)
-    (cljs :unified-mode true :source-map true :optimizations :none)))
+    (cljs :source-map true :optimizations :none)))
 
 (deftask autotest []
   (set-env! :source-paths #(conj % "test"))
