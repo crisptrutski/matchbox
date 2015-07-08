@@ -53,9 +53,9 @@
       (go
         (m/set! ref {"key" 432})
         (is (= 432 (-> ref (m/get :key) m/read       <!)))
-        ;(is (= 432 (-> ref (m/get :key) m/snapshot   <!           m/read)))
-        ;(is (= 432 (-> ref m/snapshot   (m/get :key) <!           m/read)))
-        ;(is (= 432 (-> ref m/snapshot   <!           (m/get :key) m/read)))
+        (is (= 432 (-> ref (m/get :key) m/snapshot   <!           m/read-)))
+        (is (= 432 (-> ref m/snapshot   (m/get :key) <!           m/read-)))
+        (is (= 432 (-> ref m/snapshot   <!           (m/get :key) m/read-)))
         (done)))))
 
 #?(:cljs (enable-console-print!))

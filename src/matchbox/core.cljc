@@ -57,6 +57,8 @@
   (priority [_]) ;; metadata
   (export   [_])) ;; data + meta data
 
+(defn read- [x] (read x))
+
 (defprotocol IListenable
   (once [_ type_s]) ;; guess this does have some uses - eg. gimme the first deletion
   (on   [_ type_s])
