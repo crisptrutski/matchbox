@@ -7,7 +7,8 @@
                  [adzerk/bootlaces      "0.1.11"              :scope "test"]
                  [pandeiro/boot-http    "0.6.3-SNAPSHOT"      :scope "test"]
 
-                 [doo "0.1.2-SNAPSHOT"]
+                 [doo "0.1.2-SNAPSHOT" :scope "test"]
+                 [crisptrutski/boot-cljs-test "0.1.0-SNAPSHOT" :scope "test"]
 
                  [org.clojure/tools.nrepl "0.2.10" :scope "provided"]
 
@@ -36,7 +37,7 @@
  '[boot.pod              :refer [make-pod]]
  '[pandeiro.boot-http    :refer [serve]]
 
- '[doo.core              :as doo])
+ '[crisptrutski.boot-cljs-test :refer [test-cljs]])
 
 (deftask build-android-stub []
   (set-env! :src-paths nil
@@ -66,45 +67,12 @@
     (cljs-repl)
     (cljs :source-map true :optimizations :none)))
 
-
-(require 'doo.core)
-(require 'cljs.build.api)
-
-(deftask test-cljs
-  "Run cljs.test tests in a pod.
-
-   The --namespaces option specifies the namespaces to test. The default is to
-   run tests in all namespaces found in the project.
-
-   The --filters option specifies Clojure expressions that are evaluated with %
-   bound to a Var in a namespace under test. All must evaluate to true for a Var to
-   be considered for testing by clojure.test/test-vars."
-  [e js-env     VAL kw     "The environment to run tests within, eg. slimer, phantom, node, or rhino"
-   n namespaces NS  #{sym} "Namespaces whose tests will be run. All tests will be run if ommitted."
-   x exit?          bool   "Exit immediately with reporter's exit code."]
-  (let [js-env     (or js-env :phantom)
-        tmp-file   "testable.js"
-        main-ns    'example.runner
-        inputs     (into (get-env :source-paths)
-                         (get-env :resource-paths))
-        cljs-paths (apply cljs.build.api/inputs inputs)]
-    (fn [next-task]
-      (fn [fileset]
-        (cljs.build.api/build cljs-paths
-                              {:output-to     tmp-file
-                               :main          main-ns
-                               :optimizations :whitespace})
-        (let [{:keys [exit]} (doo.core/run-script js-env tmp-file)]
-          (if exit?
-            (System/exit exit)
-            (next-task fileset)))))))
-
 (deftask testing []
   (add-android-stub)
   (set-env! :source-paths #(conj % "test"))
   identity)
 
-(deftask test-all []
+(deftask autotest []
   (comp
    (testing)
    (watch)
