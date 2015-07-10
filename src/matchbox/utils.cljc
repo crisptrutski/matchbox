@@ -10,6 +10,13 @@
 (def ^{:doc "Placeholder value to send `nil` through channel."}
   -nil- (gensym))
 
+#?(:clj
+   (defmacro with-let [[binding expr & rest] & body]
+     (assert (empty? rest))
+     `(let [~binding ~expr]
+        ~@body
+        ~binding)))
+
 (defn restore-nil
   "Recover nil values from channel output."
   [x]

@@ -7,7 +7,6 @@
                  [adzerk/bootlaces      "0.1.11"              :scope "test"]
                  [pandeiro/boot-http    "0.6.3-SNAPSHOT"      :scope "test"]
 
-                 [doo "0.1.2-SNAPSHOT" :scope "test"]
                  [crisptrutski/boot-cljs-test "0.1.0-SNAPSHOT" :scope "test"]
 
                  [org.clojure/tools.nrepl "0.2.10" :scope "provided"]
