@@ -1,5 +1,6 @@
 (ns matchbox.impl
-  (require [matchbox.coerce :refer [ensure-kw-map]])
+  (require [matchbox.coerce :refer [ensure-kw-map]]
+           [matchbox.utils :as u])
   (:import [com.firebase.client Firebase FirebaseError Firebase$AuthResultHandler
                                 DataSnapshot Transaction Transaction$Handler AuthData
                                 MutableData ValueEventListener ChildEventListener Transaction$Result
@@ -10,32 +11,30 @@
 
 (defn completion-listener [handler err-handler]
   (assert err-handler)
-   (reify Firebase$CompletionListener
-     (^void onComplete [_ ^FirebaseError err ^Firebase ref]
-       (if err
-         (err-handler err)
-         (handler ref)))))
+  (reify Firebase$CompletionListener
+    (^void onComplete [_ ^FirebaseError err ^Firebase ref]
+      (if err
+        (err-handler err)
+        (handler ref)))))
 
-(defn value-listener [handler err-handler]
-  (assert err-handler)
+(defn value-listener [handler cancel-handler]
+  (assert cancel-handler)
   (reify ValueEventListener
-    (^void onDataChange [_ ^DataSnapshot ds]   (handler ds))
-    (^void onCancelled  [_ ^FirebaseError err] (err-handler err))))
+    (^void onDataChange [_ ^DataSnapshot ds] (handler ds))
+    (^void onCancelled [_ ^FirebaseError err] (cancel-handler err))))
 
 (defn child-listener [{:keys [added changed moved removed cancelled]}]
   (reify ChildEventListener
-    (^void onChildAdded   [_ ^DataSnapshot ds ^String old-key]
+    (^void onChildAdded [_ ^DataSnapshot ds ^String old-key]
       (when added (added ds)))
     (^void onChildChanged [_ ^DataSnapshot ds ^String old-key]
-      (when added (added ds)))
-    (^void onChildMoved   [_ ^DataSnapshot ds ^String old-key]
+      (when added (changed ds)))
+    (^void onChildMoved [_ ^DataSnapshot ds ^String old-key]
       (when moved (moved ds)))
     (^void onChildRemoved [_ ^DataSnapshot ds]
       (when removed (removed ds)))
     (^void onCancelled [_ ^FirebaseError err]
-      ;; double check this... perhaps better to do nothing
-      ;; (does this happen on any unsubscribe?)
-      ((or cancelled throw-err) err))))
+      (when cancelled (cancelled err)))))
 
 (defn tx-handler [xform handler err-handler]
   (assert err-handler)
@@ -49,6 +48,14 @@
       (if err
         (err-handler err committed)
         (when handler (handler ds))))))
+
+(defn add-value-listener [ref handler err-handler]
+  (.addListenerForSingleValueEvent
+    ref (value-listener handler err-handler)))
+
+(defn add-child-listeners [ref handlers]
+  (.addChildEventListener
+    ref (child-listener handlers)))
 
 (defn parse-auth [^AuthData result]
   {:uid           (.getUid result)
@@ -65,8 +72,3 @@
       (handler result))
     (^void onAuthenticationError [_ ^FirebaseError err]
       (err-handler))))
-
-;; TODO:
-;; 1. Ensure downstream callers all handle hydration etc now [ie. tests]
-;; 2. Ensure err-handler always passed, then remove assert [ie. tests]
-;; 3. doc-strings?

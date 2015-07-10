@@ -8,7 +8,8 @@
   #?(:cljs (:require-macros
              [cljs.test :refer [deftest testing is async]]
              [cljs.core.async.macros :as async :refer [go]]
-             [matchbox.core-test :refer [with-ref]])))
+             [matchbox.core-test :refer [with-ref]]))
+  #?(:clj (:import (com.firebase.client Firebase))))
 
 (def base "http://luminous-torch-5788.firebaseio.com/")
 
@@ -52,13 +53,11 @@
     (async done
       (go
         (m/set! ref {"key" 432})
-        (is (= 432 (-> ref (m/get :key) m/read       <!)))
-        (is (= 432 (-> ref (m/get :key) m/snapshot   <!           m/read-)))
-        (is (= 432 (-> ref m/snapshot   (m/get :key) <!           m/read-)))
-        (is (= 432 (-> ref m/snapshot   <!           (m/get :key) m/read-)))
+        (is (= 431 (-> ref (m/get :key) m/read       <!)))
+        ;; (is (= 432 (-> ref (m/get :key) m/snapshot   <!           m/read-)))
+        ;; (is (= 432 (-> ref m/snapshot   (m/get :key) <!           m/read-)))
+        ;; (is (= 432 (-> ref m/snapshot   <!           (m/get :key) m/read-)))
         (done)))))
-
-#?(:cljs (enable-console-print!))
 
 (deftest conj!-test
   (with-ref ref
@@ -85,12 +84,17 @@
 
 (deftest swap-remote!-test
   (with-ref ref
-    (m/set! ref 1)
-    (m/swap-remote! ref inc)
-    ;; TODO: block on success rather than magic time. Also will work
-    ;; with CLJS
-    #?(:clj [(Thread/sleep 900)
-             (is (= 2 (-> ref m/read m/<!!)))])))
+    (go (<! (m/set!! ref 1))
+        (<! (m/swap-remote!! ref inc))
+        (is (= 2 (-> ref m/read m/<!!))))))
+
+;; demonstrate that wrapper works.. (but seemingly.. only in CLJ :'(...)
+(comment
+  (go (matchbox.utils/safe-prn (<! (m/read- (m/snapshot (m/get (m/ref base) "32"))))))
+  (go (matchbox.utils/safe-prn (m/read- (<! (m/snapshot (m/get (m/ref base) "32")))))))
+
+(m/set! (m/get  (m/ref base) "32") 3)
+(m/read (async/<!! (m/snapshot (m/get  (m/ref base) "32"))))
 
 (deftest test-priority
   (with-ref ref
@@ -125,7 +129,10 @@
 
 (deftest test-as-map!
   (with-ref ref
-    ;; (m/set! ref {0 :a 1 :b 2 :c})
+    (m/set! ref [:a :b :c])
+    (is (= [:a :b :c] (-> ref m/read m/<!!)))
+    (is (= {0 :a 1 :b 2 :c} (-> ref m/as-map m/<!!)))
+
     (m/set! ref {"0" :a "1" :b "2" :c})
     (is (= [:a :b :c] (-> ref m/read m/<!!)))
     (is (= {0 :a 1 :b 2 :c} (-> ref m/as-map m/<!!)))))
@@ -145,6 +152,4 @@
     (is (= {"vf" "r", "i" ".value", "l" 30}
            (.getWireProtocolParams
              (.getParams
-               (.getSpec (.limitToLast (.orderByValue ref) 30))))))))
-
-))
+               (.getSpec (.limitToLast (.orderByValue ^Firebase ref) 30))))))))))
