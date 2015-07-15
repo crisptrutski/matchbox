@@ -29,7 +29,7 @@
 (deftest ref-test
   ;; TODO: work out interop quirkly completely (require .firebaseio.com, add
   ;; trailing slash), or drop the shim
-  (is (= "https://abc.firebaseio.com" (.toString (m/ref "abc.firebaseio.com")))))
+  (is (= "https://abc.firebaseio.com/" (.toString (m/ref "abc.firebaseio.com/")))))
 
 (deftest traverse-test
   (let [root (m/ref base)
