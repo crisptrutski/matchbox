@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.7](https://github.com/crisptrutski/matchbox/tree/0.0.7) (2015-08-02)
+
+- Update dependencies
+
+- New atom-sync mechanisms
+
+## [0.0.6](https://github.com/crisptrutski/matchbox/tree/0.0.6) (2015-03-30)
+
+- Smooth differences between platforms
+
+- Basic atom-sync mechanisms
+
 ## [0.0.5](https://github.com/crisptrutski/matchbox/tree/0.0.5) (2015-03-25)
 
 **Implemented enhancements:**
