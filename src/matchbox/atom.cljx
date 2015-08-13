@@ -2,6 +2,7 @@
   (:require [clojure.walk :refer [postwalk]]
             [matchbox.core :as m]
             [matchbox.registry :as mr])
+  #+clj
   (:import (clojure.lang Atom)))
 
 ;; Shim CLJS-style prototypes into CLJ
