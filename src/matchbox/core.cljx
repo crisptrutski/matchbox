@@ -62,7 +62,6 @@
 (declare hydrate)
 (declare reset!)
 
-#+clj
 (defn throw-fb-error [err & [msg]]
   (throw (ex-info (or msg "FirebaseError") {:err err})))
 
@@ -198,8 +197,6 @@
   #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb get-children))
   #+cljs (.once ref "value" (comp cb #(get-children %))))
 
-(declare deref-in)
-
 (defn reset! [ref val & [cb]]
   #+clj
   (if-not cb
@@ -208,8 +205,8 @@
   #+cljs (.set ref (serialize val) (if cb
                                      (fn [err]
                                        (if err
-                                         (throw err)
-                                         (deref-in ref cb)))
+                                         (throw-fb-error err)
+                                         (cb ref)))
                                      undefined)))
 
 (defn reset-with-priority! [ref val priority & [cb]]
@@ -220,8 +217,8 @@
                            (if cb
                              (fn [err]
                                (if err
-                                 (throw err)
-                                 (deref-in ref cb)))
+                                 (throw-fb-error err)
+                                 (cb ref)))
                              undefined)))
 
 (defn merge! [ref val & [cb]]
@@ -233,8 +230,8 @@
   (.update ref (serialize val) (if cb
                                  (fn [err]
                                    (if err
-                                     (throw err)
-                                     (deref-in ref cb)))
+                                     (throw-fb-error err)
+                                     (cb ref)))
                                  undefined)))
 
 (defn conj! [ref val & [cb]]
@@ -249,8 +246,8 @@
                     (if cb
                       (fn [err]
                         (if err
-                          (throw err)
-                          (deref-in ref @k cb)))
+                          (throw-fb-error err)
+                          (cb (get-in ref @k))))
                       undefined))))
            @k))
 
@@ -265,8 +262,8 @@
       (.transaction ref f' (if cb
                              (fn [err]
                                (if err
-                                 (throw err)
-                                 (deref-in ref cb)))
+                                 (throw-fb-error err)
+                                 (cb ref)))
                              undefined)))))
 
 (defn dissoc! [ref & [cb]]
