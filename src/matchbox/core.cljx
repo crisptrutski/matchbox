@@ -198,6 +198,8 @@
   #+clj (.addListenerForSingleValueEvent ref (reify-value-listener cb get-children))
   #+cljs (.once ref "value" (comp cb #(get-children %))))
 
+(declare deref-in)
+
 (defn reset! [ref val & [cb]]
   #+clj
   (if-not cb
@@ -234,8 +236,6 @@
                                      (throw err)
                                      (deref-in ref cb)))
                                  undefined)))
-
-(declare deref-in)
 
 (defn conj! [ref val & [cb]]
   #+clj (let [r (.push ref)]
