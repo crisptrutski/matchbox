@@ -203,13 +203,24 @@
   (if-not cb
     (.setValue ref (serialize val))
     (.setValue ref (serialize val) (wrap-cb cb)))
-  #+cljs (.set ref (serialize val) (or cb undefined)))
+  #+cljs (.set ref (serialize val) (if cb
+                                     (fn [err]
+                                       (if err
+                                         (throw err)
+                                         (deref-in ref cb)))
+                                     undefined)))
 
 (defn reset-with-priority! [ref val priority & [cb]]
   #+clj (if-not cb
           (.setValue ref (serialize val) priority)
           (.setValue ref (serialize val) priority (wrap-cb cb)))
-  #+cljs (.setWithPriority ref (serialize val) priority (or cb undefined)))
+  #+cljs (.setWithPriority ref (serialize val) priority
+                           (if cb
+                             (fn [err]
+                               (if err
+                                 (throw err)
+                                 (deref-in ref cb)))
+                             undefined)))
 
 (defn merge! [ref val & [cb]]
   #+clj
@@ -217,14 +228,28 @@
     (.updateChildren ref (serialize val))
     (.updateChildren ref (serialize val) (wrap-cb cb)))
   #+cljs
-  (.update ref (serialize val) (or cb undefined)))
+  (.update ref (serialize val) (if cb
+                                 (fn [err]
+                                   (if err
+                                     (throw err)
+                                     (deref-in ref cb)))
+                                 undefined)))
+
+(declare deref-in)
 
 (defn conj! [ref val & [cb]]
   #+clj (let [r (.push ref)]
           (reset! r val cb)
           (key r))
-  #+cljs (key (.push ref (serialize val)
-                     (or cb undefined))))
+  #+cljs (let [k (key
+                  (.push ref (serialize val)
+                         (if cb
+                           (fn [err]
+                             (if err
+                               (throw err)
+                               (deref-in ref k cb)))
+                           undefined)))]
+           k))
 
 (defn swap!
   "Update value atomically, with local optimistic writes"
@@ -234,7 +259,12 @@
     (.runTransaction ref (build-tx-handler f args cb) true)
     #+cljs
     (let [f' #(-> % hydrate ((fn [x] (apply f x args))) serialize)]
-      (.transaction ref f' (or cb undefined)))))
+      (.transaction ref f' (if cb
+                             (fn [err]
+                               (if err
+                                 (throw err)
+                                 (deref-in ref cb)))
+                             undefined)))))
 
 (defn dissoc! [ref & [cb]]
   #+clj
