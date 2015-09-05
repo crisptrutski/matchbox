@@ -220,8 +220,11 @@
   (.update ref (serialize val) (or cb undefined)))
 
 (defn conj! [ref val & [cb]]
-  #+clj (reset! (.push ref) val cb)
-  #+cljs (.push ref (serialize val) (or cb undefined)))
+  #+clj (let [r (.push ref)]
+          (reset! r val cb)
+          (key r))
+  #+cljs (key (.push ref (serialize val)
+                     (or cb undefined))))
 
 (defn swap!
   "Update value atomically, with local optimistic writes"

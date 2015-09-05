@@ -41,7 +41,7 @@
         p1   (promise)
         p2   (promise)]
     (m/listen-to ref :child-added #(deliver p1 %))
-    (m/conj! ref val)
+    (is (string? (m/conj! ref val)))
     (is (= val (last @p1)))
     (m/listen-to ref (first @p1) :value #(deliver p2 %))
     (is (= @p1 @p2))))
