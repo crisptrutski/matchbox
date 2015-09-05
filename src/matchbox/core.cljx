@@ -241,15 +241,18 @@
   #+clj (let [r (.push ref)]
           (reset! r val cb)
           (key r))
-  #+cljs (let [k (key
-                  (.push ref (serialize val)
-                         (if cb
-                           (fn [err]
-                             (if err
-                               (throw err)
-                               (deref-in ref k cb)))
-                           undefined)))]
-           k))
+  #+cljs (let [k (atom nil)]
+           (clojure.core/reset!
+            k
+            (key
+             (.push ref (serialize val)
+                    (if cb
+                      (fn [err]
+                        (if err
+                          (throw err)
+                          (deref-in ref @k cb)))
+                      undefined))))
+           @k))
 
 (defn swap!
   "Update value atomically, with local optimistic writes"
