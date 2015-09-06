@@ -47,10 +47,8 @@
 (m/reset! r {:deep {:route "secret"}})
 
 ;; Let's read that data back
-;; Note: We'll get a tuple of [<key> value], where <key> is the name
-;; of the immediate parent, or `nil` if you're reading from the root.
 (m/deref r safe-prn)
-;; => [<key> {:deep {:route "secret"}}]
+;; => {:deep {:route "secret"}}
 
 ;; We can also pass a callback, eg. to know once the value is persisted
 ;; The callback will receive the reference written to.
@@ -60,7 +58,7 @@
 ;; Note: going forward I'm omitting key portion in output comments
 (def child (m/get-in r [:deep :route]))
 (m/deref child safe-prn)
-;; => ["route" "better-secret"]
+;; => "better-secret"
 
 ;; We can also get back to parents (unlike a cursor)
 (= r (-> child m/parent m/parent))
@@ -83,7 +81,9 @@
 ;; Now lets add a persistent listener:
 (def listener
   (m/listen-to r :value (partial safe-prn ['listen-to :value])))
-;; (note that it immediately prints the current value)
+;; NOTE: this callback will fire with initial value as soon as it is loaded.
+;; NOTE: the callback receives [<key> value] pair, where <key> is the name
+;; of the immediate parent, or `nil` if you're reading from the root.
 
 ;; And get a sub-reference and helper function ready
 (def child (m/get-in r :less))
@@ -182,7 +182,7 @@
 ;; It can also listen to more granular children events, for example:
 (m/listen-to r :abcde :child-added safe-prn)
 (doseq [i [1 3 3 7]]
-  (m/conj-in! r :abcdee i))
+  (m/conj-in! r :abcde i))
 (mr/disable-listeners!)
 
 ;; The listen of child events handled:
