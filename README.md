@@ -7,7 +7,9 @@
 
 # Current version
 
-[![Clojars Project](http://clojars.org/matchbox/latest-version.svg)](http://clojars.org/matchbox)
+```
+[matchbox "0.0.8-SNAPSHOT"]
+```
 
 # Features
 
