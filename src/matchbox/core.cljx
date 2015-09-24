@@ -52,6 +52,8 @@
 ;; Distinct from nil/null in CLJS, useful for opting out of callbacks
 #+cljs (def undefined)
 
+#+cljs (def Firebase js/Firebase)
+
 (def SERVER_TIMESTAMP
   #+clj ServerValue/TIMESTAMP
   #+cljs js/Firebase.ServerValue.TIMESTAMP)
@@ -462,12 +464,12 @@
 
 (defn auth-custom
   "Authenticates a Firebase client using an authentication token or Firebase Secret."
-  ([#+clj ^Firebase ref secret]
+  ([^Firebase ref secret]
    (auth-custom ref secret nil))
-  ([#+clj ^Firebase ref secret cb]
+  ([^Firebase ref secret cb]
    (.authWithCustomToken ref secret (wrap-auth-cb cb)))
   #+cljs
-  ([#+clj ^Firebase ref secret cb session-only?]
+  ([^Firebase ref secret cb session-only?]
    (.authWithCustomToken ref
                          secret
                          (wrap-auth-cb cb)
