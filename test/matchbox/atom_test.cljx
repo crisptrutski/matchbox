@@ -9,6 +9,8 @@
 (def r (m/connect "https://luminous-torch-5788.firebaseio.com"
                   [(str (rand-int 1000)) "atom-test"]))
 
+(m/reset! r nil)
+
 (def c1 (m/get-in r "1"))
 (def c2 (m/get-in r "2"))
 (def c3 (m/get-in r "3"))
