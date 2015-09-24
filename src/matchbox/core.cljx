@@ -439,7 +439,7 @@
   (if cb
     (fn [err info]
       (cb err (hydrate info)))
-    undefined)
+    identity)
   #+clj
   (reify Firebase$AuthResultHandler
     (^void onAuthenticated [_ ^AuthData auth-data]
@@ -451,14 +451,27 @@
   (.authWithPassword ref
                      #+cljs #js {:email email, :password password}
                      #+clj email #+clj password
-                     (or (wrap-auth-cb cb) identity)
+                     (wrap-auth-cb cb)
                      #+cljs (build-opts session-only?)))
 
 (defn auth-anon [ref & [cb session-only?]]
   (.authAnonymously ref
-                    (or (wrap-auth-cb cb) identity)
+                    (wrap-auth-cb cb)
                     ;; Note: session-only? ignored on JVM
                     #+cljs (build-opts session-only?)))
+
+(defn auth-custom
+  "Authenticates a Firebase client using an authentication token or Firebase Secret."
+  ([#+clj ^Firebase ref secret]
+   (auth-custom ref secret nil))
+  ([#+clj ^Firebase ref secret cb]
+   (.authWithCustomToken ref secret (wrap-auth-cb cb)))
+  #+cljs
+  ([#+clj ^Firebase ref secret cb session-only?]
+   (.authWithCustomToken ref
+                         secret
+                         (wrap-auth-cb cb)
+                         (build-opts session-only?))))
 
 (defn auth-info
   "Returns a map of uid, provider, token, expires - or nil if there is no session"

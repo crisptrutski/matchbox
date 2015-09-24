@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.8-SNAPSHOT
+
+- Custom authentication wrapper [\#41](http://github.com/crisptrutski/matchbox/issues/41)
+
 ## [0.0.7](https://github.com/crisptrutski/matchbox/tree/0.0.7) (2015-08-02)
 
 - Update dependencies
