@@ -36,6 +36,14 @@
 (defn auth-anon< [ref & [session-only?]]
   (with-chan #(m/auth-anon ref (chan->auth-cb %) session-only?)))
 
+(defn auth-custom<
+  "Authenticates a Firebase client using an authentication token or Firebase Secret."
+  ([ref secret]
+   (with-chan #(m/auth-custom ref secret (chan->auth-cb %))))
+  #+cljs
+  ([ref secret session-only?]
+   (with-chan #(m/auth-custom ref secret (chan->auth-cb %) session-only?))))
+
 ;; async
 
 (defn deref< [ref]
