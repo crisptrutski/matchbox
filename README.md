@@ -93,16 +93,18 @@ Matchbox can be used without a `core.async` dependency.
 
 # Examples
 
-There are some ClojureScript demos in the  `examples` directory.
+1) There are some ClojureScript demos in the `examples` directory.
 
 Those in the `cljs` folder can be compiled from the main project via
 `lein cljsbuild once <example-name>`, and then run by opening the 'index.html'
 found in the example directory in a browser.
 
-There is also a stand-alone demo project, `reagent-example`. This example can be
+2) There is also a stand-alone demo project, `reagent-example`. This example can be
 launched by executing `lein run`, and opening "http://localhost:3000" in a browser.
 
-## Gotchas
+3) If you'd like to use `re-frame`, there is [a realtime chat app showcase](https://github.com/Quantisan/re-frame-firebase-example).
+
+# Gotchas
 
 1. `swap!` takes callback in non-standard way
 
