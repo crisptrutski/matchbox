@@ -36,7 +36,7 @@ Quick spin to get some basic flavour:
 
 (m/listen-children
   root [:users :mike :friends]
-  (fn [event-type data] (prn data)))
+  (fn [[event-type data]] (prn data)))
 
 (def mikes-friends (m/get-in root [:users :mike :friends]))
 (m/reset! mikes-friends [{:name "Kid A"} {:name "Kid B"}])
