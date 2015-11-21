@@ -449,9 +449,12 @@
     (^void onAuthenticationError [_ ^FirebaseError err]
       (if cb (cb err nil)))))
 
-(defn create-user [ref email password & [cb]]
+(defn create-user
+  "create-user creates a user in the Firebase built-in authentication server"
+  [ref email password & [cb]]
   (.createUser ref
                #+cljs #js {:email email, :password password}
+               #+clj email #+clj password
                (wrap-auth-cb cb)))
 
 (defn auth [ref email password & [cb session-only?]]
