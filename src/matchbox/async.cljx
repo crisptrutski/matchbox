@@ -44,6 +44,11 @@
   ([ref secret session-only?]
    (with-chan #(m/auth-custom ref secret (chan->auth-cb %) session-only?))))
 
+;; users
+
+(defn create-user< [ref email password]
+  (with-chan #(m/create-user ref email password (chan->cb-once %))))
+
 ;; async
 
 (defn deref< [ref]
