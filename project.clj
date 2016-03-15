@@ -27,7 +27,7 @@
                                    cemerick.piggieback/wrap-cljs-repl]}
                    :plugins [[com.keminglabs/cljx "0.6.0"]
                              [quickie "0.3.6"]
-                             [lein-cljsbuild "1.0.3" :scope "test"]
+                             [lein-cljsbuild "1.1.3" :scope "test"]
                               [com.jakemccrary/lein-test-refresh "0.6.0"]
                              [com.cemerick/clojurescript.test "0.3.3" :scope "test"]
                              [com.keminglabs/cljx "0.6.0" :exclusions [com.cemerick/piggieback]]
