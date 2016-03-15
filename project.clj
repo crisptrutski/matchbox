@@ -6,12 +6,12 @@
   :authors ["verma", "crisptrutski"]
   :min-lein-version "2.5.0"
   :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.7.122" :scope "provided"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha" :scope "provided"]
-                 [com.firebase/firebase-client-jvm "2.4.0" :exclusions [org.apache.httpcomponents/httpclient]]
-                 [org.apache.httpcomponents/httpclient "4.5.1"]
+                 [org.clojure/clojurescript "1.7.228" :scope "provided"]
+                 [org.clojure/core.async "0.2.374" :scope "provided"]
+                 [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
+                 [org.apache.httpcomponents/httpclient "4.5.2"]
 
-                 [cljsjs/firebase "2.3.1-0"]]
+                 [cljsjs/firebase "2.4.1-0"]]
   :deploy-repositories [["releases" :clojars]]
 
   :test-paths ["test", "target/test-classes"]
