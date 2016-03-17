@@ -7,7 +7,7 @@
             [matchbox.registry :as mr]))
 
 (def r (m/connect "https://luminous-torch-5788.firebaseio.com"
-                  [(str (rand-int 1000)) "atom-test"]))
+                  [(str (+ 1000 (rand-int 1000))) "atom-test"]))
 
 (m/reset! r nil)
 
@@ -46,12 +46,12 @@
 
     (once-synced
      ;; white swapping around helped with alignment, makes error messages confusing
-     #_(is (= (-deref atom-1) nil))
-     #_(is (= (-deref atom-2) {:initial "state"}))
-     #_(is (= (-deref atom-3) nil))
-     #_(is (= (-deref atom-4) {:data rnd}))
-     #_(is (= (-deref atom-5) nil))
-     #_(is (= (-deref atom-6) {:some {:inital "data"}, :here "because"})))
+     (is (= (-deref atom-1) nil))
+     (is (= (-deref atom-2) {:initial "state"}))
+     (is (= (-deref atom-3) nil))
+     (is (= (-deref atom-4) {:data rnd}))
+     (is (= (-deref atom-5) nil))
+     (is (= (-deref atom-6) {:some {:inital "data"}, :here "because"})))
 
     (swap! atom-1 assoc :a "write")
     (swap! atom-2 assoc :a "write")
