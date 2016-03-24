@@ -16,7 +16,7 @@
 (defn no-op [& _])
 
 (defn extract-cb [args]
-  (if (and (>= 2 (count args))
+  (if (and (>= (count args) 2)
            (= (first (take-last 2 args)) :callback))
     [(last args) (drop-last 2 args)]
     [nil args]))
