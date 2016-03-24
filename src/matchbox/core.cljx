@@ -262,10 +262,10 @@
     #+cljs
     (let [f' #(-> % hydrate ((fn [x] (apply f x args))) serialize)]
       (.transaction ref f' (if cb
-                             (fn [err]
+                             (fn [err committed? ds]
                                (if err
                                  (throw-fb-error err)
-                                 (cb ref)))
+                                 (cb (value ds))))
                              undefined)))))
 
 (defn dissoc! [ref & [cb]]
