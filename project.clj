@@ -5,8 +5,8 @@
   :authors ["verma", "crisptrutski"]
 
   :dependencies
-  [[org.clojure/clojure "1.7.0" :scope "provided"]
-   [org.clojure/clojurescript "1.7.228" :scope "provided"]
+  [[org.clojure/clojure "1.8.0" :scope "provided"]
+   [org.clojure/clojurescript "1.8.34" :scope "provided"]
    [org.clojure/core.async "0.2.374" :scope "provided"]
    [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
    [org.apache.httpcomponents/httpclient "4.5.2"]
