@@ -14,13 +14,25 @@
 
   :aot [matchbox.clojure.android-stub]
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
-  :min-lein-version "2.5.2"
+
+  ;; Having trouble enforcing this on Travis
+  ;; 1. Default is 2.5.1
+  ;; 2. Cannot set version in .travis.yml
+  ;; 3. Cannot run `lein upgrade` on container based VM
+
+  ;; :min-lein-version "2.5.2"
 
   :profiles {:dev {:plugins [[lein-cljsbuild "1.1.3" :scope "test"]
                              [com.jakemccrary/lein-test-refresh "0.6.0"]
                              [com.cemerick/clojurescript.test "0.3.3" :scope "test"]]
                    :aliases {"test-all" ["do" "clean,"
-                                         "test,"
+                                         ;; Workaround for lein 2.5.1
+                                         "test"
+                                           "matchbox.atom-test"
+                                           "matchbox.common-test"
+                                           "matchbox.registry-test"
+                                           "matchbox.serialization-test"
+                                           "matchbox.utils-test,"
                                          "cljsbuild" "test"]}}}
 
   :cljsbuild {:builds [{:source-paths ["src" "test"]
