@@ -1,7 +1,7 @@
 (ns matchbox.async
   (:require [matchbox.core :as m]
-            [#+clj clojure.core.async
-             #+cljs cljs.core.async
+            [#?(:clj clojure.core.async
+                :cljs cljs.core.async)
              :refer [<! >! chan put! close!]]))
 
 (defn with-chan
@@ -40,9 +40,9 @@
   "Authenticates a Firebase client using an authentication token or Firebase Secret."
   ([ref secret]
    (with-chan #(m/auth-custom ref secret (chan->auth-cb %))))
-  #+cljs
-  ([ref secret session-only?]
-   (with-chan #(m/auth-custom ref secret (chan->auth-cb %) session-only?))))
+  #?(:cljs
+      ([ref secret session-only?]
+       (with-chan #(m/auth-custom ref secret (chan->auth-cb %) session-only?)))))
 
 ;; users
 

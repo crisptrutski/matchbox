@@ -1,28 +1,30 @@
 (ns matchbox.serialization-test
-  #+cljs (:require-macros
-          [cemerick.cljs.test :refer [deftest is testing done block-or-done]]
-          [cljs.core.async.macros :refer [go]])
-  (:require #+cljs [cemerick.cljs.test :as t]
-            #+clj [clojure.test :as t :refer [deftest is testing]]
-            #+clj [cemerick.cljs.test :refer [block-or-done]]
-            [matchbox.core :as m]
-            [matchbox.async :as ma]
-            [matchbox.registry :as mr]
-            [matchbox.testing :refer [db-uri random-ref]]
-            [matchbox.testing
-             #+clj :refer
-             #+cljs :refer-macros [is=
-                                   round-trip=
-                                   round-trip<
-                                   block-test]
-             #+cljs :include-macros #+cljs true]
-            [#+clj clojure.core.async
-             #+cljs cljs.core.async
-             :refer [chan <! >! #+clj go]]))
+  #?(:cljs
+     (:require-macros
+       [cemerick.cljs.test :refer [deftest is testing done]]
+       [cljs.core.async.macros :refer [go]]))
+  (:require
+    #?(:clj [clojure.test :refer [deftest is testing]]
+        :cljs [cemerick.cljs.test])
+    [matchbox.core :as m]
+    [matchbox.testing :refer [db-uri random-ref]]
+    [matchbox.testing
+     #?@(:clj [:refer [is=
+                       round-trip=
+                       round-trip<
+                       block-test]]
+         :cljs [:refer-macros [is=
+                               round-trip=
+                               round-trip<
+                               block-test]
+                :include-macros true])]
+    [#?(:clj clojure.core.async
+        :cljs cljs.core.async)
+     :refer [chan <! >! #?(:clj go)]]))
 
 ;; serialize / deserialize (specs)
 
-#+clj
+#?(:clj
 (deftest serialize-test
   ;; map keys from keywords -> strings
   (let [orig {:hello "world" :bye "world"}
@@ -34,9 +36,9 @@
     (doseq [x [true [1 2 3 4] 150.0 "hello" #{1 2 3} '(3 2 1)]]
       (is (= x (m/serialize x)))))
   (testing "keyword"
-    (is (= ":a" (m/serialize :a)))))
+    (is (= ":a" (m/serialize :a))))))
 
-#+clj
+#?(:clj
 (deftest hydrate-test
   ;; map keys from strings -> keywords
   (let [orig {"hello" "world" "bye" "world"}
@@ -46,10 +48,10 @@
   ;; values are unchanged
   (testing "bool, long, float, vector, string, keyword, set, list"
     (doseq [x [true [1 2 3 4] 150.0 "hello" :a #{1 2 3} '(3 2 1)]]
-      (is (= x (m/hydrate x))))))
+      (is (= x (m/hydrate x)))))))
 
 (deftest serialize-hydrate-test
-  (is (= {:a 1, :b #+cljs [:b :a] #+clj #{:a :b}}
+  (is (= {:a 1, :b #?(:cljs [:b :a] :clj #{:a :b})}
          (m/hydrate
           (m/serialize {"a" 1, "b" #{:a :b}})))))
 
@@ -68,18 +70,14 @@
     ;; Cast down from extended types though
     (round-trip= 3.0 3N)
     (round-trip< 4M value
-                 #+clj
-                 (is (instance? java.lang.Double value))
-                 #+cljs
-                 (is (= js/Number (type value))))
+                 #?(:clj (is (instance? Double value))
+                    :cljs (is (= js/Number (type value)))))
     ;; Unless the decimal portion is explicit..
     (round-trip< 4.0M value
-                 #+clj
-                 (is (instance? java.lang.Double value))
-                 #+cljs
-                 (is (= js/Number (type value))))
-    #+clj
-    (round-trip= 4.3E90 4.3E90M))
+                 #?(:clj (is (instance? Double value))
+                    :cljs (is (= js/Number (type value)))))
+    #?(:clj
+       (round-trip= 4.3E90 4.3E90M)))
 
   (testing "strings"
     (round-trip= "feeling myself" "feeling myself"))

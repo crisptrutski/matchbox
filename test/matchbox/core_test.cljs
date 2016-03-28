@@ -1,10 +1,12 @@
 (ns matchbox.core-test
-  (:require-macros [cemerick.cljs.test :refer [is deftest done]]
-                   [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cemerick.cljs.test :as t]
-            [cljs.core.async :refer [<!]]
-            [matchbox.core :as m]
-            [matchbox.testing :refer [random-ref]]))
+  (:require-macros
+    [cemerick.cljs.test :refer [is deftest done]]
+    [cljs.core.async.macros :refer [go go-loop]])
+  (:require
+    [cemerick.cljs.test]
+    [cljs.core.async :refer [<!]]
+    [matchbox.core :as m]
+    [matchbox.testing :refer [random-ref]]))
 
 (deftest ^:async reset!-test
   (let [ref (random-ref)]
