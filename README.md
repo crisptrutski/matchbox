@@ -8,7 +8,7 @@
 # Current version
 
 ```
-[matchbox "0.0.8-SNAPSHOT"]
+[matchbox "0.0.8"]
 ```
 
 # Features

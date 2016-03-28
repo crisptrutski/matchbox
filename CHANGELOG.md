@@ -1,8 +1,20 @@
 # Changelog
 
-## 0.0.8-SNAPSHOT
+## 0.0.9-SNAPSHOT
+
+## [0.0.8](https://github.com/crisptrutski/matchbox/tree/0.0.7)(2016-03-28)
+
+- Remove CLJX dev dependency
+
+- Bump underlying dependencies
 
 - Custom authentication wrapper [\#41](http://github.com/crisptrutski/matchbox/issues/41)
+
+- Return generated key from `conj!`
+
+- Small fixes (eg. callback value for `swap!`, type hints, some missing aliases)
+
+- Don't automatically chain `deref` for callback on writes
 
 ## [0.0.7](https://github.com/crisptrutski/matchbox/tree/0.0.7) (2015-08-02)
 
