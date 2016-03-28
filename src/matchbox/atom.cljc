@@ -2,32 +2,32 @@
   (:require [clojure.walk :refer [postwalk]]
             [matchbox.core :as m]
             [matchbox.registry :as mr])
-  #+clj
-  (:import (clojure.lang Atom)))
+  #?(:clj
+      (:import (clojure.lang Atom))))
 
 ;; Shim CLJS-style prototypes into CLJ
 
-#+clj
-(defprotocol ISwap
-  (-swap!
-    [_ f]
-    [_ f a]
-    [_ f a b]
-    [_ f a b xs]))
+#?(:clj
+    (defprotocol ISwap
+      (-swap!
+        [_ f]
+        [_ f a]
+        [_ f a b]
+        [_ f a b xs])))
 
-#+clj
-(defprotocol IDeref
-  (-deref [_]))
+#?(:clj
+    (defprotocol IDeref
+      (-deref [_])))
 
-#+clj
-(extend-protocol IDeref
-  Atom
-  (-deref [this] @this))
+#?(:clj
+    (extend-protocol IDeref
+      Atom
+      (-deref [this] @this)))
 
-#+clj
-(defprotocol IWatchable
-  (-add-watch [_ k f])
-  (-remove-watch [_ k]))
+#?(:clj
+    (defprotocol IWatchable
+      (-add-watch [_ k f])
+      (-remove-watch [_ k])))
 
 ;; Watch strategies
 
@@ -122,7 +122,8 @@
   (-unlink [_] "Remove any sync between local and firebase state"))
 
 (deftype FireAtom [ref cache ->update]
-  #+cljs IAtom
+  #?(:cjs IAtom)
+
   ISwap
   (-swap! [_ f]
     (->update f))

@@ -1,7 +1,7 @@
 (ns matchbox.registry-test
-  #+cljs (:require-macros [cemerick.cljs.test :refer [is deftest done]])
-  (:require #+cljs [cemerick.cljs.test :as t]
-            #+clj [clojure.test :as t :refer [deftest is]]
+  #?(:cljs (:require-macros [cemerick.cljs.test :refer [is deftest done]]))
+  (:require #?(:cljs [cemerick.cljs.test]
+               :clj [clojure.test :refer [deftest is]])
             [matchbox.registry :as r]))
 
 (reset! r/unsubs {})

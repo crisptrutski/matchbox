@@ -6,8 +6,8 @@
             [clojure.string :as str]
             ;; these are optional, can use matchbox without core.asyn in project
             [matchbox.async :as ma]
-            [#+clj clojure.core.async
-             #+cljs cljs.core.async
+            [#?(:clj clojure.core.async
+                :cljs cljs.core.async)
              :as async]))
 
 
@@ -30,12 +30,12 @@
 
 ;; JVM only - you can adjust log level, but only before first API call
 ;; Let's set it to the most verbose settings
-#+clj (try (m/set-logger-level! :debug)
-           (catch Throwable e "Too late to set log level"))
+#?(:clj
+(try (m/set-logger-level! :debug)
+     (catch Throwable e "Too late to set log level")))
 
 ;; Supported logger levels
-#+clj (prn (keys m/logger-levels))
-
+#?(:clj (prn (keys m/logger-levels)))
 
 ;; Get a reference the root (update the URI with your app's name)
 (def base-uri "https://luminous-torch-5788.firebaseio.com/")

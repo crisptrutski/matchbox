@@ -23,12 +23,11 @@
 
 ;;
 
-#+clj
-(def repl-out *out*)
+#?(:clj (def repl-out *out*))
 
-#+clj
-(defn prn
-  "Like clojure.core/prn, but always bound to root thread's *out*"
-  [& args]
-  (binding [*out* repl-out]
-    (apply clojure.core/prn args)))
+#?(:cj
+    (defn prn
+      "Like clojure.core/prn, but always bound to root thread's *out*"
+      [& args]
+      (binding [*out* repl-out]
+        (apply clojure.core/prn args))))

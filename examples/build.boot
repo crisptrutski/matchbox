@@ -5,7 +5,6 @@
                  [adzerk/boot-cljs-repl "0.1.9"      :scope "test"]
                  [adzerk/boot-reload    "0.2.4"      :scope "test"]
                  [pandeiro/boot-http    "0.6.1"      :scope "test"]
-                 [deraen/boot-cljx      "0.3.0"]
                  [org.clojure/clojurescript "0.0-3165"]
                  [reagent "0.5.0"]
                  [org.omcljs/om "0.8.6"]
@@ -16,8 +15,7 @@
  '[adzerk.boot-cljs      :refer [cljs]]
  '[adzerk.boot-cljs-repl :refer [cljs-repl start-repl]]
  '[adzerk.boot-reload    :refer [reload]]
- '[pandeiro.boot-http    :refer [serve]]
- '[deraen.boot-cljx      :refer [cljx]])
+ '[pandeiro.boot-http    :refer [serve]]])
 
 (deftask build []
   (comp (speak)
@@ -27,7 +25,6 @@
 (deftask run []
   (comp (serve)
         (watch)
-        (cljx)
         (cljs-repl)
         (reload)
         (build)))
