@@ -51,7 +51,7 @@ Quick spin to get some basic flavour:
 (m/unauth)
 ```
 
-Take a look at the [quick intro](docs/quick_intro.cljx) to for a lightning tour.
+Take a look at the [quick intro](docs/quick_intro.cljc) to for a lightning tour.
 
 # Overview
 
