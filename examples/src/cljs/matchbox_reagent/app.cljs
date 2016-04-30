@@ -1,8 +1,9 @@
 (ns matchbox-reagent.app
-  (:require [reagent.core :as reagent]
-            [matchbox-reagent.chat.reagent :as re-chat]
-            [matchbox-reagent.dice.reagent :as re-dice]
-            [matchbox-reagent.dice.om :as om-dice]))
+  (:require
+    [reagent.core :as reagent]
+    [matchbox-reagent.chat.reagent :as re-chat]
+    [matchbox-reagent.dice.reagent :as re-dice]
+    [matchbox-reagent.dice.om :as om-dice]))
 
 (def demos
   {"Chat (reagent)" re-chat/init
@@ -17,8 +18,9 @@
         id# (name (gensym))
         new (.createElement js/document "div")]
     (reset! last-id id#)
-    ;; (.remove old)
-    ;; (.setAttribute old "style" "display:none")
+    (when old
+      (.remove old)
+      (.setAttribute old "style" "display:none"))
     (.setAttribute new "id" id#)
     (.appendChild (.-body js/document) new)
     ;; ready to attack demo
