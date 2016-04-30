@@ -56,7 +56,7 @@
 
   For removing a single listener, see `disable-listener!`"
   [& [ref type :as path]]
-  (let [ref (if ref (str ref))]
+  (let [ref (when ref (str ref))]
     (case (count path)
       0 (do (disable-all! (flatten-vals @unsubs))
             (reset! unsubs {}))
