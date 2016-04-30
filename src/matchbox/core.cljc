@@ -26,7 +26,7 @@
     [clojure.string :as str]
     [clojure.walk :as walk]
     [matchbox.utils :as utils]
-    [matchbox.registry :refer [register-listener]]
+    [matchbox.registry :refer [register-listener register-auth-listener disable-auth-listener!]]
     #?(:cljs cljsjs.firebase)))
 
 ;; constants
@@ -523,7 +523,13 @@
   [ref]
   (auth-data->map (.getAuth ref)))
 
-;; onAuth and offAuth are not wrapped yet
+;; onAuth and offAuth are not fully wrapped yet
+
+(defn onAuth [ref cb]
+  (register-auth-listener ref cb (wrap-auth-cb cb)))
+
+(defn offAuth [ref cb]
+  (disable-auth-listener! ref cb))
 
 (defn unauth [ref]
   (.unauth ref))
