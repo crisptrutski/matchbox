@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.0.9-SNAPSHOT
+## 0.0.10-SNAPSHOT
+
+## 0.0.9(2016-04-30)
+
+- Add OAuth wrappers for CLJS
 
 ## [0.0.8](https://github.com/crisptrutski/matchbox/tree/0.0.7)(2016-03-28)
 
