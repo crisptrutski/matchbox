@@ -435,7 +435,7 @@
   #?(:cljs
       (if cb
         (fn [err info]
-          (cb err (hydrate info)))
+          (cb err (js->clj info :keywordize-keys true)))
         identity)
      :clj
       (reify Firebase$AuthResultHandler
