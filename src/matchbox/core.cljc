@@ -1,6 +1,7 @@
 (ns matchbox.core
-  (:refer-clojure :exclude [get-in set! reset! conj! swap! dissoc! deref parents key
-                            take take-last])
+  (:refer-clojure
+    :exclude
+    [get-in set! reset! conj! swap! dissoc! deref parents key take take-last])
   #?(:clj
      (:import
        [com.firebase.client
@@ -400,9 +401,7 @@
   []
   @connected)
 
-(defn on-disconnect
-  "Return an on"
-  [ref]
+(defn on-disconnect [ref]
   #?(:cljs (.onDisconnect ref)))
 
 (defn cancel [ref-disconnect & [cb]]
