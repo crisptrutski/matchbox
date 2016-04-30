@@ -483,21 +483,27 @@
   ([ref type]
     (auth-with-oauth-popup ref type undefined))
   ([ref type cb]
-    (.authWithOAuthPopup ref type (wrap-auth-cb cb)))))
+    (.authWithOAuthPopup ref type (wrap-auth-cb cb)))
+  ([ref type cb options]
+   (.authWithOAuthPopup ref type (wrap-auth-cb cb) (clj->js options)))))
 
 #?(:cljs
    (defn auth-with-oauth-redirect
      ([ref type]
       (auth-with-oauth-redirect ref type undefined))
      ([ref type cb]
-      (.authWithOAuthRedirect ref type (wrap-auth-cb cb)))))
+      (.authWithOAuthRedirect ref type (wrap-auth-cb cb)))
+     ([ref type cb options]
+      (.authWithOAuthRedirect ref type (wrap-auth-cb cb) (clj->js options)))))
 
 #?(:cljs
    (defn auth-with-oauth-token
      ([ref type token-or-obj]
       (auth-with-oauth-token ref type token-or-obj undefined))
      ([ref type token-or-obj cb]
-      (.authWithOAuthToken ref type token-or-obj (wrap-auth-cb cb)))))
+      (.authWithOAuthToken ref type token-or-obj (wrap-auth-cb cb)))
+     ([ref type token-or-obj cb options]
+      (.authWithOAuthToken ref type token-or-obj (wrap-auth-cb cb) (clj->js options)))))
 
 (defn auth-info
   "Returns a map of uid, provider, token, expires - or nil if there is no session"
