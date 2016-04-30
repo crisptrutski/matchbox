@@ -1,4 +1,4 @@
-(defproject matchbox "0.0.8"
+(defproject matchbox "0.0.9"
   :description "Firebase bindings for Clojure(Script)"
   :url "http://github.com/crisptrutski/matchbox"
   :license {:name "Eclipse Public License" :url "http://www.eclipse.org/legal/epl-v10.html"}
