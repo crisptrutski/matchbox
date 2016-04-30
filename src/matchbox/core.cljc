@@ -18,7 +18,9 @@
         ValueEventListener
         Firebase$CompletionListener
         Transaction$Result
-        Logger$Level Firebase$AuthResultHandler]
+        Logger$Level
+        Firebase$AuthResultHandler
+        Firebase$AuthStateListener]
        (java.util HashMap ArrayList)))
   (:require
     [clojure.string :as str]
@@ -430,6 +432,17 @@
              :expires       (.getExpires auth-data)
              :auth          (ensure-kw-map (.getAuth auth-data))
              :provider-data (ensure-kw-map (.getProviderData auth-data))})))
+
+(defn wrap-auth-changed [cb]
+  #?(:cljs
+     (if cb
+       (fn [err info]
+         (cb err (js->clj info :keywordize-keys true)))
+       identity)
+     :clj
+     (reify Firebase$AuthStateListener
+       (^void onAuthStateChanged [_ ^AuthData auth-data]
+         (if cb (cb nil (auth-data->map auth-data)))))))
 
 (defn- wrap-auth-cb [cb]
   #?(:cljs
