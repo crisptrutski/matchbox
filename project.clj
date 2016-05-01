@@ -10,7 +10,8 @@
    [org.clojure/core.async "0.2.374" :scope "provided"]
    [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
    [org.apache.httpcomponents/httpclient "4.5.2"]
-   [cljsjs/firebase "2.4.1-0"]]
+   [cljsjs/firebase "2.4.1-0"]
+   [org.clojure/tools.namespace "0.2.11" :scope "test"]]
 
   :aot [matchbox.clojure.android-stub]
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
