@@ -85,7 +85,7 @@
 
   For removing a single listener, see `disable-listener!`"
   [& [ref type :as path]]
-  (let [ref (if ref (str ref))]
+  (let [ref (when ref (str ref))]
     (case (count path)
       0 (do (disable-all! (flatten-vals @unsubs))
             (reset! unsubs {}))
@@ -94,3 +94,30 @@
       2 (do (disable-all! (flatten-vals (get-in @unsubs [ref type])))
             (swap! unsubs update-in [ref] #(dissoc % type))))
     (cleanup!)))
+
+;; nested maps of {ref {fn wrapped-fn}}
+(defonce auth-listeners (atom {}))
+
+(defn register-auth-listener [ref cb]
+  (let [wrapped-cb cb]
+    (comment (call-interop-here ...))
+    (swap! auth-listeners conj [cb wrapped-cb])))
+
+(defn -disable-auth-listener! [ref cb]
+  (let [passed-cb (get-in @auth-listeners [ref cb] cb)]
+    (comment (call-interop-here ...))))
+
+(defn disable-auth-listener! [ref cb]
+  (-disable-auth-listener! ref cb)
+  (swap! auth-listeners dissoc cb))
+
+(defn disable-auth-listeners!
+  ([]
+   (doseq [[ref cbs] @auth-listeners]
+     (doseq [[_ wrapped-cb] cbs]
+       (-disable-auth-listener! ref wrapped-cb)))
+   (reset! auth-listeners {}))
+  ([ref]
+    (doseq [[_ wrapped-cb] (get @auth-listeners ref)]
+      (-disable-auth-listener! ref wrapped-cb))
+    (swap! auth-listeners dissoc ref)))

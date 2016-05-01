@@ -22,9 +22,11 @@
 
   ;; :min-lein-version "2.5.2"
 
+  :doo {:verbose true}
+
   :profiles {:dev {:plugins [[lein-cljsbuild "1.1.3" :scope "test"]
-                             [com.jakemccrary/lein-test-refresh "0.6.0"]
-                             [com.cemerick/clojurescript.test "0.3.3" :scope "test"]]
+                             [lein-doo "0.1.6"]
+                             [com.jakemccrary/lein-test-refresh "0.6.0"]]
                    :aliases {"test-all" ["do" "clean,"
                                          ;; Workaround for lein 2.5.1
                                          "test"
@@ -33,13 +35,13 @@
                                            "matchbox.registry-test"
                                            "matchbox.serialization-test"
                                            "matchbox.utils-test,"
-                                         "cljsbuild" "test"]}}}
+                                         "doo" "phantom" "test" "once"]}}}
 
-  :cljsbuild {:builds [{:source-paths ["src" "test"]
-                        ;;:notify-command ["phantomjs" :cljs.test/runner "target/cljs/test.js"]
+  :cljsbuild {:builds [{:id "test"
+                        :source-paths ["src" "test"]
                         :compiler {:output-to "target/cljs/test.js"
-                                   :optimizations :whitespace
-                                   :pretty-print true}}]
+                                   :main matchbox.runner
+                                   :optimizations :none}}]
               :test-commands {"unit-tests" ["phantomjs" :runner
                                             "this.literal_js_was_evaluated=true"
                                             "target/cljs/test.js"]}})

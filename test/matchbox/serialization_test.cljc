@@ -1,22 +1,20 @@
 (ns matchbox.serialization-test
   #?(:cljs
      (:require-macros
-       [cemerick.cljs.test :refer [deftest is testing done]]
+       [cljs.test :refer [deftest is testing async]]
        [cljs.core.async.macros :refer [go]]))
   (:require
     #?(:clj [clojure.test :refer [deftest is testing]]
-        :cljs [cemerick.cljs.test])
+        :cljs [cljs.test])
     [matchbox.core :as m]
     [matchbox.testing :refer [db-uri random-ref]]
     [matchbox.testing
      #?@(:clj [:refer [is=
                        round-trip=
-                       round-trip<
-                       block-test]]
+                       round-trip<]]
          :cljs [:refer-macros [is=
                                round-trip=
-                               round-trip<
-                               block-test]
+                               round-trip<]
                 :include-macros true])]
     [#?(:clj clojure.core.async
         :cljs cljs.core.async)

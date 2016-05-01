@@ -1,7 +1,7 @@
 (ns matchbox.atom-test
-  #?(:cljs (:require-macros [cemerick.cljs.test :refer [is deftest done]]))
+  #?(:cljs (:require-macros [cljs.test :refer [is deftest async]]))
   (:require
-    #?(:cljs [cemerick.cljs.test]
+    #?(:cljs [cljs.test]
        :clj [clojure.test :refer [deftest is testing]])
     [matchbox.core :as m]
     [matchbox.atom :as a :refer [#?@(:clj [-deref -swap!])]]
