@@ -11,10 +11,9 @@
 (defonce unsubs-flat (atom nil))
 
 (defn register-auth-listener [ref cb wrapped-cb]
-  (let []
-    #?(:clj  (.addAuthStateListener ref wrapped-cb)
-       :cljs (.onAuth ref wrapped-cb))
-    (swap! auth-listeners conj [cb wrapped-cb])))
+  #?(:clj  (.addAuthStateListener ref wrapped-cb)
+     :cljs (.onAuth ref wrapped-cb))
+  (swap! auth-listeners update ref #(conj % [cb wrapped-cb])))
 
 (defn -disable-auth-listener! [ref cb]
   (let [passed-cb (get-in @auth-listeners [ref cb] cb)]
