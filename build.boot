@@ -32,8 +32,8 @@
 (deftask run-test
   "Test"
   []
+  (set-env! :source-paths #(conj % "test"))
   (comp
-    (set-env! :source-paths #(conj % "test"))
     (test-cljs)))
 
 (deftask build
