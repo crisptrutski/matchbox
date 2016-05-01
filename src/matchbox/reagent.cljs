@@ -1,7 +1,8 @@
 (ns matchbox.reagent
   (:refer-clojure :exclude [atom])
   (:require [matchbox.core :as m]
-            [matchbox.atom :as matom]))
+            [matchbox.atom :as matom]
+            [reagent.core]))
 
 (defn- with-ratom [value f & args]
   (let [a (reagent.core/atom value)]
