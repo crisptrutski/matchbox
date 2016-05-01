@@ -42,7 +42,4 @@
                         :source-paths ["src" "test"]
                         :compiler {:output-to "target/cljs/test.js"
                                    :main matchbox.runner
-                                   :optimizations :none}}]
-              :test-commands {"unit-tests" ["phantomjs" :runner
-                                            "this.literal_js_was_evaluated=true"
-                                            "target/cljs/test.js"]}})
+                                   :optimizations :none}}]})
