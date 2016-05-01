@@ -5,6 +5,7 @@
    [org.clojure/core.async "0.2.374" :scope "provided"]
    [adzerk/boot-cljs "1.7.228-1" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]
+   [crisptrutski/boot-cljs-test "0.2.2-SNAPSHOT"]
    [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
    [org.apache.httpcomponents/httpclient "4.5.2"]
    [reagent "0.6.0-alpha" :scope "provided"]
@@ -12,24 +13,28 @@
  :source-paths   #{"src"})
 
 (require
- '[adzerk.bootlaces :refer :all]
- '[adzerk.boot-cljs :refer :all])
+  '[adzerk.bootlaces :refer :all]
+  '[adzerk.boot-cljs :refer :all]
+  '[crisptrutski.boot-cljs-test :refer [test-cljs]])
 
  (def +version+ "0.0.10-SNAPSHOT")
  (bootlaces! +version+)
 
 (task-options!
- pom {:project 'matchbox
-      :version +version+
-      :description ""
-      :url         ""
-      :scm {:url ""}}
- aot {:namespace #{'matchbox.clojure.android-stub}})
+  pom {:project 'matchbox
+       :version +version+
+       :description "Firebase bindings for Clojure(Script)"
+       :url "http://github.com/crisptrutski/matchbox"
+       :scm {:url "http://github.com/crisptrutski/matchbox"}}
+  aot {:namespace #{'matchbox.clojure.android-stub}}
+  test-cljs {:js-env :phantom})
 
 (deftask run-test
   "Test"
   []
-  clojure.core/identity)
+  (comp
+    (set-env! :source-paths #(conj % "test"))
+    (test-cljs)))
 
 (deftask build
   "Build matchbox for deployment"
