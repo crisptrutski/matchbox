@@ -1,11 +1,39 @@
 (ns matchbox.registry
   (:require [clojure.walk :as walk]))
 
+;; nested maps of {ref {fn wrapped-fn}}
+(defonce auth-listeners (atom nil))
+
 ;; nested maps of {ref {type #{fns}}}
 (defonce unsubs (atom nil))
 
 ;; flat map of {fn [ref type]}
 (defonce unsubs-flat (atom nil))
+
+(defn register-auth-listener [ref cb wrapped-cb]
+  #?(:clj  (.addAuthStateListener ref wrapped-cb)
+     :cljs (.onAuth ref wrapped-cb))
+  (swap! auth-listeners update ref #(assoc % cb wrapped-cb)))
+
+(defn- -disable-auth-listener! [ref cb]
+  (let [passed-cb (get-in @auth-listeners [ref cb] #?(:cljs cb))]
+    #?(:clj  (when passed-cb (.removeAuthStateListener ref passed-cb))
+       :cljs (.offAuth ref passed-cb))))
+
+(defn disable-auth-listener! [ref cb]
+  (-disable-auth-listener! ref cb)
+  (swap! auth-listeners update ref #(dissoc % cb)))
+
+(defn disable-auth-listeners!
+  ([]
+   (doseq [[ref cbs] @auth-listeners]
+     (doseq [[_ wrapped-cb] cbs]
+       (-disable-auth-listener! ref wrapped-cb)))
+   (reset! auth-listeners {}))
+  ([ref]
+    (doseq [[_ wrapped-cb] (get @auth-listeners ref)]
+      (-disable-auth-listener! ref wrapped-cb))
+    (swap! auth-listeners dissoc ref)))
 
 (defn register-listener [ref type unsub!]
   (swap! unsubs update-in [(str ref) type] #(set (conj % unsub!)))
@@ -56,7 +84,7 @@
 
   For removing a single listener, see `disable-listener!`"
   [& [ref type :as path]]
-  (let [ref (if ref (str ref))]
+  (let [ref (when ref (str ref))]
     (case (count path)
       0 (do (disable-all! (flatten-vals @unsubs))
             (reset! unsubs {}))

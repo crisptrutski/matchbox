@@ -1,8 +1,10 @@
 (ns matchbox.registry-test
-  #?(:cljs (:require-macros [cemerick.cljs.test :refer [is deftest done]]))
-  (:require #?(:cljs [cemerick.cljs.test]
+  #?(:cljs (:require-macros [cljs.test :refer [is deftest async]]))
+  (:require #?(:cljs [cljs.test]
                :clj [clojure.test :refer [deftest is]])
-            [matchbox.registry :as r]))
+            [matchbox.core :as m]
+            [matchbox.registry :as r]
+            [matchbox.testing :as mt]))
 
 (reset! r/unsubs {})
 
@@ -10,6 +12,9 @@
 (def a-2 (atom nil))
 (def a-3 (atom nil))
 (def a-4 (atom nil))
+
+(def r-1 (m/connect mt/db-uri :a))
+(def r-2 (m/connect mt/db-uri :b))
 
 (def callback-1 #(swap! a-1 inc))
 (def callback-2 #(swap! a-2 inc))
@@ -57,3 +62,23 @@
   (is (= 1 @a-2))
   (is (= 1 @a-3))
   (is (= 1 @a-4)))
+
+(defonce f-1 (constantly 1))
+(defonce f-2 (constantly 2))
+
+(deftest auth-listener-test
+  (r/disable-auth-listeners!)
+  (is (empty? @r/auth-listeners))
+
+  (r/register-auth-listener r-1 f-1 (#'m/wrap-auth-changed f-1))
+  (r/register-auth-listener r-1 f-2 (#'m/wrap-auth-changed f-2))
+  (r/register-auth-listener r-2 f-1 (#'m/wrap-auth-changed f-1))
+  (is (= 2 (count @r/auth-listeners)))
+  (is (= 3 (count (mapcat val @r/auth-listeners))))
+
+  (r/disable-auth-listener! r-2 f-1)
+  (is (= 2 (count (mapcat val @r/auth-listeners))))
+
+  (r/disable-auth-listeners!)
+  (is (= 0 (count (mapcat val @r/auth-listeners))))
+  (is (empty? @r/auth-listeners)))
