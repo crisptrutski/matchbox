@@ -32,7 +32,7 @@
 (deftask run-test
   "Test"
   []
-  (set-env! :source-paths #(conj % "test"))
+  (merge-env! :source-paths #{"test"})
   (comp
     (test-cljs)))
 
