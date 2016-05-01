@@ -1,9 +1,9 @@
 (ns matchbox.utils-test
   #?(:cljs
      (:require-macros
-       [cemerick.cljs.test :refer [deftest is]]))
+       [cljs.test :refer [deftest is]]))
   (:require
-    [#?@(:cljs [cemerick.cljs.test]
+    [#?@(:cljs [cljs.test]
          :clj  [clojure.test :refer [deftest is]])]
     [matchbox.utils :as utils]))
 

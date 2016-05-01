@@ -6,32 +6,12 @@
     [matchbox.core :as m]
     [matchbox.async :as ma]
     [#?(:clj  clojure.core.async
-        :cljs cljs.core.async) :refer [#?@(:clj [go <!!])]]))
+        :cljs cljs.core.async) :refer [<! #?@(:clj [go <!!])]]))
 
 (def db-uri "https://luminous-torch-5788.firebaseio.com/")
 
 (def pending (atom {}))
 (def errors (atom {}))
-
-;; Temporarily borrowed from cemerick.test
-(defmacro block-or-done [channel]
-  (if (:ns &env)
-    `(do
-       (let [ctx# (:test-name (cemerick.cljs.test/test-context))
-             done?# (fn [v#]
-                      (when (instance? js/Error v#)
-                        (swap! errors update ctx# conj v#))
-                      (swap! pending update ctx# dec)
-                      (when (zero? (get @pending ctx#))
-                        (if-let [e# (first (get @errors ctx#))]
-                          (~'done e#)
-                          (~'done))))]
-         (swap! pending update ctx# inc)
-         (cljs.core.async.macros/go
-           (let [[v# c#] (cljs.core.async/alts! [~channel (cljs.core.async/timeout 5000)])]
-             (when-not (= ~channel c#) (cemerick.cljs.test/is (not "Timed out at 5000ms")))
-             (done?# v#)))))
-    `(<!! ~channel)))
 
 (defn random-ref []
   (let [ref (m/connect db-uri (str (rand-int 100000)))]
@@ -62,7 +42,9 @@
                                '(catch Exception e# e#)))
                         true)]
            (~'>! complete# res#)))
-     (block-or-done complete#)))
+     (if-cljs
+       '(async done (go (<! complete#) (done)))
+       '(<!! complete#))))
 
 (defmacro is=
   "Test next value delivered from channel matches expectation"

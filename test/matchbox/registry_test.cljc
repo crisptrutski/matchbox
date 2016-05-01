@@ -1,6 +1,6 @@
 (ns matchbox.registry-test
-  #?(:cljs (:require-macros [cemerick.cljs.test :refer [is deftest done]]))
-  (:require #?(:cljs [cemerick.cljs.test]
+  #?(:cljs (:require-macros [cljs.test :refer [is deftest async]]))
+  (:require #?(:cljs [cljs.test]
                :clj [clojure.test :refer [deftest is]])
             [matchbox.registry :as r]))
 
