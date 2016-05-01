@@ -97,7 +97,6 @@
       (is (nil? (m/auth-info ref)))
       (m/auth-anon ref
         (fn [error auth-data]
-          (prn error auth-data)
           (is (not error))
           (is (= "anonymous" (:provider auth-data)))
           (is (= (m/auth-info ref) auth-data))
