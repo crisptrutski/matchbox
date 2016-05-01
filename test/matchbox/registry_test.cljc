@@ -63,21 +63,22 @@
   (is (= 1 @a-3))
   (is (= 1 @a-4)))
 
+(defonce f-1 (constantly 1))
+(defonce f-2 (constantly 2))
+
 (deftest auth-listener-test
+  (r/disable-auth-listeners!)
   (is (empty? @r/auth-listeners))
 
-  (r/register-auth-listener r-1 + (#'m/wrap-auth-changed +))
-  (r/register-auth-listener r-1 / (#'m/wrap-auth-changed /))
-  (r/register-auth-listener r-2 + (#'m/wrap-auth-changed +))
-
+  (r/register-auth-listener r-1 f-1 (#'m/wrap-auth-changed f-1))
+  (r/register-auth-listener r-1 f-2 (#'m/wrap-auth-changed f-2))
+  (r/register-auth-listener r-2 f-1 (#'m/wrap-auth-changed f-1))
   (is (= 2 (count @r/auth-listeners)))
   (is (= 3 (count (mapcat val @r/auth-listeners))))
 
-  (r/disable-auth-listener! r-2 +)
-
+  (r/disable-auth-listener! r-2 f-1)
   (is (= 2 (count (mapcat val @r/auth-listeners))))
 
   (r/disable-auth-listeners!)
-
   (is (= 0 (count (mapcat val @r/auth-listeners))))
   (is (empty? @r/auth-listeners)))

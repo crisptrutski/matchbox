@@ -16,8 +16,8 @@
   (swap! auth-listeners update ref #(assoc % cb wrapped-cb)))
 
 (defn- -disable-auth-listener! [ref cb]
-  (let [passed-cb (get-in @auth-listeners [ref cb] cb)]
-    #?(:clj  (.removeAuthStateListener ref passed-cb)
+  (let [passed-cb (get-in @auth-listeners [ref cb] #?(:cljs cb))]
+    #?(:clj  (when passed-cb (.removeAuthStateListener ref passed-cb))
        :cljs (.offAuth ref passed-cb))))
 
 (defn disable-auth-listener! [ref cb]
