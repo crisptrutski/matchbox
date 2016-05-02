@@ -1,7 +1,7 @@
 ![Matchbox - Firebase bindings for Clojure(script)](https://cloud.githubusercontent.com/assets/881351/6866974/0c503f46-d486-11e4-9b88-6e0c833afeb0.png)
 
 
-[![Build Status](https://travis-ci.org/crisptrutski/matchbox.svg?branch=master)](https://travis-ci.org/crisptrutski/matchbox)
+[![Build Status](https://circleci.com/gh/crisptrutski/matchbox.svg?style=shield)](https://circleci.com/gh/crisptrutski/matchbox)
 [![Dependency Status](https://www.versioneye.com/clojure/matchbox:matchbox/badge.svg)](https://www.versioneye.com/clojure/matchbox:matchbox)
 [![Join the chat at https://gitter.im/crisptrutski/matchbox](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/crisptrutski/matchbox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
