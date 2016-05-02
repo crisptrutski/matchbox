@@ -1,0 +1,13 @@
+machine:
+  java:
+    version: oraclejdk8
+
+dependencies:
+  post:
+    - wget -O boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
+    - chmod 755 boot
+    - ./boot -V
+
+test:
+  override:
+    - ./boot run-test
