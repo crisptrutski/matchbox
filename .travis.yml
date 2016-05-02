@@ -1,5 +1,0 @@
-language: clojure
-script: boot run-test
-#sudo: false
-#install:
-#  - "echo Y | lein upgrade 2.5.2"
