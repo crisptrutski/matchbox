@@ -2,23 +2,28 @@
  :dependencies
  '[[org.clojure/clojure "1.7.0" :scope "provided"]
    [org.clojure/clojurescript "1.7.228" :scope "provided"]
+   ;; packaged dependencies
+   [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
+   [cljsjs/firebase "2.4.1-0"]
+   [org.apache.httpcomponents/httpclient "4.5.2"]
+   ;; optional namespace dependencies
    [org.clojure/core.async "0.2.374" :scope "provided"]
+   [reagent "0.6.0-alpha" :scope "provided"]
+   ;; build tooling
    [adzerk/boot-cljs "1.7.228-1" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]
-   [crisptrutski/boot-cljs-test "0.2.2-SNAPSHOT"]
-   [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
-   [org.apache.httpcomponents/httpclient "4.5.2"]
-   [reagent "0.6.0-alpha" :scope "provided"]
-   [cljsjs/firebase "2.4.1-0"]]
- :source-paths   #{"src"})
+   [adzerk/boot-test "1.1.1"]
+   [crisptrutski/boot-cljs-test "0.2.2-SNAPSHOT"]]
+ :source-paths #{"src"})
 
 (require
   '[adzerk.bootlaces :refer :all]
   '[adzerk.boot-cljs :refer :all]
+  '[adzerk.boot-test :refer :all]
   '[crisptrutski.boot-cljs-test :refer [test-cljs]])
 
- (def +version+ "0.0.10-SNAPSHOT")
- (bootlaces! +version+)
+(def +version+ "0.0.10-SNAPSHOT")
+(bootlaces! +version+)
 
 (task-options!
   pom {:project 'matchbox
@@ -29,39 +34,21 @@
   aot {:namespace #{'matchbox.clojure.android-stub}}
   test-cljs {:js-env :phantom})
 
-(deftask run-test
-  "Test"
-  []
+(deftask deps [] identity)
+
+(deftask testing []
   (merge-env! :source-paths #{"test"})
-  (comp
-    (test-cljs)))
+  identity)
 
-(deftask build
-  "Build matchbox for deployment"
-  []
-  (comp
-   (cljs :optimizations :none)
-   (target :dir #{"target"})
-   ))
+(deftask watch-js [] (comp (testing) (watch) (test-cljs)))
 
-(deftask pack
-  "Pack matchbox for deployment"
-  []
-  (comp
-   (pom)
-   (aot)
-   (jar)))
+(deftask watch-jvm [] (comp (aot) (testing) (watch) (test)))
 
-(deftask dev
-  "Build matchbox for local development."
-  []
-  (comp
-   (watch)
-   (build)))
+(deftask ci []
+  (task-options!
+    test {:junit-output-to "junit-out"}
+    test-cljs {:exit? true})
+  (comp (aot) (testing) (test) (test-cljs)))
 
-(deftask prod
-  "Build matchbox for production deployment."
-  []
-  (comp
-   (build)
-   (pack)))
+(deftask build []
+  (comp (pom) (aot) (jar)))
