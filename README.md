@@ -53,7 +53,7 @@ Quick spin to get some basic flavour:
 
 Take a look at the [quick intro](docs/quick_intro.cljc) to for a lightning tour.
 
-For those who want to dive right in, [reagent-figwheel](https://github.com/gadfly361/reagent-figwheel) has a `+matchbox` option bake some sensible Matchbox plumbing right into your next app.
+For those who want to dive right in, [reagent-figwheel](https://github.com/gadfly361/reagent-figwheel) has a `+firebase` option bake some sensible Matchbox plumbing right into your next app.
 
 # Overview
 
