@@ -9,6 +9,7 @@
    [org.clojure/clojurescript "1.8.34" :scope "provided"]
    [org.clojure/core.async "0.2.374" :scope "provided"]
    [reagent "0.6.0-alpha" :scope "provided"]
+   [frankiesardo/linked "1.2.6" :scope "provided"]
    [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
    [org.apache.httpcomponents/httpclient "4.5.2"]
    [cljsjs/firebase "2.4.1-0"]

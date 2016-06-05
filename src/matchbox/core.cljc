@@ -29,18 +29,6 @@
     [matchbox.registry :refer [register-listener register-auth-listener disable-auth-listener!]]
     #?(:cljs cljsjs.firebase)))
 
-(defn zipsmap
-  "Like zipmap, but returning a sorted map."
-  [keys vals]
-  (loop [map (sorted-map)
-         ks (seq keys)
-         vs (seq vals)]
-    (if (and ks vs)
-      (recur (assoc map (first ks) (first vs))
-             (next ks)
-             (next vs))
-      map)))
-
 ;; constants
 
 ;; Distinct from nil/null in CLJS, useful for opting out of callbacks
@@ -136,9 +124,9 @@
 (defn- hydrate* [x]
   (cond
     #?@(:clj
-        [(instance? HashMap x) (recur (into (sorted-map) x))
+        [(instance? HashMap x) (recur (into {} x))
          (instance? ArrayList x) (recur (into [] x))])
-    (map? x) (zipsmap (map keyword (keys x)) (vals x))
+    (map? x) (zipmap (map keyword (keys x)) (vals x))
     :else (hydrate-keywords x)))
 
 (defn hydrate [v]
