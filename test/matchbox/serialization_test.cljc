@@ -18,31 +18,32 @@
 
 ;; serialize / deserialize (specs)
 
-#?(:clj
-   (deftest serialize-test
-     ;; map keys from keywords -> strings
-     (let [orig {:hello "world" :bye "world"}
-           tran (m/serialize orig)]
-       (is (contains? tran "hello"))
-       (is (not (contains? tran :hello))))
-     ;; values are unchanged
-     (testing "bool, long, float, vector, string, set, list"
-       (doseq [x [true [1 2 3 4] 150.0 "hello" #{1 2 3} '(3 2 1)]]
-         (is (= x (m/serialize x)))))
-     (testing "keyword"
-       (is (= ":a" (m/serialize :a))))))
+(deftest serialize-test
+  ;; map keys from keywords -> strings
+  (let [orig {:hello "world" :bye "world"}
+        tran #?(:clj (m/serialize orig)
+                :cljs (js->clj (m/serialize orig)))]
+    (is (contains? tran "hello"))
+    (is (not (contains? tran :hello))))
+  ;; values are unchanged
+  (testing "bool, long, float, vector, string, set, list"
+    (doseq [x [true [1 2 3 4] 150.0 "hello" #{1 2 3} '(3 2 1)]]
+      (is (= #?(:clj x :cljs (js->clj (clj->js x)))
+             #?(:clj (m/serialize x)
+                :cljs (js->clj (m/serialize x)))))))
+  (testing "keyword"
+    (is (= ":a" (m/serialize :a)))))
 
-#?(:clj
-   (deftest hydrate-test
-     ;; map keys from strings -> keywords
-     (let [orig {"hello" "world" "bye" "world"}
-           tran (m/hydrate orig)]
-       (is (contains? tran :hello))
-       (is (not (contains? (set (keys tran)) "hello"))))
-     ;; values are unchanged
-     (testing "bool, long, float, vector, string, keyword, set, list"
-       (doseq [x [true [1 2 3 4] 150.0 "hello" :a #{1 2 3} '(3 2 1)]]
-         (is (= x (m/hydrate x)))))))
+(deftest hydrate-test
+  ;; map keys from strings -> keywords
+  (let [orig {"hello" "world" "bye" "world"}
+        tran (m/hydrate orig)]
+    (is (contains? tran :hello))
+    (is (not (contains? (set (keys tran)) "hello"))))
+  ;; values are unchanged
+  (testing "bool, long, float, vector, string, keyword, set, list"
+    (doseq [x [true [1 2 3 4] 150.0 "hello" :a #{1 2 3} '(3 2 1)]]
+      (is (= x (m/hydrate x))))))
 
 (deftest serialize-hydrate-test
   (is (= {:a 1, :b #?(:cljs [:b :a] :clj #{:a :b})}
