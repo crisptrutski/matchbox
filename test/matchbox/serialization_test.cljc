@@ -42,7 +42,7 @@
   (let [orig {"hello" "world" "bye" "world"}
         tran (m/hydrate orig)]
     (is (contains? tran :hello))
-    (is (not (contains? tran "hello"))))
+    (is (not (contains? (set (keys tran)) "hello"))))
   ;; values are unchanged
   (testing "bool, long, float, vector, string, keyword, set, list"
     (doseq [x [true [1 2 3 4] 150.0 "hello" :a #{1 2 3} '(3 2 1)]]
