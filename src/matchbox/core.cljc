@@ -116,11 +116,11 @@
     (defn- strip-prefix [type]
       (-> type name (str/replace #"^.+\-" "") keyword)))
 
-(def data-config (atom {:hydrate keyword/hydrate :serialize keyword/serialize}))
+(def data-config (utils/->Serializer keyword/hydrate keyword/serialize))
 
-(defn hydrate [v] ((:hydrate @data-config) v))
+(defn hydrate [x] ((utils/get-hydrate data-config) x))
 
-(defn serialize [v] ((:serialize @data-config) v))
+(defn serialize [x] ((utils/get-serialize data-config) x))
 
 (defn key
   "Last segment in reference or snapshot path"
