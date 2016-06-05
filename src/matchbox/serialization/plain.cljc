@@ -2,8 +2,7 @@
   (:require
     [clojure.walk :as walk]
     [matchbox.utils :as utils])
-  (:import
-    (java.util HashMap ArrayList)))
+  #?(:clj (:import (java.util HashMap ArrayList))))
 
 (defn hydrate-raw [x]
   #?(:cljs x

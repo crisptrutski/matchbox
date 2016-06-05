@@ -14,8 +14,7 @@
     [matchbox.serialization.keyword :as keyword]
     [matchbox.serialization.sorted :as sorted]
     [matchbox.serialization.stable :as stable])
-  (:import
-    (java.util HashMap)))
+#?(:clj (:import (java.util HashMap))))
 
 ;; serialize / deserialize (specs)
 
@@ -105,11 +104,11 @@
 
 (def ref-map
   (reduce
-    (fn [#?(:clj ^HashMap acc :cljs (js/Object.)) [k v]]
-      #?(:clj (.put acc k v) :cjls (aset acc k v))
+    (fn [#?(:clj ^HashMap acc :cljs acc) [k v]]
+      #?(:clj (.put acc k v) :cljs (aset acc k v))
       acc)
     (let [base {"a" {"b" {"c" [{"d" "e" "f" ":f"}]}}}]
-      #?(:clj (HashMap. base) :cjls (clj->js base)))
+      #?(:clj (HashMap. base) :cljs (clj->js base)))
     (map vector (map (comp str char) (range 98 123)) (range 25))))
 
 (deftest custom-serializers-test
