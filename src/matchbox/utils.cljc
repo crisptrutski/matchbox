@@ -25,24 +25,22 @@
 
 (defprotocol ISerializer
   (hydrate [this x])
-  (set-hydrate! [this val])
   (serialize [this x])
-  (set-serialize! [this val]))
+  (config! [this hydrate serialize]))
 
-(deftype Serializer [#?(:clj ^:volatile-mutable hydrate :cljs ^:mutable hydrate)
-                     #?(:clj ^:volatile-mutable serialize :cljs ^:mutable serialize)]
+(deftype Serializer
+  [#?(:clj ^:volatile-mutable hydrate :cljs ^:mutable hydrate)
+   #?(:clj ^:volatile-mutable serialize :cljs ^:mutable serialize)]
   ISerializer
   (hydrate [_ x] (hydrate x))
-  (set-hydrate! [_ val] (set! hydrate val))
   (serialize [_ x] (serialize x))
-  (set-serialize! [_ val] (set! serialize val)))
+  (config! [_ h s] (set! hydrate h) (set! serialize s)))
 
 (defn set-date-config! [hydrate serialize]
   (-> ^Serializer
       #?(:clj @(resolve 'matchbox.core/data-config)
          :cljs matchbox.core/data-config)
-      (set-hydrate! hydrate)
-      (set-serialize! serialize)))
+      (config! hydrate serialize)))
 
 #?(:clj (def repl-out *out*))
 
