@@ -1,6 +1,7 @@
 (ns matchbox.serialization.plain
   (:require
-    [clojure.walk :as walk])
+    [clojure.walk :as walk]
+    [matchbox.utils :as utils])
   (:import
     (java.util HashMap ArrayList)))
 
@@ -19,3 +20,6 @@
 (defn serialize [v]
   #?(:clj (walk/stringify-keys v)
      :cljs (clj->js v)))
+
+(defn set-default! []
+  (utils/set-date-config! hydrate serialize))

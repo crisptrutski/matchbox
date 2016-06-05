@@ -2,8 +2,8 @@
   (:require
     [clojure.walk :as walk]
     [matchbox.serialization.keyword :as keyword]
-    [linked.core :as linked]
-    [linked.map])
+    [linked.map]
+    [matchbox.utils :as utils])
   (:import
     (java.util HashMap ArrayList)
     (clojure.lang PersistentTreeMap)))
@@ -23,3 +23,6 @@
      :cljs (walk/postwalk hydrate-shallow (js->clj v))))
 
 (def serialize keyword/serialize)
+
+(defn set-default! []
+  (utils/set-date-config! hydrate serialize))

@@ -1,6 +1,7 @@
 (ns matchbox.serialization.keyword
   (:require
     [matchbox.serialization.plain :as plain]
+    [matchbox.utils :as utils]
     [clojure.walk :as walk]))
 
 (defn hydrate-kw [x]
@@ -19,3 +20,6 @@
   (->> (walk/stringify-keys v)
        (walk/postwalk kw->str)
        #?(:cljs clj->js)))
+
+(defn set-default! []
+  (utils/set-date-config! hydrate serialize))

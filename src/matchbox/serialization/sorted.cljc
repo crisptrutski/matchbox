@@ -1,7 +1,8 @@
 (ns matchbox.serialization.sorted
   (:require
     [clojure.walk :as walk]
-    [matchbox.serialization.keyword :as keyword])
+    [matchbox.serialization.keyword :as keyword]
+    [matchbox.utils :as utils])
   (:import
     (java.util HashMap ArrayList)
     (clojure.lang PersistentTreeMap)))
@@ -22,3 +23,5 @@
 
 (def serialize keyword/serialize)
 
+(defn set-default! []
+  (utils/set-date-config! hydrate serialize))
