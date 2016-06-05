@@ -24,17 +24,17 @@
 ;;
 
 (defprotocol ISerializer
-  (get-hydrate [this])
+  (hydrate [this x])
   (set-hydrate! [this val])
-  (get-serialize [this])
+  (serialize [this x])
   (set-serialize! [this val]))
 
 (deftype Serializer [#?(:clj ^:volatile-mutable hydrate :cljs ^:mutable hydrate)
                      #?(:clj ^:volatile-mutable serialize :cljs ^:mutable serialize)]
   ISerializer
-  (get-hydrate [_] hydrate)
+  (hydrate [_ x] (hydrate x))
   (set-hydrate! [_ val] (set! hydrate val))
-  (get-serialize [_] serialize)
+  (serialize [_ x] (serialize x))
   (set-serialize! [_ val] (set! serialize val)))
 
 (defn set-date-config! [hydrate serialize]

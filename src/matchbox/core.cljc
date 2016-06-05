@@ -118,9 +118,9 @@
 
 (def data-config (utils/->Serializer keyword/hydrate keyword/serialize))
 
-(defn hydrate [x] ((utils/get-hydrate data-config) x))
+(defn hydrate [x] (utils/hydrate data-config x))
 
-(defn serialize [x] ((utils/get-serialize data-config) x))
+(defn serialize [x] (utils/serialize data-config x))
 
 (defn key
   "Last segment in reference or snapshot path"
