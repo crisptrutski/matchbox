@@ -13,7 +13,7 @@
     (str/join "/" (map name korks))
     (when korks (name korks))))
 
-(defn no-op [& _])
+(defn no-op ([_]) ([_ _]) ([_ _ _]) ([_ _ _ & _]))
 
 (defn extract-cb [args]
   (if (and (>= (count args) 2)
@@ -23,9 +23,28 @@
 
 ;;
 
+(defprotocol ISerializer
+  (hydrate [this x])
+  (serialize [this x])
+  (config! [this hydrate serialize]))
+
+(deftype Serializer
+  [#?(:clj ^:volatile-mutable hydrate :cljs ^:mutable hydrate)
+   #?(:clj ^:volatile-mutable serialize :cljs ^:mutable serialize)]
+  ISerializer
+  (hydrate [_ x] (hydrate x))
+  (serialize [_ x] (serialize x))
+  (config! [_ h s] (set! hydrate h) (set! serialize s)))
+
+(defn set-date-config! [hydrate serialize]
+  (-> ^Serializer
+      #?(:clj @(resolve 'matchbox.core/data-config)
+         :cljs matchbox.core/data-config)
+      (config! hydrate serialize)))
+
 #?(:clj (def repl-out *out*))
 
-#?(:cj
+#?(:clj
     (defn prn
       "Like clojure.core/prn, but always bound to root thread's *out*"
       [& args]

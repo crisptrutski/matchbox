@@ -27,6 +27,7 @@
     [clojure.walk :as walk]
     [matchbox.utils :as utils]
     [matchbox.registry :refer [register-listener register-auth-listener disable-auth-listener!]]
+    [matchbox.serialization.keyword :as keyword]
     #?(:cljs cljsjs.firebase)))
 
 ;; constants
@@ -115,29 +116,11 @@
     (defn- strip-prefix [type]
       (-> type name (str/replace #"^.+\-" "") keyword)))
 
-(defn- keywords->strings [x]
-  (if (keyword? x) (str x) x))
+(def data-config (utils/->Serializer keyword/hydrate keyword/serialize))
 
-(defn- hydrate-keywords [x]
-  (if (and (string? x) (= \: (first x))) (keyword (subs x 1)) x))
+(defn hydrate [x] (utils/hydrate data-config x))
 
-#?(:clj
-    (defn- hydrate* [x]
-      (cond (instance? HashMap x) (recur (into {} x))
-            (instance? ArrayList x) (recur (into [] x))
-            (map? x) (zipmap (map keyword (keys x)) (vals x))
-            :else (hydrate-keywords x))))
-
-(defn hydrate [v]
-  #?(:clj (walk/prewalk hydrate* v)
-     :cljs (walk/postwalk
-             hydrate-keywords
-             (js->clj v :keywordize-keys true))))
-
-(defn serialize [v]
-  (->> (walk/stringify-keys v)
-       (walk/postwalk keywords->strings)
-       #?(:cljs clj->js)))
+(defn serialize [x] (utils/serialize data-config x))
 
 (defn key
   "Last segment in reference or snapshot path"

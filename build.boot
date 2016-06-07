@@ -9,11 +9,12 @@
    ;; optional namespace dependencies
    [org.clojure/core.async "0.2.374" :scope "provided"]
    [reagent "0.6.0-alpha" :scope "provided"]
+   [frankiesardo/linked "1.2.6" :scope "provided"]
    ;; build tooling
    [adzerk/boot-cljs "1.7.228-1" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]
-   [adzerk/boot-test "1.1.1"]
-   [crisptrutski/boot-cljs-test "0.2.2-SNAPSHOT"]]
+   [adzerk/boot-test "1.1.1" :scope "test"]
+   [crisptrutski/boot-cljs-test "0.2.2-SNAPSHOT" :scope "test"]]
  :source-paths #{"src"})
 
 (require
