@@ -68,7 +68,7 @@
       ;; (sorts by name on equality)
       (m/set-priority! child-1 "a")
       (m/set-priority-in! ref (m/key child-2) 0)
-      (m/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done))))))
+      (m/deref-list ref (fn [v] (is (= [3 2 1] v)) (done))))))
 
 (deftest reset-with-priority!-test
   (async done
@@ -76,7 +76,7 @@
       (m/reset-with-priority-in! ref "a" 1 "a")
       (m/reset-with-priority-in! ref "b" 2 0)
       (m/reset-in! ref "c" 3)
-      (m/deref ref (fn [v] (is (= [3 2 1] (vals v))) (done))))))
+      (m/deref-list ref (fn [v] (is (= [3 2 1] v)) (done))))))
 
 (deftest disconnect!-reconnect!-test
   ;; default is connected
