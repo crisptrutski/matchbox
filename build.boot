@@ -4,7 +4,7 @@
    [org.clojure/clojurescript "1.7.228" :scope "provided"]
    ;; packaged dependencies
    [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
-   [cljsjs/firebase "2.4.1-0"]
+   [cljsjs/firebase "3.0.5-rc2-0"]
    [org.apache.httpcomponents/httpclient "4.5.2"]
    ;; optional namespace dependencies
    [org.clojure/core.async "0.2.374" :scope "provided"]
