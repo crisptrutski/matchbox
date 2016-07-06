@@ -27,8 +27,8 @@
     [clojure.walk :as walk]
     [matchbox.utils :as utils]
     [matchbox.registry :refer [register-listener register-auth-listener disable-auth-listener!]]
-    [matchbox.serialization.keyword :as keyword]
-    #?(:cljs cljsjs.firebase)))
+    [matchbox.serialization.keyword :as keyword])
+  #?(:cljs (:require [cljsjs.firebase] [firebase-cljs.core :as fb])))
 
 ;; constants
 
@@ -146,13 +146,17 @@
   (let [path (utils/korks->path korks)]
     (if-not (seq path) ref (.child ref path))))
 
-(defn connect
-  "Create a reference for firebase"
-  ([url]
-   #?(:clj (Firebase. url)
-      :cljs (js/Firebase. url)))
-  ([url korks]
-   (get-in (connect url) korks)))
+#?(:clj (defn connect
+          "Create a Firebase connection"
+          ([svccred db] (-> FirebaseOptions.
+                            .Builder
+                            (.setServiceAccount (FileInputStream. svccred))
+                            (.setDatabaseUrl db)
+                            .build)))
+   :cljs (defn connect
+           "Create a Firebase connection"
+           ([conf] (fb/init conf))
+           ([conf name] (fb/init conf name))))
 
 (defn parent
   "Immediate ancestor of reference, if any"
