@@ -4,6 +4,10 @@
     [get-in set! reset! conj! swap! dissoc! deref parents key take take-last])
   #?(:clj
      (:import
+       [com.google.firebase
+         FirebaseOptions]
+       [com.google.firebase.auth
+         FirebaseAuth]
        [com.google.firebase.database
         ;AuthData
         ChildEventListener
@@ -20,12 +24,12 @@
         Transaction$Result
         Logger$Level
         ;Firebase$AuthResultHandler
-        ;FirebaseAuth$AuthStateListener
         ]
        (java.util HashMap ArrayList)))
   (:require
     [clojure.string :as str]
     [clojure.walk :as walk]
+    #?(:clj [clojure.java.io :as io])
     [matchbox.utils :as utils]
     [matchbox.registry :refer [register-listener register-auth-listener disable-auth-listener!]]
     [matchbox.serialization.keyword :as keyword]
@@ -56,7 +60,7 @@
 #_#?(:clj
 (defn set-logger-level! [key]
   (assert (contains? logger-levels key) (format "Unknown logger level: `%s`" key))
-  (.setLogLevel ^Config (Firebase/getDefaultConfig)
+  (.setLogLevel ^Config (DatabaseReference/getDefaultConfig)
                 (logger-levels key))))
 
 
@@ -76,7 +80,7 @@
 #?(:clj
     (defn- wrap-cb [cb]
       (reify DatabaseReference$CompletionListener
-        (^void onComplete [_ ^DatabaseError err ^Firebase ref]
+        (^void onComplete [_ ^DatabaseError err ^DatabaseReference ref]
           (if err (throw-fb-error err "Cancelled") (cb ref))))))
 
 #?(:clj
@@ -149,9 +153,9 @@
 
 #?(:clj (defn connect
           "Create a Firebase connection"
-          ([svccred db] (-> FirebaseOptions.
+          ([svccred db] (-> FirebaseOptions
                             .Builder
-                            (.setServiceAccount (FileInputStream. svccred))
+                            (.setServiceAccount (io/input-stream svccred))
                             (.setDatabaseUrl db)
                             .build)))
    :cljs (defn connect
@@ -275,7 +279,7 @@
 
 ;;
 
-(defn ref? [x] (instance? #?(:clj Firebase :cljs js/Firebase) x))
+(defn ref? [x] (instance? #?(:clj DatabaseReference :cljs js/Firebase) x))
 
 (defn- with-ds [ref-or-ds f & [cb]]
   (if (ref? ref-or-ds)
@@ -428,7 +432,7 @@
          (cb err (js->clj info :keywordize-keys true)))
        identity)
      :clj
-     (reify Firebase$AuthStateListener
+     (reify FirebaseAuth$AuthStateListener
        (^void onAuthStateChanged [_ ^AuthData auth-data]
          (if cb (cb nil (auth-data->map auth-data)))))))
 
@@ -439,7 +443,7 @@
           (cb err (js->clj info :keywordize-keys true)))
         identity)
      :clj
-      (reify Firebase$AuthResultHandler
+      (reify FirebaseAuth$AuthResultHandler
         (^void onAuthenticated [_ ^AuthData auth-data]
           (if cb (cb nil (auth-data->map auth-data))))
         (^void onAuthenticationError [_ ^DatabaseError err]
