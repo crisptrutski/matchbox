@@ -4,31 +4,32 @@
     [get-in set! reset! conj! swap! dissoc! deref parents key take take-last])
   #?(:clj
      (:import
-       [com.firebase.client
-        AuthData
+       [com.google.firebase.database
+        ;AuthData
         ChildEventListener
-        Config
+        ;Config
         DataSnapshot
-        Firebase
-        FirebaseError
+        DatabaseReference
+        DatabaseError
         MutableData
         ServerValue
         Transaction
         Transaction$Handler
         ValueEventListener
-        Firebase$CompletionListener
+        DatabaseReference$CompletionListener
         Transaction$Result
         Logger$Level
-        Firebase$AuthResultHandler
-        Firebase$AuthStateListener]
+        ;Firebase$AuthResultHandler
+        ;FirebaseAuth$AuthStateListener
+        ]
        (java.util HashMap ArrayList)))
   (:require
     [clojure.string :as str]
     [clojure.walk :as walk]
     [matchbox.utils :as utils]
     [matchbox.registry :refer [register-listener register-auth-listener disable-auth-listener!]]
-    [matchbox.serialization.keyword :as keyword])
-  #?(:cljs (:require [cljsjs.firebase] [firebase-cljs.core :as fb])))
+    [matchbox.serialization.keyword :as keyword]
+    #?@(:cljs [[cljsjs.firebase] [firebase-cljs.core :as fb]])))
 
 ;; constants
 
@@ -70,12 +71,12 @@
 (declare reset!)
 
 (defn throw-fb-error [err & [msg]]
-  (throw (ex-info (or msg "FirebaseError") {:err err})))
+  (throw (ex-info (or msg "DatabaseError") {:err err})))
 
 #?(:clj
     (defn- wrap-cb [cb]
-      (reify Firebase$CompletionListener
-        (^void onComplete [_ ^FirebaseError err ^Firebase ref]
+      (reify DatabaseReference$CompletionListener
+        (^void onComplete [_ ^DatabaseError err ^Firebase ref]
           (if err (throw-fb-error err "Cancelled") (cb ref))))))
 
 #?(:clj
@@ -84,7 +85,7 @@
         (reify ValueEventListener
           (^void onDataChange [_ ^DataSnapshot ds]
             (cb (ds-wrapper ds)))
-          (^void onCancelled [_ ^FirebaseError err]
+          (^void onCancelled [_ ^DatabaseError err]
             (if err (throw-fb-error err "Cancelled") (cb ref)))))))
 
 #?(:clj
@@ -94,7 +95,7 @@
           (let [current (hydrate (.getValue d))]
             (reset! d (apply f current args))
             (Transaction/success d)))
-        (^void onComplete [_ ^FirebaseError error, ^boolean committed, ^DataSnapshot d]
+        (^void onComplete [_ ^DatabaseError error, ^boolean committed, ^DataSnapshot d]
           (if (and cb (not error) committed)
             (cb (hydrate (.getValue d))))))))
 
@@ -109,7 +110,7 @@
           (if moved (moved (wrap-snapshot d))))
         (^void onChildRemoved [_ ^DataSnapshot d]
           (if removed (removed (wrap-snapshot d))))
-        (^void onCancelled [_ ^FirebaseError err]
+        (^void onCancelled [_ ^DatabaseError err]
           (throw-fb-error err "Cancelled")))))
 
 #?(:clj
@@ -441,7 +442,7 @@
       (reify Firebase$AuthResultHandler
         (^void onAuthenticated [_ ^AuthData auth-data]
           (if cb (cb nil (auth-data->map auth-data))))
-        (^void onAuthenticationError [_ ^FirebaseError err]
+        (^void onAuthenticationError [_ ^DatabaseError err]
           (if cb (cb err nil))))))
 
 (defn create-user
