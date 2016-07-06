@@ -5,6 +5,7 @@
    ;; packaged dependencies
    [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
    [cljsjs/firebase "3.0.5-rc2-0"]
+   [degree9/firebase-cljs "0.3.0"]
    [org.apache.httpcomponents/httpclient "4.5.2"]
    ;; optional namespace dependencies
    [org.clojure/core.async "0.2.374" :scope "provided"]
