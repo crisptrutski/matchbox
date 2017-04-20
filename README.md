@@ -95,16 +95,11 @@ Matchbox can be used without a `core.async` dependency.
 
 # Examples
 
-1) There are some ClojureScript demos in the `examples` directory.
+1) There are ClojureScript demos for [reagent](https://github.com/reagent-project/reagent) and [om](https://github.com/omcljs/om) in the `examples` directory.
 
-Those in the `cljs` folder can be compiled from the main project via
-`lein cljsbuild once <example-name>`, and then run by opening the 'index.html'
-found in the example directory in a browser.
+   The demos can be launched by executing `boot dev` in the `examples` folder, and opening http://localhost:3000 in a browser.
 
-2) There is also a stand-alone demo project, `reagent-example`. This example can be
-launched by executing `lein run`, and opening "http://localhost:3000" in a browser.
-
-3) If you'd like to use `re-frame`, there is [a realtime chat app showcase](https://github.com/Quantisan/re-frame-firebase-example).
+2) If you'd like to use `re-frame`, there is [a realtime chat app showcase](https://github.com/Quantisan/re-frame-firebase-example).
 
 # Gotchas
 
