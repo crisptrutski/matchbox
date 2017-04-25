@@ -12,7 +12,8 @@
    [frankiesardo/linked "1.2.6" :scope "provided"]
    [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
    [org.apache.httpcomponents/httpclient "4.5.2"]
-   [cljsjs/firebase "2.4.1-0"]
+   ;;[cljsjs/firebase "2.4.1-0"]
+   [cljsjs/firebase-node "2.4.2-0"]
    [org.clojure/tools.namespace "0.2.11" :scope "test"]]
 
   :aot [matchbox.clojure.android-stub]
@@ -25,4 +26,10 @@
                         :source-paths ["src" "test"]
                         :compiler {:output-to "target/cljs/test.js"
                                    :main matchbox.runner
+                                   :optimizations :none}}
+                       {:id "node-test"
+                        :source-paths ["src" "test"]
+                        :compiler {:output-to "target/cljs/node-test.js"
+                                   :main matchbox.runner
+                                   :target :nodejs
                                    :optimizations :none}}]})
