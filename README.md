@@ -13,7 +13,7 @@ For new projects:
 Matchbox is unlikely to be worth reviving:
 
 * The client and Admin SDKs no longer have enough in common for one wrapper.
-* The JavaScript SDK's function-based API works well directly from ClojureScript.
+* The newer JavaScript SDK's function-based API works well directly from ClojureScript.
 
 ## Last release
 
