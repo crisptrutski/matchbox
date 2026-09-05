@@ -1,31 +1,43 @@
 ![Matchbox - Firebase bindings for Clojure(script)](https://cloud.githubusercontent.com/assets/881351/6866974/0c503f46-d486-11e4-9b88-6e0c833afeb0.png)
 
+## Archived
 
-[![Build Status](https://circleci.com/gh/crisptrutski/matchbox.svg?style=shield)](https://circleci.com/gh/crisptrutski/matchbox)
-[![Dependency Status](https://www.versioneye.com/clojure/matchbox:matchbox/badge.svg)](https://www.versioneye.com/clojure/matchbox:matchbox)
-[![Join the chat at https://gitter.im/crisptrutski/matchbox](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/crisptrutski/matchbox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Matchbox is archived and incompatible with current Firebase APIs.
 
-# Current version
+For new projects:
 
-```
+* **ClojureScript:** use the official [Firebase JavaScript SDK](https://github.com/firebase/firebase-js-sdk).
+* **Clojure:** use the official [Firebase Admin Java SDK](https://github.com/firebase/firebase-admin-java),
+  or consider [fire](https://github.com/alekcz/fire) for Realtime Database access.
+
+Matchbox is unlikely to be worth reviving:
+
+* The client and Admin SDKs no longer have enough in common for one wrapper.
+* The JavaScript SDK's function-based API works well directly from ClojureScript.
+
+## Last release
+
+```clojure
 [matchbox "0.0.9"]
 ```
 
-# Features
+The rest of this README documents the final release.
+
+## Features
 
 Matchbox offers more than just bindings:
 
- * Atom/Zipper/Cursor-ish abstraction over Firebase references
- * Clojure data in/out
- * Uniform API for JVM and JS platforms
- * Optional sequence abstraction - work with lists not sorted maps
- * Optional core.async based API
- * Multiplexed children event channels and/or callbacks
- * Registry for listeners simplifies scoped or global cleanup
+* Atom-, zipper-, and cursor-like abstractions over Firebase references
+* Conversion to and from Clojure data
+* A uniform API for Clojure and ClojureScript
+* Optional sequence abstraction—work with lists rather than sorted maps
+* Optional core.async-based API
+* Multiplexed child-event channels and callbacks
+* Listener registry for scoped or global cleanup
 
-# Usage
+## Usage
 
-Quick spin to get some basic flavour:
+Here's a quick taste:
 
 ```clojure
 (require '[matchbox.core :as m])
@@ -48,73 +60,67 @@ Quick spin to get some basic flavour:
     (m/reset-in! root [:users :mike :num-friends]
                  (count value))))
 
-(m/unauth)
+(m/unauth root)
 ```
 
-Take a look at the [quick intro](docs/quick_intro.cljc) to for a lightning tour.
+See the [quick introduction](docs/quick_intro.cljc) for a more complete tour.
 
-For those who want to dive right in, [reagent-figwheel](https://github.com/gadfly361/reagent-figwheel) has a `+firebase` option bake some sensible Matchbox plumbing right into your next app.
+## Overview
 
-# Overview
-
-For brevity, comparing to the JS Firebase API only.
+For brevity, this table compares Matchbox only with the JavaScript Firebase API.
 
 Notes:
 
-1. Almost all functions accept callbacks, and those callbacks will be intercepted to receive hydrated data.
-2. This list is not complete, notably it does not cover connectivity control and hooks, queries, auth, logging and other aspects also wrapped by Matchbox.
+1. Almost all functions accept callbacks. Matchbox intercepts them so they receive hydrated data.
+2. This table is not exhaustive. Matchbox also wraps connectivity, queries, authentication,
+   logging, and more.
 
 Matchbox | Firebase.js | Differences
 -------- | -------- | ------
-`connect` | `Firebase.` | Supports optional korks as second parameter
-`get-in` | `.child` | Supports symbols, keywords and sequences also (korks)
-`parent` | `.parent` | -
-`deref` | `.once` | Fixed to a "value" subscription
-`deref-list` | `.once` | Returns ordered values rather than a map. Query compatible.
-`reset!` | `.set` | Data automatically serialized in a sensible manner
-`reset-with-priority!` | `.setWithPriority` | ..
-`merge!` | `.update` | ..
-`conj!` | `.push` | ..
-`swap!` | `.transaction` | Always applied locally, supports additional arguments.
-`dissoc!` or `remove!` | `.remove` | -
-`set-priority!` | `.setPriority` | -
-`listen-to` | `.on` | Stored in registry for easy unsubscription
+`connect` | `new Firebase` | Accepts a key or key path as an optional second argument
+`get-in` | `.child` | Accepts a string, symbol, keyword, or key path
+`parent` | `.parent` | —
+`deref` | `.once` | Always uses a `value` subscription
+`deref-list` | `.once` | Returns ordered values rather than a map; compatible with queries
+`reset!` | `.set` | Automatically serializes data
+`reset-with-priority!` | `.setWithPriority` | —
+`merge!` | `.update` | —
+`conj!` | `.push` | —
+`swap!` | `.transaction` | Applies locally by default and accepts additional arguments
+`dissoc!` or `remove!` | `.remove` | —
+`set-priority!` | `.setPriority` | —
+`listen-to` | `.on` | Stored in the registry for easy unsubscription
 `listen-list` | `.on` | Like `deref-list` for `listen-to`
-`listen-children` | `.on` | Listen to all child events, multiplexed.
+`listen-children` | `.on` | Multiplexes all child events through one callback
 
 Additionally, there are up to three variations of most functions:
 
-1. `*-in` variants take an optional second parameter of `korks`, to refer directly to a child.
-   These exist for all "ending-with-a-bang" functions, as well as `deref` and `deref-list`.
+1. `*-in` variants accept a key or key path as their second argument to refer directly to a child.
+   These exist for all functions ending in `!`, as well as `deref` and `deref-list`.
 2. `*<` variants return a channel of results instead of taking a callback.
    These exist for all functions that would take a callback.
-3. `*-in<` combine decoration of (1) and (2), and exist where applicable.
+3. `*-in<` variants combine the first two forms where applicable.
 
-The last two, if they exist are defined in `matchbox.async`. This is so that
-Matchbox can be used without a `core.async` dependency.
+The latter two, when available, are defined in `matchbox.async`, allowing Matchbox to be used
+without a `core.async` dependency.
 
-# Examples
+## Examples
 
-1) There are ClojureScript demos for [reagent](https://github.com/reagent-project/reagent) and [om](https://github.com/omcljs/om) in the `examples` directory.
+There are ClojureScript demos for [Reagent](https://github.com/reagent-project/reagent) and
+[Om](https://github.com/omcljs/om) in the `examples` directory. Run `boot dev` from that directory,
+then open `http://localhost:3000` in a browser.
 
-   The demos can be launched by executing `boot dev` in the `examples` folder, and opening http://localhost:3000 in a browser.
+## Gotchas
 
-2) If you'd like to use `re-frame`, there is [a realtime chat app showcase](https://github.com/Quantisan/re-frame-firebase-example).
-
-# Gotchas
-
-1. `swap!` takes callback in non-standard way
+1. `swap!` takes its callback in a non-standard position
 
    Since we support passing additional arguments to an update function,
    we can't use an optional argument for the callback.
 
-   Our solution draws inspiration from "kwargs" style signatures:
+   Our solution draws inspiration from keyword-argument-style signatures, such as
+   `(my-function :has "keyword" :style "arguments")`.
 
-   ```clojure
-   (eg. `(my-function :has "keyword" :style "arguments")`).
-   ```
-
-   Coming back to `swap!`, we support `:callback callback-fn` at end of arg list:
+   For `swap!`, pass `:callback callback-fn` at the end of the argument list:
 
    ```clojure
    (m/swap! r f)                  ;; call (f <val>),     no callback
@@ -123,34 +129,36 @@ Matchbox can be used without a `core.async` dependency.
    (m/swap! r f b c :callback cb) ;; call (f <val> b c), with callback `cb`
    ```
 
-   Note that `:callback` MUST appear as the second-last argument.
+   `:callback` must appear as the second-last argument.
 
-2. JVM callbacks on side thread
+2. JVM callbacks may run on another thread
 
-   Depending on your [environment and
-   config](https://www.firebase.com/docs/java-api/javadoc/com/firebase/client/Config.html#setEventTarget(com.firebase.client.EventTarget)),
-   callbacks may be triggered on another thread.
+   Depending on your environment and Firebase configuration, callbacks may be triggered on
+   another thread.
 
-   This can be confusing when debugging with `prn` in callbacks, as
-   `*out*` will not be to the REPL's writer. We provide `matchbox.utils/prn` as a simple
-   helper to ensure output is visible.
+   This can be confusing when debugging with `prn`, as `*out*` may not point to the REPL's writer.
+   `matchbox.utils/prn` ensures that output is visible.
 
 3. Serialization
 
-  Data | Storage | Reads back as it writes?
-  --- | --- | ---
-  `{}`, nameable keys | JSON  | Not unless all keys are keywords (rest are coerced)
-  `{}`, richer keys | Not supported | N/A
-  `[]` | JSON with numeric keys | Yes
-  `#{}` | JSON with numeric keys | No, reads back as a vector
-  `"string"` | string | Yes
-  `:a/keyword` | ":a/keyword" | Yes
-  Number | Number | Pretty much, with nits for `java.math.*` types
-  Record | JSON | No, reads back as vanilla map
-  (def)Type | JSON | No, reads back as vanilla map
-  Other | Depends on platform | Expect useless strings (JS) or serious downcasting (JVM)
+   Data | Storage | Reads back as it writes?
+   --- | --- | ---
+   `{}`, nameable keys | JSON | Not unless all keys are keywords (rest are coerced)
+   `{}`, richer keys | Not supported | N/A
+   `[]` | JSON with numeric keys | Yes
+   `#{}` | JSON with numeric keys | No, reads back as a vector
+   `"string"` | string | Yes
+   `:a/keyword` | `":a/keyword"` | Yes
+   Number | Number | Mostly; some `java.math.*` types differ
+   `defrecord` instance | JSON | No, reads back as a vanilla map
+   `deftype` instance | JSON | No, reads back as a vanilla map
+   Other | Depends on platform | Expect useless strings (JS) or serious downcasting (JVM)
 
-  See more info [here](docs/serialization.md)
+   See the [serialization documentation](docs/serialization.md) for more information.
+
+## History
+
+Matchbox began as a fork of [Pani](https://github.com/verma/pani).
 
 ## License
 
